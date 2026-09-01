@@ -1,6 +1,7 @@
 //! Domain rules for Work Time Tracker.
 //!
 //! This crate knows nothing about GTK, SQLite, D-Bus, or the filesystem.
+mod clock;
 mod error;
 mod id;
 mod idle;
@@ -10,6 +11,7 @@ mod tracker;
 mod validation;
 mod work;
 
+pub use clock::*;
 pub use error::DomainError;
 pub use id::*;
 pub use idle::*;
