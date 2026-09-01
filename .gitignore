@@ -1,0 +1,37 @@
+/target/
+/build/
+/build-meson/
+/build-release/
+/stage/
+/.cache/
+
+# Rust
+**/*.rs.bk
+*.pdb
+
+# Native Linux build artifacts
+compile_commands.json
+*.o
+*.obj
+*.a
+*.so
+*.so.*
+*.la
+.deps/
+.dirstamp
+/autom4te.cache/
+/config.log
+/config.status
+
+# Debugging and editor temporary files
+core
+*.core
+.gdb_history
+*.swp
+*.swo
+*~
+
+# Packaging archives
+*.rpm
+*.tar.xz
+*.tar.gz
