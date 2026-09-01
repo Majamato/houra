@@ -24,7 +24,6 @@ compile_commands.json
 /config.status
 
 # Debugging and editor temporary files
-core
 *.core
 .gdb_history
 *.swp
