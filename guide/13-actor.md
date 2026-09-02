@@ -33,7 +33,7 @@ use std::path::PathBuf;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread::{self, JoinHandle};
 
-use work_time_core::{
+use houra_core::{
     Project, ProjectId, SystemClock, Task, TaskId, TimeEntry, TrackerCommand, TrackerEngine,
     TrackerSnapshot, Transition,
 };
@@ -51,7 +51,7 @@ enum Request {
     Snapshot(Reply<TrackerSnapshot>),
     LiveElapsed(Reply<std::time::Duration>),
     Entries(i64, i64, Reply<Vec<TimeEntry>>),
-    AddEntry(TimeEntry, Reply<work_time_core::EntryId>),
+    AddEntry(TimeEntry, Reply<houra_core::EntryId>),
     UpdateEntry(TimeEntry, Reply<()>),
     Projects(bool, Reply<Vec<Project>>),
     Tasks(bool, Reply<Vec<Task>>),
@@ -121,7 +121,7 @@ impl TrackerHandle {
         self.request(|reply| Request::Entries(start_ms, end_ms, reply))
     }
 
-    pub fn add_entry(&self, entry: TimeEntry) -> Result<work_time_core::EntryId, AppError> {
+    pub fn add_entry(&self, entry: TimeEntry) -> Result<houra_core::EntryId, AppError> {
         self.request(|reply| Request::AddEntry(entry, reply))
     }
 
@@ -250,7 +250,7 @@ impl TrackerService {
         let engine = TrackerEngine::restore(SystemClock::default(), snapshot, unclean);
         let (sender, receiver) = mpsc::channel();
         let join = thread::Builder::new()
-            .name("work-time-storage".into())
+            .name("houra-storage".into())
             .spawn(move || worker_loop(&mut store, engine, receiver))
             .map_err(|source| AppError::io("storage worker", source))?;
         Ok(Self {
@@ -440,10 +440,10 @@ Append to `tests/storage.rs` (extend the `use` lines):
 ```rust
 // crates/app/tests/storage.rs
 use tempfile::TempDir;
-use work_time_core::{EntryId, EntrySource, ProjectId, TaskId, TimeEntry, TrackerSnapshot};
-use work_time_tracker::TrackerService;
-use work_time_tracker::backup::BackupDocument;
-use work_time_tracker::storage::Store;
+use houra_core::{EntryId, EntrySource, ProjectId, TaskId, TimeEntry, TrackerSnapshot};
+use houra::TrackerService;
+use houra::backup::BackupDocument;
+use houra::storage::Store;
 
 // ...
 
@@ -454,7 +454,7 @@ fn concurrent_start_commands_are_serialized() {
         .unwrap_or_else(|error| panic!("service failed: {error}"));
     let first = service.handle.clone();
     let second = service.handle.clone();
-    let command = || work_time_core::TrackerCommand::Start {
+    let command = || houra_core::TrackerCommand::Start {
         project_id: ProjectId(1),
         task_id: None,
         note: "concurrent".into(),
@@ -471,7 +471,7 @@ fn concurrent_start_commands_are_serialized() {
     assert!(
         service
             .handle
-            .apply(work_time_core::TrackerCommand::Stop)
+            .apply(houra_core::TrackerCommand::Stop)
             .is_ok()
     );
     assert!(service.shutdown().is_ok());
@@ -561,7 +561,7 @@ git add -A && git commit -m "Chapter 13: actor (headless app complete)"
    }
    ```
 
-   Run `cargo test -p work-time-tracker --lib show_sizes`. Then change the
+   Run `cargo test -p houra --lib show_sizes`. Then change the
    variant to `Restore(BackupDocument, Reply<()>)` (and `Box::new(document)`
    to `document` in the handle) and run again.
 
@@ -583,7 +583,7 @@ git add -A && git commit -m "Chapter 13: actor (headless app complete)"
    ```rust
    #[test]
    fn shutdown_with_a_running_timer_leads_to_recovery_on_restart() {
-       use work_time_core::{TrackerCommand, TrackerState};
+       use houra_core::{TrackerCommand, TrackerState};
 
        let directory = TempDir::new().unwrap_or_else(|error| panic!("tempdir failed: {error}"));
        let path = directory.path().join("actor.sqlite3");

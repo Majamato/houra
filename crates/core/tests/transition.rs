@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use work_time_core::{
+use houra_core::{
     IdleDecision, ManualClock, Notification, ProjectId, TrackerCommand, TrackerEngine, TrackerState,
 };
 

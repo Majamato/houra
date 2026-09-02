@@ -27,7 +27,7 @@ use std::fs;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
-use work_time_core::{Project, Task, TimeEntry, TrackerSnapshot, validate_no_overlaps};
+use houra_core::{Project, Task, TimeEntry, TrackerSnapshot, validate_no_overlaps};
 
 use crate::AppError;
 
@@ -132,7 +132,7 @@ than adding one.
 // crates/app/src/backup.rs (inside impl BackupDocument)
 
     pub fn validate(&self) -> Result<(), AppError> {
-        if self.format != "work-time-tracker-backup" {
+        if self.format != "houra-backup" {
             return Err(AppError::InvalidBackup("unknown format marker".into()));
         }
         if self.version != BACKUP_VERSION {
@@ -149,7 +149,7 @@ than adding one.
         if !self
             .projects
             .iter()
-            .any(|project| project.id == work_time_core::ProjectId(1))
+            .any(|project| project.id == houra_core::ProjectId(1))
         {
             return Err(AppError::InvalidBackup(
                 "the required General project is missing".into(),
@@ -232,7 +232,7 @@ use crate::error::AppError;
 
     pub fn backup(&self, exported_at_ms: i64) -> Result<BackupDocument, AppError> {
         Ok(BackupDocument {
-            format: "work-time-tracker-backup".into(),
+            format: "houra-backup".into(),
             version: BACKUP_VERSION,
             exported_at_ms,
             projects: self.list_projects(true)?,
@@ -314,9 +314,9 @@ Add to `tests/storage.rs` (extend the `use` lines):
 ```rust
 // crates/app/tests/storage.rs
 use tempfile::TempDir;
-use work_time_core::{EntryId, EntrySource, ProjectId, TaskId, TimeEntry, TrackerSnapshot};
-use work_time_tracker::backup::BackupDocument;
-use work_time_tracker::storage::Store;
+use houra_core::{EntryId, EntrySource, ProjectId, TaskId, TimeEntry, TrackerSnapshot};
+use houra::backup::BackupDocument;
+use houra::storage::Store;
 
 // ... existing helpers and tests (insert these after task_must_belong_to_entry_project) ...
 
@@ -357,7 +357,7 @@ fn invalid_restore_is_transactionally_rejected() {
     let (_directory, mut store) = temporary_store();
     assert!(store.add_entry(&manual(None, 1, 100, 200)).is_ok());
     let invalid = BackupDocument {
-        format: "work-time-tracker-backup".into(),
+        format: "houra-backup".into(),
         version: 1,
         exported_at_ms: 1,
         projects: store
@@ -382,7 +382,7 @@ original data survives.
 ## 11.6 Checkpoint
 
 ```sh
-cargo test -p work-time-tracker
+cargo test -p houra
 ```
 
 Expected: `tests/storage.rs` — 8 passed (plus keepers).
@@ -411,7 +411,7 @@ git add -A && git commit -m "Chapter 11: backup"
    fn unknown_fields_and_versions_are_rejected() {
        let directory = TempDir::new().unwrap_or_else(|error| panic!("tempdir failed: {error}"));
        let path = directory.path().join("bad.json");
-       let extra = r#"{"format":"work-time-tracker-backup","version":1,"exported_at_ms":1,
+       let extra = r#"{"format":"houra-backup","version":1,"exported_at_ms":1,
            "projects":[],"tasks":[],"entries":[],"tracker":{"state":{"kind":"stopped"},"revision":0},
            "comment":"hello"}"#;
        std::fs::write(&path, extra).unwrap_or_else(|error| panic!("write failed: {error}"));
@@ -420,7 +420,7 @@ git add -A && git commit -m "Chapter 11: backup"
            .map(|error| error.to_string())
            .unwrap_or_default();
        println!("EXTRA: {message}");
-       let future = r#"{"format":"work-time-tracker-backup","version":2,"exported_at_ms":1,
+       let future = r#"{"format":"houra-backup","version":2,"exported_at_ms":1,
            "projects":[],"tasks":[],"entries":[],"tracker":{"state":{"kind":"stopped"},"revision":0}}"#;
        std::fs::write(&path, future).unwrap_or_else(|error| panic!("write failed: {error}"));
        let message = BackupDocument::read_from_path(&path)
@@ -432,7 +432,7 @@ git add -A && git commit -m "Chapter 11: backup"
    }
    ```
 
-   Run `cargo test -p work-time-tracker --test storage unknown_fields`.
+   Run `cargo test -p houra --test storage unknown_fields`.
 
    <details><summary>Answer</summary>
 
@@ -448,7 +448,7 @@ git add -A && git commit -m "Chapter 11: backup"
 
 2. **The triggers still catch it.** In `Store::restore` delete the line
    `document.validate()?;` and run
-   `cargo test -p work-time-tracker --test storage invalid_restore`.
+   `cargo test -p houra --test storage invalid_restore`.
 
    <details><summary>Answer</summary>
 
@@ -462,7 +462,7 @@ git add -A && git commit -m "Chapter 11: backup"
    ```rust
    #[test]
    fn backup_refuses_an_active_timer() {
-       use work_time_core::{ActiveTimer, TrackerSnapshot, TrackerState, Transition};
+       use houra_core::{ActiveTimer, TrackerSnapshot, TrackerState, Transition};
 
        let (_directory, mut store) = temporary_store();
        let running = Transition {
@@ -523,7 +523,7 @@ git add -A && git commit -m "Chapter 11: backup"
 
    ```json
    {
-     "format": "work-time-tracker-backup",
+     "format": "houra-backup",
      "version": 1,
      "exported_at_ms": 1000,
      "projects": [

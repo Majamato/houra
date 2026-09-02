@@ -1,7 +1,7 @@
 # Chapter 1 — Workspace and first run
 
 **Goal.** An empty folder becomes a Cargo *workspace* with two crates: a
-library `work-time-core` (still empty) and a binary `work-time-tracker` that
+library `houra-core` (still empty) and a binary `houra` that
 prints one line. Every later chapter adds code to these two crates.
 
 **You will learn**
@@ -11,7 +11,7 @@ prints one line. Every later chapter adds code to these two crates.
 - The five Cargo commands you will run in every chapter.
 - What the lint settings forbid, and why a "no `unwrap`" rule makes better code.
 
-**Prerequisite.** `git init` done in `time_tracker_study` (see `00-outline.md`).
+**Prerequisite.** `git init` done in `Houra` (see `00-outline.md`).
 
 ---
 
@@ -33,7 +33,7 @@ edition = "2024"
 rust-version = "1.85"
 license = "GPL-3.0-or-later"
 authors = ["majamato"]
-repository = "https://github.com/majamato/work-time-tracker"
+repository = "https://github.com/Majamato/houra"
 
 # Dependency catalog. Listing a crate here downloads nothing; a member crate
 # opts in with `name.workspace = true`.
@@ -165,8 +165,8 @@ Meson outputs used from Chapter 20.
 ```toml
 # crates/core/Cargo.toml
 [package]
-name = "work-time-core"
-description = "Pure domain model and timer state machine for Work Time Tracker"
+name = "houra-core"
+description = "Pure domain model and timer state machine for Houra"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -186,17 +186,17 @@ expect_used = "deny"
 
 ```rust
 // crates/core/src/lib.rs
-//! Domain rules for Work Time Tracker.
+//! Domain rules for Houra.
 //!
 //! This crate knows nothing about GTK, SQLite, D-Bus, or the filesystem.
 ```
 
-**What.** A package named `work-time-core` whose only source file, `lib.rs`,
+**What.** A package named `houra-core` whose only source file, `lib.rs`,
 contains a documentation comment and nothing else. `version.workspace = true`
 means "take the value from the root `[workspace.package]`".
 
 **Rust — `lib.rs`.** A file named `src/lib.rs` makes the package a *library
-crate*. Other crates import it with `use work_time_core::...` — note that the
+crate*. Other crates import it with `use houra_core::...` — note that the
 hyphen in the package name becomes an underscore in Rust code, because `-` is
 the minus operator.
 
@@ -230,15 +230,15 @@ panic.
 ```toml
 # crates/app/Cargo.toml
 [package]
-name = "work-time-tracker"
-description = "A local-first GNOME work time tracker"
+name = "houra"
+description = "A local-first GNOME time tracker"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
-work-time-core = { path = "../core" }
+houra-core = { path = "../core" }
 
 [lints.rust]
 unsafe_code = "forbid"
@@ -251,12 +251,12 @@ expect_used = "deny"
 ```rust
 // crates/app/src/main.rs
 fn main() {
-    println!("Work Time Tracker (study build)");
+    println!("Houra (study build)");
 }
 ```
 
 **What.** A second package. `src/main.rs` makes it a *binary crate*: Cargo
-builds an executable named after the package, `work-time-tracker`. Its one
+builds an executable named after the package, `houra`. Its one
 dependency is the core library, referenced by relative path instead of a
 version number because it lives in the same repository.
 
@@ -276,7 +276,7 @@ with no VM, and its start-up is the operating system calling `main`.
 ## 1.5 What the folder looks like now
 
 ```
-time_tracker_study/
+Houra/
 ├── .gitignore
 ├── Cargo.toml
 ├── rustfmt.toml
@@ -293,7 +293,7 @@ time_tracker_study/
 ```
 
 The folder names `core` and `app` are *directories*; the package names inside
-`Cargo.toml` (`work-time-core`, `work-time-tracker`) are what Cargo and Rust
+`Cargo.toml` (`houra-core`, `houra`) are what Cargo and Rust
 code use. Both are allowed to differ.
 
 ## 1.6 Checkpoint
@@ -302,13 +302,13 @@ code use. Both are allowed to differ.
 cargo run
 ```
 
-Expected (the first run also prints `Compiling work-time-core` and
-`Compiling work-time-tracker`):
+Expected (the first run also prints `Compiling houra-core` and
+`Compiling houra`):
 
 ```
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.10s
-     Running `target/debug/work-time-tracker`
-Work Time Tracker (study build)
+     Running `target/debug/houra`
+Houra (study build)
 ```
 
 ```sh
@@ -345,7 +345,7 @@ this stage: Cargo would prune it to the two crates you are actually using.)
 | `cargo test` | build the test targets and run every `#[test]` |
 | `cargo fmt` | reformat all sources in place |
 | `cargo clippy` | compile with extra lints |
-| `-p work-time-core` | limit a command to one package |
+| `-p houra-core` | limit a command to one package |
 | `--workspace` | apply to all packages |
 | `--all-targets` | include tests, examples and benches |
 
@@ -366,8 +366,8 @@ git add -A && git commit -m "Chapter 1: workspace"
 
    ```
    error: rustc 1.98.0 is not supported by the following packages:
-     work-time-core@0.1.0 requires rustc 1.999
-     work-time-tracker@0.1.0 requires rustc 1.999
+     houra-core@0.1.0 requires rustc 1.999
+     houra@0.1.0 requires rustc 1.999
    ```
 
    That is what the field is for: a clear message instead of a confusing
@@ -376,13 +376,13 @@ git add -A && git commit -m "Chapter 1: workspace"
 
 2. **Use the library from the binary.** Add this line to `lib.rs`:
    `pub const GREETING: &str = "core is linked";` and print it from `main.rs`
-   with `println!("{}", work_time_core::GREETING);`. Run it. Then revert with
+   with `println!("{}", houra_core::GREETING);`. Run it. Then revert with
    `git checkout -- .`.
 
    <details><summary>Answer</summary>
 
    The binary sees the library through its package name with underscores,
-   `work_time_core`. `pub` is needed: without it the constant is private to the
+   `houra_core`. `pub` is needed: without it the constant is private to the
    library and the binary gets
    `error[E0603]: constant `GREETING` is private`. `&str` is a borrowed string
    slice; string literals have that type and live for the whole program.

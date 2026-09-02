@@ -1,5 +1,5 @@
 mod tests {
-    use work_time_core::{
+    use houra_core::{
         DomainError, EntrySource, ProjectId, TimeEntry, validate_color, validate_name,
     };
 
@@ -36,10 +36,10 @@ mod tests {
 
 use std::time::Duration;
 
-use proptest::prelude::*;
-use work_time_core::{
+use houra_core::{
     IdleDecision, ManualClock, ProjectId, TrackerCommand, TrackerEngine, TrackerState,
 };
+use proptest::prelude::*;
 
 proptest! {
     #[test]

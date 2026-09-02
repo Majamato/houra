@@ -9,7 +9,7 @@ edition = "2024"
 rust-version = "1.85"
 license = "GPL-3.0-or-later"
 authors = ["majamato"]
-repository = "https://github.com/majamato/work-time-tracker"
+repository = "https://github.com/Majamato/houra"
 
 # Dependency catalog.
 [workspace.dependencies]

@@ -24,13 +24,13 @@ but not yet used. Files: `crates/app/Cargo.toml`, `crates/app/src/lib.rs`,
 ```toml
 # crates/app/Cargo.toml
 [package]
-name = "work-time-tracker"
-description = "A local-first GNOME work time tracker"
+name = "houra"
+description = "A local-first GNOME time tracker"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
-default-run = "work-time-tracker"
+default-run = "houra"
 
 [features]
 default = []
@@ -46,7 +46,7 @@ serde_json.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
-work-time-core = { path = "../core" }
+houra-core = { path = "../core" }
 gio = { workspace = true, optional = true }
 glib = { workspace = true, optional = true }
 gtk = { workspace = true, optional = true }
@@ -84,7 +84,7 @@ fast again.
 
 ```rust
 // crates/app/src/lib.rs
-//! Application services for Work Time Tracker.
+//! Application services for Houra.
 //!
 //! The storage actor is available without GTK, which lets database and backup
 //! behavior run in CI or on a server. `native-ui` adds the GNOME presentation
@@ -96,12 +96,12 @@ pub use error::AppError;
 
 /// Reverse-DNS application ID shared by GApplication, the desktop file,
 /// icons, GSettings, resources, notifications, and package metadata.
-pub const APP_ID: &str = "io.github.majamato.WorkTimeTracker";
-pub const APP_NAME: &str = "Work Time Tracker";
+pub const APP_ID: &str = "io.github.majamato.Houra";
+pub const APP_NAME: &str = "Houra";
 ```
 
 **What.** The package now has *both* `lib.rs` and `main.rs`. Cargo compiles
-them as two crates: a library named `work_time_tracker` and a binary that
+them as two crates: a library named `houra` and a binary that
 depends on it. Each later chapter adds a `pub mod` line here.
 
 **Why split lib and bin.** Integration tests (Chapter 9 onwards) can only
@@ -109,7 +109,7 @@ depends on it. Each later chapter adds a `pub mod` line here.
 makes the whole application testable without launching it.
 
 **Rust — `pub mod` vs `mod`.** The core crate kept modules private and
-re-exported chosen items. Here modules are `pub`: `work_time_tracker::storage::Store`
+re-exported chosen items. Here modules are `pub`: `houra::storage::Store`
 is a fine path for an application's internal layers, and tests need to
 reach them.
 
@@ -125,7 +125,7 @@ ID is the one string GNOME uses to tie together everything about this app
 use std::path::PathBuf;
 
 use thiserror::Error;
-use work_time_core::DomainError;
+use houra_core::DomainError;
 
 /// Everything that can go wrong at the application boundary: rejected domain
 /// operations plus database, serialization, filesystem, and worker failures.
@@ -156,9 +156,9 @@ pub enum AppError {
     #[error("backup validation failed: {0}")]
     InvalidBackup(String),
     #[error("project {0:?} does not exist or is archived")]
-    InvalidProject(work_time_core::ProjectId),
+    InvalidProject(houra_core::ProjectId),
     #[error("task {0:?} does not exist, is archived, or belongs to another project")]
-    InvalidTask(work_time_core::TaskId),
+    InvalidTask(houra_core::TaskId),
     #[error("project/task cannot be permanently deleted because history references it")]
     ReferencedItem,
 }
@@ -218,7 +218,7 @@ use std::path::PathBuf;
 
 use directories::BaseDirs;
 use tracing_subscriber::EnvFilter;
-use work_time_tracker::{APP_NAME, AppError};
+use houra::{APP_NAME, AppError};
 
 fn main() {
     tracing_subscriber::fmt()
@@ -232,19 +232,19 @@ fn main() {
     }
 }
 
-/// `$XDG_DATA_HOME/work-time-tracker/tracker.sqlite3`, usually
-/// `~/.local/share/work-time-tracker/tracker.sqlite3`.
+/// `$XDG_DATA_HOME/houra/tracker.sqlite3`, usually
+/// `~/.local/share/houra/tracker.sqlite3`.
 fn data_path() -> Result<PathBuf, AppError> {
     let base = BaseDirs::new().ok_or(AppError::DataDirectoryUnavailable)?;
     Ok(base
         .data_local_dir()
-        .join("work-time-tracker")
+        .join("houra")
         .join("tracker.sqlite3"))
 }
 
 #[cfg(feature = "native-ui")]
 fn run() -> Result<(), AppError> {
-    work_time_tracker::native::run(data_path()?)
+    houra::native::run(data_path()?)
 }
 
 #[cfg(not(feature = "native-ui"))]
@@ -301,7 +301,7 @@ cargo run
 Expected (after a one-time longer compile for SQLite):
 
 ```
-     Running `target/debug/work-time-tracker`
+     Running `target/debug/houra`
 This build contains the tested storage engine but not the GNOME UI. Rebuild with `--features native-ui` (Meson does this automatically).
 ```
 
@@ -328,16 +328,16 @@ git add -A && git commit -m "Chapter 8: app crate"
 
    ```sh
    cargo run; echo "status=$status"          # fish
-   RUST_LOG=error ./target/debug/work-time-tracker
+   RUST_LOG=error ./target/debug/houra
    ```
 
    <details><summary>Answer</summary>
 
    ```
-   Work Time Tracker: application data directory is unavailable
+   Houra: application data directory is unavailable
    status=1
    2026-08-30T22:41:33.277705Z ERROR application terminated error=application data directory is unavailable
-   Work Time Tracker: application data directory is unavailable
+   Houra: application data directory is unavailable
    ```
 
    The first run shows only the `eprintln!` line and exit code 1. With
@@ -354,7 +354,7 @@ git add -A && git commit -m "Chapter 8: app crate"
        use super::*;
 
        fn rejects() -> Result<(), AppError> {
-           work_time_core::validate_name("   ")?;
+           houra_core::validate_name("   ")?;
            Ok(())
        }
 
@@ -375,7 +375,7 @@ git add -A && git commit -m "Chapter 8: app crate"
    }
    ```
 
-   Run `cargo test -p work-time-tracker --lib -- --nocapture`.
+   Run `cargo test -p houra --lib -- --nocapture`.
 
    <details><summary>Answer</summary>
 
@@ -399,7 +399,7 @@ git add -A && git commit -m "Chapter 8: app crate"
    ```
    error[E0277]: `?` couldn't convert the error to `error::AppError`
       |
-   56 |         work_time_core::validate_name("   ")?;
+   56 |         houra_core::validate_name("   ")?;
       |         ------------------------------------^ the trait `From<DomainError>` is not implemented for `error::AppError`
    note: `error::AppError` needs to implement `From<DomainError>`
    ```

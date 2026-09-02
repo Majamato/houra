@@ -1,6 +1,6 @@
 [package]
-name = "work-time-core"
-description = "Pure domain model and timer state machine for Work Time Tracker"
+name = "houra-core"
+description = "Pure domain model and timer state machine for Houra"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

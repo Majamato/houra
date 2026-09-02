@@ -3,7 +3,7 @@
 **Goal.** Preferences stored in GSettings with a schema, a preferences
 dialog, first-run autostart, the `--background` start, and an application
 hold so the process outlives its window. Files:
-`data/io.github.majamato.WorkTimeTracker.gschema.xml`,
+`data/io.github.majamato.Houra.gschema.xml`,
 `crates/app/src/native/mod.rs`, `crates/app/src/native/window.rs`,
 `data/ui/window.ui`.
 
@@ -23,10 +23,10 @@ hold so the process outlives its window. Files:
 ## 18.1 The schema
 
 ```xml
-<!-- data/io.github.majamato.WorkTimeTracker.gschema.xml -->
+<!-- data/io.github.majamato.Houra.gschema.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
-<schemalist gettext-domain="work-time-tracker">
-  <schema id="io.github.majamato.WorkTimeTracker" path="/io/github/majamato/WorkTimeTracker/">
+<schemalist gettext-domain="houra">
+  <schema id="io.github.majamato.Houra" path="/io/github/majamato/Houra/">
     <key name="idle-threshold-minutes" type="u">
       <default>5</default>
       <range min="1" max="120"/>
@@ -415,12 +415,12 @@ The schema is not installed on your system (Chapter 20 installs it), so
 compile it into a directory and point GLib at it:
 
 ```sh
-mkdir -p /tmp/wtt-schemas
-cp data/io.github.majamato.WorkTimeTracker.gschema.xml /tmp/wtt-schemas/
-glib-compile-schemas --strict /tmp/wtt-schemas
+mkdir -p /tmp/houra-schemas
+cp data/io.github.majamato.Houra.gschema.xml /tmp/houra-schemas/
+glib-compile-schemas --strict /tmp/houra-schemas
 cargo build --features native-ui
-GSETTINGS_SCHEMA_DIR=/tmp/wtt-schemas GSETTINGS_BACKEND=memory XDG_DATA_HOME=/tmp/wtt-study \
-  XDG_CONFIG_HOME=/tmp/wtt-config cargo run --features native-ui
+GSETTINGS_SCHEMA_DIR=/tmp/houra-schemas GSETTINGS_BACKEND=memory XDG_DATA_HOME=/tmp/houra-study \
+  XDG_CONFIG_HOME=/tmp/houra-config cargo run --features native-ui
 ```
 
 `GSETTINGS_BACKEND=memory` keeps this study build's preferences out of your
@@ -430,7 +430,7 @@ autostart file away from `~/.config/autostart`.
 
 Check: Ctrl+, opens Preferences; change the threshold and switches (they
 persist for this process only, because of the memory backend). The first
-run wrote `/tmp/wtt-config/autostart/io.github.majamato.WorkTimeTracker.desktop`
+run wrote `/tmp/houra-config/autostart/io.github.majamato.Houra.desktop`
 — open it; it is the file from Chapter 12 with your binary's path. Run with
 `--background`: no window appears, the process stays alive; run again
 without the flag from another terminal: the window appears. Without
@@ -489,7 +489,7 @@ git add -A && git commit -m "Chapter 18: settings and background"
    }
    ```
 
-   Run `cargo test --features native-ui -p work-time-tracker --lib option_predicates`.
+   Run `cargo test --features native-ui -p houra --lib option_predicates`.
 
    <details><summary>Answer</summary>
 
@@ -503,8 +503,8 @@ git add -A && git commit -m "Chapter 18: settings and background"
    installed app once and then:
 
    ```sh
-   gsettings list-recursively io.github.majamato.WorkTimeTracker
-   dconf dump /io/github/majamato/WorkTimeTracker/
+   gsettings list-recursively io.github.majamato.Houra
+   dconf dump /io/github/majamato/Houra/
    ```
 
    Nothing to do now — remember to come back.

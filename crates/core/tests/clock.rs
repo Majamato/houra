@@ -1,6 +1,6 @@
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use work_time_core::{Clock, ManualClock, SystemClock};
+use houra_core::{Clock, ManualClock, SystemClock};
 
 #[test]
 fn manual_clock_starts_at_the_requested_wall_time() {

@@ -38,7 +38,7 @@ Replace `lib.rs`:
 
 ```rust
 // crates/core/src/lib.rs
-//! Domain rules for Work Time Tracker.
+//! Domain rules for Houra.
 //!
 //! This crate knows nothing about GTK, SQLite, D-Bus, or the filesystem. That
 //! boundary keeps the timer rules deterministic and cheap to test.
@@ -51,11 +51,11 @@ pub use model::*;
 **Rust — modules.** `mod model;` tells the compiler: "there is a module named
 `model`; load it from `src/model.rs`". Modules are Rust's namespaces, and every
 file is a module. Without `pub`, `mod model` is private: nobody outside this
-crate can write `work_time_core::model::Project`.
+crate can write `houra_core::model::Project`.
 
 **Rust — re-exports.** `pub use model::*;` takes every public item from
 `model` and re-exports it at the crate root, so users write
-`work_time_core::Project`. The `*` is a glob import. The file layout stays an
+`houra_core::Project`. The `*` is a glob import. The file layout stays an
 internal detail; you could later split `model.rs` into three files without
 changing any caller.
 
@@ -171,7 +171,7 @@ cost; you would use `extension type` (Dart 3.3+) for the same idea.
 Build now, before going on:
 
 ```sh
-cargo build -p work-time-core
+cargo build -p houra-core
 ```
 
 It should finish with no warnings. (A "unused" warning would mean you forgot
@@ -265,7 +265,7 @@ failures) that *contains* a `DomainError`. Errors describe what went wrong in
 the vocabulary of their layer.
 
 ```sh
-cargo build -p work-time-core
+cargo build -p houra-core
 ```
 
 ## 2.3 Projects, tasks, and time entries
@@ -476,8 +476,8 @@ bounds and they say what you mean (`all`, `any`, `map`, `filter`).
 ## 2.4 Checkpoint
 
 ```sh
-cargo build -p work-time-core
-cargo clippy -p work-time-core --all-targets -- -D warnings
+cargo build -p houra-core
+cargo clippy -p houra-core --all-targets -- -D warnings
 cargo fmt --all -- --check
 ```
 
@@ -523,7 +523,7 @@ Do each one, read the output, then `git checkout -- .`.
    }
    ```
 
-   Run `cargo test -p work-time-core`.
+   Run `cargo test -p houra-core`.
 
    <details><summary>Answer</summary>
 
@@ -607,7 +607,7 @@ Do each one, read the output, then `git checkout -- .`.
    }
    ```
 
-   Run `cargo test -p work-time-core show`.
+   Run `cargo test -p houra-core show`.
 
    <details><summary>Answer</summary>
 
@@ -624,7 +624,7 @@ Do each one, read the output, then `git checkout -- .`.
    </details>
 
 4. **Remove a `?`.** In `Project::validate`, delete the `?` after
-   `validate_name(&self.name)` and run `cargo build -p work-time-core`.
+   `validate_name(&self.name)` and run `cargo build -p houra-core`.
 
    <details><summary>Answer</summary>
 
@@ -680,7 +680,7 @@ Do each one, read the output, then `git checkout -- .`.
    }
    ```
 
-   Run `cargo test -p work-time-core`. Expected:
+   Run `cargo test -p houra-core`. Expected:
 
    ```
    test model::tests::blank_names_are_rejected ... ok

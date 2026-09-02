@@ -332,7 +332,7 @@ Add to `tests/transitions.rs` (and extend the `use` line):
 
 ```rust
 // crates/core/tests/transitions.rs
-use work_time_core::{
+use houra_core::{
     IdleDecision, ManualClock, Notification, ProjectId, TrackerCommand, TrackerEngine, TrackerState,
 };
 
@@ -462,7 +462,7 @@ proptest.workspace = true
 use std::time::Duration;
 
 use proptest::prelude::*;
-use work_time_core::{
+use houra_core::{
     IdleDecision, ManualClock, ProjectId, TrackerCommand, TrackerEngine, TrackerState,
 };
 
@@ -571,7 +571,7 @@ Chapter 4.
 ## 6.7 Checkpoint
 
 ```sh
-cargo test -p work-time-core
+cargo test -p houra-core
 ```
 
 Expected (order within a file may vary):
@@ -591,7 +591,7 @@ test result: ok. 5 passed; ...
 ```
 
 ```sh
-cargo clippy -p work-time-core --all-targets -- -D warnings
+cargo clippy -p houra-core --all-targets -- -D warnings
 cargo fmt --all -- --check
 diff <(grep -v '^\s*//' ../work_time_tracker/crates/core/src/engine.rs) \
      <(grep -v '^\s*//' crates/core/src/engine.rs)
@@ -608,7 +608,7 @@ git add -A && git commit -m "Chapter 6: idle and recovery"
 
 1. **Watch proptest shrink.** In `resolve_idle`, in the `ReassignAndResume`
    arm, change the second `push_entry` call's `return_ms` to `return_ms - 1`.
-   Run `cargo test -p work-time-core --test properties`.
+   Run `cargo test -p houra-core --test properties`.
 
    <details><summary>Answer</summary>
 

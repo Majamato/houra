@@ -3,7 +3,7 @@
 **Goal.** The application opens a libadwaita window with a timer label and a
 Start/Stop button wired to the storage thread. Along the way: a Cargo build
 script that compiles a GResource, a UI file, and a GObject subclass in Rust.
-Files: `crates/app/build.rs`, `data/io.github.majamato.WorkTimeTracker.gresource.xml`,
+Files: `crates/app/build.rs`, `data/io.github.majamato.Houra.gresource.xml`,
 `data/ui/window.ui`, `data/style.css`, `crates/app/src/native/mod.rs`,
 `crates/app/src/native/window.rs`, `lib.rs`.
 
@@ -34,7 +34,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 fn main() {
-    println!("cargo:rerun-if-changed=../../data/io.github.majamato.WorkTimeTracker.gresource.xml");
+    println!("cargo:rerun-if-changed=../../data/io.github.majamato.Houra.gresource.xml");
     println!("cargo:rerun-if-changed=../../data/ui/window.ui");
     if env::var_os("CARGO_FEATURE_NATIVE_UI").is_none() {
         return;
@@ -45,10 +45,10 @@ fn main() {
     };
     let status = Command::new("glib-compile-resources")
         .arg("--target")
-        .arg(out_dir.join("work-time-tracker.gresource"))
+        .arg(out_dir.join("houra.gresource"))
         .arg("--sourcedir")
         .arg("../../data")
-        .arg("../../data/io.github.majamato.WorkTimeTracker.gresource.xml")
+        .arg("../../data/io.github.majamato.Houra.gresource.xml")
         .status();
     match status {
         Ok(status) if status.success() => {}
@@ -59,10 +59,10 @@ fn main() {
 ```
 
 ```xml
-<!-- data/io.github.majamato.WorkTimeTracker.gresource.xml -->
+<!-- data/io.github.majamato.Houra.gresource.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/io/github/majamato/WorkTimeTracker">
+  <gresource prefix="/io/github/majamato/Houra">
     <file preprocess="xml-stripblanks">ui/window.ui</file>
     <file>style.css</file>
   </gresource>
@@ -99,7 +99,7 @@ and the `match` with a guard (`Ok(status) if status.success()`) separates
 
 **Linux — GResource.** GLib's answer to "where are my assets?": files are
 compiled into the executable and addressed by a URI-like path,
-`/io/github/majamato/WorkTimeTracker/ui/window.ui`. `xml-stripblanks`
+`/io/github/majamato/Houra/ui/window.ui`. `xml-stripblanks`
 removes whitespace from the XML at compile time.
 
 **GTK — CSS.** GTK styles widgets with a CSS dialect. `.timer` is a style
@@ -115,8 +115,8 @@ never loads it; 14.3 loads it — a small, deliberate improvement.)
 <interface>
   <requires lib="gtk" version="4.12"/>
   <requires lib="Adw" version="1.5"/>
-  <template class="WorkTimeTrackerWindow" parent="AdwApplicationWindow">
-    <property name="title" translatable="yes">Work Time Tracker</property>
+  <template class="HouraWindow" parent="AdwApplicationWindow">
+    <property name="title" translatable="yes">Houra</property>
     <property name="default-width">720</property>
     <property name="default-height">680</property>
     <property name="width-request">360</property>
@@ -164,7 +164,7 @@ version is the skeleton: a header bar, a clamp that keeps content at a
 readable width, a vertical box with the timer label and one button. Chapter
 15 grows it into the full Tracker page.
 
-**GTK — templates.** `<template class="WorkTimeTrackerWindow"
+**GTK — templates.** `<template class="HouraWindow"
 parent="AdwApplicationWindow">` declares a *composite widget*: a new class
 whose instances are built from this XML. The class name must equal the Rust
 subclass's `NAME` (14.4), and every `id` you want to touch from Rust must
@@ -225,7 +225,7 @@ pub fn run(database_path: PathBuf) -> Result<(), AppError> {
 fn register_resources() -> Result<(), AppError> {
     let bytes = glib::Bytes::from_static(include_bytes!(concat!(
         env!("OUT_DIR"),
-        "/work-time-tracker.gresource"
+        "/houra.gresource"
     )));
     let resource = gio::Resource::from_data(&bytes).map_err(|error| {
         AppError::InvalidBackup(format!("could not load application resources: {error}"))
@@ -236,7 +236,7 @@ fn register_resources() -> Result<(), AppError> {
 
 fn load_css() {
     let provider = gtk::CssProvider::new();
-    provider.load_from_resource("/io/github/majamato/WorkTimeTracker/style.css");
+    provider.load_from_resource("/io/github/majamato/Houra/style.css");
     if let Some(display) = gtk::gdk::Display::default() {
         gtk::style_context_add_provider_for_display(
             &display,
@@ -313,7 +313,7 @@ use gtk::subclass::prelude::*;
 use libadwaita as adw;
 use libadwaita::prelude::*;
 use libadwaita::subclass::prelude::*;
-use work_time_core::{ProjectId, TrackerCommand, TrackerState};
+use houra_core::{ProjectId, TrackerCommand, TrackerState};
 
 use crate::TrackerHandle;
 
@@ -322,7 +322,7 @@ mod imp {
 
     /// Private state of the window: template children plus Rust fields.
     #[derive(Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/github/majamato/WorkTimeTracker/ui/window.ui")]
+    #[template(resource = "/io/github/majamato/Houra/ui/window.ui")]
     pub struct MainWindow {
         #[template_child]
         pub timer_label: gtk::TemplateChild<gtk::Label>,
@@ -333,7 +333,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for MainWindow {
-        const NAME: &'static str = "WorkTimeTrackerWindow";
+        const NAME: &'static str = "HouraWindow";
         type Type = super::MainWindow;
         type ParentType = adw::ApplicationWindow;
 
@@ -467,7 +467,7 @@ impl MainWindow {
         };
         match snapshot.state {
             TrackerState::Running(active)
-            | TrackerState::IdlePending(work_time_core::PendingIdle { active, .. }) => {
+            | TrackerState::IdlePending(houra_core::PendingIdle { active, .. }) => {
                 let elapsed = handle.live_elapsed().map_or_else(
                     |_| {
                         u64::try_from(
@@ -561,17 +561,17 @@ on screen is still the true state.
 
 ```sh
 cargo build --features native-ui
-XDG_DATA_HOME=/tmp/wtt-study cargo run --features native-ui
+XDG_DATA_HOME=/tmp/houra-study cargo run --features native-ui
 ```
 
-A window titled "Work Time Tracker" opens with `00:00:00` and a Start
+A window titled "Houra" opens with `00:00:00` and a Start
 button. Click Start: the label counts up and the button turns red and says
 Stop. Click Stop: back to `00:00:00`. Close the window: the process exits
 (close-to-hide comes in Chapter 17). No `Gtk-CRITICAL` lines on the
 terminal.
 
 The `XDG_DATA_HOME` override keeps this study build's database away from
-the real app's `~/.local/share/work-time-tracker/`. Use it for every manual
+the real app's `~/.local/share/houra/`. Use it for every manual
 run until the end (or set it once in your shell for the study folder).
 
 ```sh
@@ -592,7 +592,7 @@ git add -A && git commit -m "Chapter 14: first GTK window"
    <details><summary>Answer</summary>
 
    ```
-   (work-time-tracker:184677): Gtk-CRITICAL **: Unable to retrieve child object 'timer_label' from class template for type 'WorkTimeTrackerWindow' while building a 'WorkTimeTrackerWindow'
+   (houra:184677): Gtk-CRITICAL **: Unable to retrieve child object 'timer_label' from class template for type 'HouraWindow' while building a 'HouraWindow'
 
    thread 'main' panicked at .../gtk4-0.10.3/src/subclass/widget.rs:1273:17:
    Failed to retrieve template child. Please check that all fields of type `GtkLabel` have been bound and have a #[template_child] attribute.
@@ -628,7 +628,7 @@ git add -A && git commit -m "Chapter 14: first GTK window"
    }
    ```
 
-   Run `cargo test --features native-ui -p work-time-tracker --lib`.
+   Run `cargo test --features native-ui -p houra --lib`.
 
    <details><summary>Answer</summary>
 

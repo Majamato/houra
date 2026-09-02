@@ -27,7 +27,7 @@ Extend the imports:
 use std::path::Path;
 
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
-use work_time_core::{
+use houra_core::{
     EntryId, EntrySource, Project, ProjectId, Task, TaskId, TimeEntry, TrackerSnapshot,
     TrackerState, Transition,
 };
@@ -213,7 +213,7 @@ Insert after `list_projects`:
     ) -> Result<TaskId, AppError> {
         validate_project(&self.connection, project_id)?;
         let trimmed = name.trim();
-        work_time_core::validate_name(trimmed)?;
+        houra_core::validate_name(trimmed)?;
         self.connection.execute(
             "INSERT INTO tasks(project_id, name, archived, created_at_ms, updated_at_ms)
              VALUES(?1, ?2, 0, ?3, ?3)",
@@ -382,7 +382,7 @@ fn validate_active_references(
             .query_map([active.start_ms], |row| row.get::<_, i64>(0).map(EntryId))?
             .collect::<Result<Vec<_>, _>>()?;
         if !conflicts.is_empty() {
-            return Err(work_time_core::DomainError::Overlap { conflicts }.into());
+            return Err(houra_core::DomainError::Overlap { conflicts }.into());
         }
     }
     Ok(())
@@ -407,7 +407,7 @@ fn reject_entry_overlaps(
     if conflicts.is_empty() {
         Ok(())
     } else {
-        Err(work_time_core::DomainError::Overlap { conflicts }.into())
+        Err(houra_core::DomainError::Overlap { conflicts }.into())
     }
 }
 
@@ -530,8 +530,8 @@ Add the fixture and three tests to `tests/storage.rs` (extend the `use`):
 ```rust
 // crates/app/tests/storage.rs
 use tempfile::TempDir;
-use work_time_core::{EntryId, EntrySource, ProjectId, TaskId, TimeEntry};
-use work_time_tracker::storage::Store;
+use houra_core::{EntryId, EntrySource, ProjectId, TaskId, TimeEntry};
+use houra::storage::Store;
 
 // ... temporary_store ...
 
@@ -613,7 +613,7 @@ return owned values you can adjust; `mut` is needed to assign a field.
 ## 10.8 Checkpoint
 
 ```sh
-cargo test -p work-time-tracker
+cargo test -p houra
 ```
 
 Expected: `tests/storage.rs` — 5 passed (`corrupt_database…`,
@@ -706,13 +706,13 @@ git add -A && git commit -m "Chapter 10: entries, projects, tasks"
 
    #[test]
    fn persist_transition_is_atomic() {
-       use work_time_core::{TrackerSnapshot, Transition};
+       use houra_core::{TrackerSnapshot, Transition};
 
        let (_directory, mut store) = temporary_store();
        assert!(store.add_entry(&manual(None, 1, 100, 200)).is_ok());
        let transition = Transition {
            snapshot: TrackerSnapshot {
-               state: work_time_core::TrackerState::Stopped,
+               state: houra_core::TrackerState::Stopped,
                revision: 7,
            },
            completed_entries: vec![manual(None, 1, 500, 600), manual(None, 1, 150, 250)],

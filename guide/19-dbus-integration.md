@@ -71,7 +71,7 @@ use glib::variant::ToVariant;
 use std::os::fd::OwnedFd;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
-use work_time_core::TrackerCommand;
+use houra_core::TrackerCommand;
 
 use crate::{AppError, TrackerHandle};
 
@@ -373,7 +373,7 @@ fn apply_return_and_notify(handle: &TrackerHandle, return_ms: i64, notifications
     };
     let notification = gio::Notification::new("Idle time needs review");
     notification.set_body(Some(
-        "Open Work Time Tracker to keep, discard, reassign, or stop.",
+        "Open Houra to keep, discard, reassign, or stop.",
     ));
     notification.set_default_action("app.toggle-timer");
     application.send_notification(Some("idle-resolution"), &notification);
@@ -383,7 +383,7 @@ fn apply_return_and_notify(handle: &TrackerHandle, return_ms: i64, notifications
 fn take_sleep_inhibitor(proxy: &gio::DBusProxy) -> Option<OwnedFd> {
     let parameters = (
         "sleep",
-        "Work Time Tracker",
+        "Houra",
         "Save the active timer before suspend",
         "delay",
     )
@@ -538,7 +538,7 @@ git add -A && git commit -m "Chapter 19: D-Bus integration (all Rust complete)"
    }
    ```
 
-   Run `cargo test --features native-ui -p work-time-tracker --lib owned_fd`.
+   Run `cargo test --features native-ui -p houra --lib owned_fd`.
 
    <details><summary>Answer</summary>
 

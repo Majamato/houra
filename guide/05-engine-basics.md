@@ -316,7 +316,7 @@ pub use model::*;
 // crates/core/tests/transitions.rs
 use std::time::Duration;
 
-use work_time_core::{ManualClock, Notification, ProjectId, TrackerCommand, TrackerEngine};
+use houra_core::{ManualClock, Notification, ProjectId, TrackerCommand, TrackerEngine};
 
 fn start(engine: &mut TrackerEngine<ManualClock>) {
     let result = engine.apply(TrackerCommand::Start {
@@ -368,7 +368,7 @@ test runs in microseconds and gives the same result on every machine.
 
 **Rust — integration tests.** Files in `tests/` are compiled as separate
 crates that can only see the library's *public* API through
-`use work_time_core::...` — exactly what a user of the crate sees. Each `fn`
+`use houra_core::...` — exactly what a user of the crate sees. Each `fn`
 marked `#[test]` runs in its own thread; a panic fails that test only.
 Contrast with `#[cfg(test)] mod tests` inside a source file, which can test
 private items.
@@ -394,7 +394,7 @@ clear at a glance.
 ## 5.6 Checkpoint
 
 ```sh
-cargo test -p work-time-core
+cargo test -p houra-core
 ```
 
 Expected (plus the Chapter 2/3/4 unit tests if you kept them):
@@ -407,7 +407,7 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 ```
 
 ```sh
-cargo clippy -p work-time-core --all-targets -- -D warnings
+cargo clippy -p houra-core --all-targets -- -D warnings
 cargo fmt --all -- --check
 git add -A && git commit -m "Chapter 5: engine basics"
 ```
@@ -419,7 +419,7 @@ Chapter 6.
 ## 5.7 Exercises
 
 1. **Read a failing assertion.** In `start_stop_records_exact_interval`
-   change `42_000` to `42` and run `cargo test -p work-time-core --test
+   change `42_000` to `42` and run `cargo test -p houra-core --test
    transitions`.
 
    <details><summary>Answer</summary>
@@ -477,7 +477,7 @@ Chapter 6.
    }
    ```
 
-   Run `cargo test -p work-time-core --test transitions stop_while`.
+   Run `cargo test -p houra-core --test transitions stop_while`.
 
    <details><summary>Answer</summary>
 

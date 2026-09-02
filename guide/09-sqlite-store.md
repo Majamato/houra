@@ -27,7 +27,7 @@ SQLite file in a temporary directory. Files: `crates/app/src/storage.rs`,
 use std::path::Path;
 
 use rusqlite::{Connection, OptionalExtension, params};
-use work_time_core::{Project, ProjectId, TrackerSnapshot};
+use houra_core::{Project, ProjectId, TrackerSnapshot};
 
 use crate::error::AppError;
 
@@ -380,8 +380,8 @@ pub mod storage;
 ```rust
 // crates/app/tests/storage.rs
 use tempfile::TempDir;
-use work_time_core::ProjectId;
-use work_time_tracker::storage::Store;
+use houra_core::ProjectId;
+use houra::storage::Store;
 
 fn temporary_store() -> (TempDir, Store) {
     let directory = TempDir::new().unwrap_or_else(|error| panic!("tempdir failed: {error}"));
@@ -427,7 +427,7 @@ the end of the test. Naming it `_directory` (not `_`) matters: `let _ =
 ## 9.6 Checkpoint
 
 ```sh
-cargo test -p work-time-tracker
+cargo test -p houra
 ```
 
 Expected:
@@ -447,7 +447,7 @@ git add -A && git commit -m "Chapter 9: sqlite store"
 
 The diff against the original `storage.rs` is large for now; Chapter 10
 fills in the rest. The database file this store would create for the real
-app lives at `~/.local/share/work-time-tracker/tracker.sqlite3`; the tests
+app lives at `~/.local/share/houra/tracker.sqlite3`; the tests
 never touch it.
 
 ## 9.7 Exercises

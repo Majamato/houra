@@ -1,4 +1,4 @@
-//! Domain rules for Work Time Tracker.
+//! Domain rules for Houra.
 //!
 //! This crate knows nothing about GTK, SQLite, D-Bus, or the filesystem.
 mod clock;

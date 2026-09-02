@@ -248,7 +248,7 @@ pub use report::{ReportBucket, ReportRow, group_entries, validate_no_overlaps};
 
 ```rust
 // crates/core/tests/report.rs
-use work_time_core::{
+use houra_core::{
     EntryId, EntrySource, ProjectId, TimeEntry, group_entries, validate_no_overlaps,
 };
 
@@ -305,14 +305,14 @@ on the binding tells `sum` its type (an alternative to the turbofish).
 ## 7.5 Checkpoint — end of Part 1
 
 ```sh
-cargo test -p work-time-core
+cargo test -p houra-core
 ```
 
 Expected: `properties.rs` 2 passed, `report.rs` 3 passed, `transitions.rs`
 5 passed (plus any keepers). Then the Part 1 boundary checks:
 
 ```sh
-cargo clippy -p work-time-core --all-targets -- -D warnings
+cargo clippy -p houra-core --all-targets -- -D warnings
 cargo fmt --all -- --check
 for f in src/lib.rs src/model.rs src/error.rs src/clock.rs src/engine.rs src/report.rs \
          tests/transitions.rs tests/properties.rs tests/report.rs; do
@@ -333,7 +333,7 @@ git add -A && git commit -m "Chapter 7: reports (core complete)"
 ## 7.6 Exercises
 
 1. **Half-open matters.** Change `<` to `<=` in `if pair[1].start_ms <
-   pair[0].end_ms` and run `cargo test -p work-time-core --test report`.
+   pair[0].end_ms` and run `cargo test -p houra-core --test report`.
 
    <details><summary>Answer</summary>
 
@@ -411,7 +411,7 @@ git add -A && git commit -m "Chapter 7: reports (core complete)"
    }
    ```
 
-   Run `cargo test -p work-time-core --test report sorted`.
+   Run `cargo test -p houra-core --test report sorted`.
 
    <details><summary>Answer</summary>
 

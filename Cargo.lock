@@ -81,6 +81,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "houra"
+version = "0.1.0"
+dependencies = [
+ "houra-core",
+]
+
+[[package]]
+name = "houra-core"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.189"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -375,22 +391,6 @@ name = "wit-bindgen"
 version = "0.46.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59"
-
-[[package]]
-name = "work-time-core"
-version = "0.1.0"
-dependencies = [
- "proptest",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "work-time-tracker"
-version = "0.1.0"
-dependencies = [
- "work-time-core",
-]
 
 [[package]]
 name = "zerocopy"

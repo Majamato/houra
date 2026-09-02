@@ -1,3 +1,3 @@
 fn main() {
-    println!("Work Time Tracker (study build)");
+    println!("Houra (study build)");
 }

@@ -370,7 +370,7 @@ is reused for every project.
         };
         let projects = handle.projects(true).unwrap_or_default();
         let tasks = handle.tasks(true).unwrap_or_default();
-        let rows = work_time_core::group_entries(&entries);
+        let rows = houra_core::group_entries(&entries);
         if rows.is_empty() {
             self.imp()
                 .report_box
@@ -437,7 +437,7 @@ logic. That is the layering paying off.
         };
         let chooser = gtk::FileDialog::builder()
             .title("Export Weekly CSV")
-            .initial_name(format!("work-time-{}.csv", start.format("%Y-%m-%d")))
+            .initial_name(format!("houra-{}.csv", start.format("%Y-%m-%d")))
             .build();
         let weak = self.downgrade();
         chooser.save(Some(self), None::<&gio::Cancellable>, move |result| {
@@ -557,7 +557,7 @@ default response; `ResponseAppearance::Suggested` colours the Save button.
 
 ```sh
 cargo build --features native-ui
-XDG_DATA_HOME=/tmp/wtt-study cargo run --features native-ui
+XDG_DATA_HOME=/tmp/houra-study cargo run --features native-ui
 ```
 
 Three tabs. *Projects*: General with an add-task button; add a project

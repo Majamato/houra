@@ -225,7 +225,7 @@ is the first one. `:?` asks for `Debug` formatting, since `TrackerState` has
 no `Display` (and should not: it is data, not a message).
 
 ```sh
-cargo build -p work-time-core
+cargo build -p houra-core
 ```
 
 ## 3.4 Commands, decisions, notifications, transitions
@@ -336,8 +336,8 @@ place — the engine — which makes it testable by constructing values.
 ## 3.5 Checkpoint
 
 ```sh
-cargo build -p work-time-core
-cargo clippy -p work-time-core --all-targets -- -D warnings
+cargo build -p houra-core
+cargo clippy -p houra-core --all-targets -- -D warnings
 cargo fmt --all -- --check
 ```
 
@@ -435,7 +435,7 @@ Revert each with `git checkout -- .` unless told otherwise.
    }
    ```
 
-   Run `cargo test -p work-time-core`. Then add `Copy` to `Notification`'s
+   Run `cargo test -p houra-core`. Then add `Copy` to `Notification`'s
    derive list and run again.
 
    <details><summary>Answer</summary>
@@ -503,7 +503,7 @@ Revert each with `git checkout -- .` unless told otherwise.
    }
    ```
 
-   Run `cargo test -p work-time-core json -- --nocapture`.
+   Run `cargo test -p houra-core json -- --nocapture`.
 
    <details><summary>Answer</summary>
 

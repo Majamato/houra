@@ -1,6 +1,6 @@
-# Work Time Tracker — rebuild guide
+# Houra — rebuild guide
 
-You already have a working Work Time Tracker in `../work_time_tracker`. This
+You already have a working Houra in `../work_time_tracker`. This
 guide rebuilds it from an empty folder, one chapter at a time, so that at the
 end you have the same working program **and** you understand why every piece
 is written the way it is.
@@ -59,8 +59,8 @@ Create the project folder next to the original and put it under git from the
 first minute:
 
 ```sh
-mkdir -p ~/Develop/Personal/time_tracker_study
-cd ~/Develop/Personal/time_tracker_study
+mkdir -p ~/Develop/Personal/Houra
+cd ~/Develop/Personal/Houra
 git init
 ```
 
@@ -86,10 +86,10 @@ The `guide/` folder (this file) lives inside that project. Commit it too.
   never touches the real app's data, preferences or autostart file:
 
   ```sh
-  set -x XDG_DATA_HOME /tmp/wtt-study          # fish; bash: export XDG_DATA_HOME=/tmp/wtt-study
-  set -x XDG_CONFIG_HOME /tmp/wtt-config
+  set -x XDG_DATA_HOME /tmp/houra-study          # fish; bash: export XDG_DATA_HOME=/tmp/houra-study
+  set -x XDG_CONFIG_HOME /tmp/houra-config
   set -x GSETTINGS_BACKEND memory
-  set -x GSETTINGS_SCHEMA_DIR /tmp/wtt-schemas  # after Chapter 18 compiles the schema there
+  set -x GSETTINGS_SCHEMA_DIR /tmp/houra-schemas  # after Chapter 18 compiles the schema there
   ```
 - Comparing your file with the original, ignoring its teaching comments:
 

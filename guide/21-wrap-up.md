@@ -107,7 +107,7 @@ Pick one; each is a few hours and builds on what is here.
    and constructor the compiler complains about is a place the flag must
    flow through — that is the exhaustiveness working for you.
 2. **A second UI.** A terminal client (`crates/cli`) that uses only
-   `work-time-core` and `work-time-tracker`'s `TrackerService`: start,
+   `houra-core` and `houra`'s `TrackerService`: start,
    stop, list today's entries. It proves the layering: no GTK, no change
    to the library.
 3. **Async.** Replace the blocking `TrackerHandle` calls in GTK callbacks

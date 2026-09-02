@@ -68,7 +68,7 @@ New imports at the top of `window.rs`:
 // crates/app/src/native/window.rs
 use chrono::{Datelike, Local, NaiveDate, NaiveDateTime, TimeZone};
 // ...
-use work_time_core::{
+use houra_core::{
     EntrySource, Project, ProjectId, Task, TimeEntry, TrackerCommand, TrackerState,
 };
 
@@ -405,9 +405,9 @@ because the handler may run more than once.
                 return;
             }
             let decision = match response {
-                "keep" => work_time_core::IdleDecision::Keep,
-                "stop" => work_time_core::IdleDecision::Stop,
-                _ => work_time_core::IdleDecision::DiscardAndResume,
+                "keep" => houra_core::IdleDecision::Keep,
+                "stop" => houra_core::IdleDecision::Stop,
+                _ => houra_core::IdleDecision::DiscardAndResume,
             };
             if let Some(handle) = &handle
                 && let Err(error) = handle.apply(TrackerCommand::ResolveIdle(decision))
@@ -443,7 +443,7 @@ because the handler may run more than once.
                 .get(index)
                 .map_or(ProjectId(1), |project| project.id);
             let result = handle.apply(TrackerCommand::ResolveIdle(
-                work_time_core::IdleDecision::ReassignAndResume {
+                houra_core::IdleDecision::ReassignAndResume {
                     project_id,
                     task_id: None,
                     note: "Idle time".into(),
@@ -587,7 +587,7 @@ logs through `tracing`; used where a dialog would be overkill.
     pub fn confirm_quit(&self) {
         let dialog = adw::AlertDialog::builder()
             .heading("A timer is still running")
-            .body("Stop the timer and quit, or keep Work Time Tracker running in the background.")
+            .body("Stop the timer and quit, or keep Houra running in the background.")
             .build();
         dialog.add_responses(&[("cancel", "Keep Running"), ("quit", "Stop and Quit")]);
         dialog.set_response_appearance("quit", adw::ResponseAppearance::Destructive);
@@ -607,9 +607,9 @@ logs through `tracing`; used where a dialog would be overkill.
     pub fn backup_data(&self) {
         let Some(handle) = self.handle() else { return };
         let chooser = gtk::FileDialog::builder()
-            .title("Back Up Work Time Tracker")
+            .title("Back Up Houra")
             .initial_name(format!(
-                "work-time-backup-{}.json",
+                "houra-backup-{}.json",
                 Local::now().format("%Y-%m-%d")
             ))
             .build();
@@ -641,7 +641,7 @@ logs through `tracing`; used where a dialog would be overkill.
             return;
         }
         let chooser = gtk::FileDialog::builder()
-            .title("Choose a Work Time Tracker Backup")
+            .title("Choose a Houra Backup")
             .build();
         let weak = self.downgrade();
         chooser.open(Some(self), None::<&gio::Cancellable>, move |result| {
@@ -877,7 +877,7 @@ parameter accepts any error type.
 
 ```sh
 cargo build --features native-ui
-XDG_DATA_HOME=/tmp/wtt-study cargo run --features native-ui
+XDG_DATA_HOME=/tmp/houra-study cargo run --features native-ui
 ```
 
 Try: the ☰ menu; Ctrl+N opens *Manual Entry*; save an entry, click its
@@ -888,7 +888,7 @@ the same window (single instance). Ctrl+Q quits — or asks, if running.
 otherwise asks before replacing.
 
 Recovery: Start a timer, then from another terminal `pkill -9 -f
-work-time-tracker`. Run again: the recovery dialog opens with the last
+houra`. Run again: the recovery dialog opens with the last
 heartbeat as the proposed end.
 
 ```sh
@@ -941,7 +941,7 @@ git add -A && git commit -m "Chapter 17: dialogs and actions"
    }
    ```
 
-   Run `cargo test --features native-ui -p work-time-tracker --lib then_some`.
+   Run `cargo test --features native-ui -p houra --lib then_some`.
 
    <details><summary>Answer</summary>
 

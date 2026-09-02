@@ -28,7 +28,7 @@ use std::io::Write;
 use std::path::Path;
 
 use chrono::{Local, TimeZone};
-use work_time_core::{Project, Task, TimeEntry};
+use houra_core::{Project, Task, TimeEntry};
 
 use crate::AppError;
 
@@ -201,7 +201,7 @@ use directories::BaseDirs;
 
 use crate::AppError;
 
-const FILE_NAME: &str = "io.github.majamato.WorkTimeTracker.desktop";
+const FILE_NAME: &str = "io.github.majamato.Houra.desktop";
 
 /// `$XDG_CONFIG_HOME/autostart/<app id>.desktop`.
 pub fn default_path() -> Result<PathBuf, AppError> {
@@ -219,7 +219,7 @@ pub fn set_enabled(enabled: bool, executable: &Path) -> Result<(), AppError> {
         fs::create_dir_all(parent).map_err(|source| AppError::io(parent, source))?;
         let escaped = executable.to_string_lossy().replace(' ', "\\ ");
         let desktop = format!(
-            "[Desktop Entry]\nType=Application\nName=Work Time Tracker\nExec={escaped} --background\nIcon=io.github.majamato.WorkTimeTracker\nX-GNOME-Autostart-enabled=true\nNoDisplay=true\n"
+            "[Desktop Entry]\nType=Application\nName=Houra\nExec={escaped} --background\nIcon=io.github.majamato.Houra\nX-GNOME-Autostart-enabled=true\nNoDisplay=true\n"
         );
         fs::write(&path, desktop).map_err(|source| AppError::io(&path, source))
     } else if path.exists() {
@@ -288,7 +288,7 @@ git add -A && git commit -m "Chapter 12: export, settings, autostart"
    #[cfg(test)]
    mod tests {
        use super::*;
-       use work_time_core::{EntryId, EntrySource, ProjectId};
+       use houra_core::{EntryId, EntrySource, ProjectId};
 
        #[test]
        fn csv_has_a_header_and_one_row_per_entry() {
@@ -326,7 +326,7 @@ git add -A && git commit -m "Chapter 12: export, settings, autostart"
    }
    ```
 
-   Run `cargo test -p work-time-tracker --lib -- --nocapture`.
+   Run `cargo test -p houra --lib -- --nocapture`.
 
    <details><summary>Answer</summary>
 
@@ -383,7 +383,7 @@ git add -A && git commit -m "Chapter 12: export, settings, autostart"
    </details>
 
 4. **Look at a real autostart file.** After Chapter 18 runs the app for the
-   first time, `cat ~/.config/autostart/io.github.majamato.WorkTimeTracker.desktop`.
+   first time, `cat ~/.config/autostart/io.github.majamato.Houra.desktop`.
    Nothing to do now; remember to come back.
 
 ## Recap

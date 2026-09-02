@@ -25,12 +25,12 @@ installed.
 ## 20.1 Desktop file and AppStream metadata
 
 ```ini
-# data/io.github.majamato.WorkTimeTracker.desktop.in
+# data/io.github.majamato.Houra.desktop.in
 [Desktop Entry]
-Name=Work Time Tracker
+Name=Houra
 Comment=Track focused work locally
-Exec=work-time-tracker
-Icon=io.github.majamato.WorkTimeTracker
+Exec=houra
+Icon=io.github.majamato.Houra
 Terminal=false
 Type=Application
 Categories=Office;GTK;GNOME;
@@ -39,22 +39,22 @@ StartupNotify=true
 ```
 
 ```xml
-<!-- data/io.github.majamato.WorkTimeTracker.metainfo.xml.in -->
+<!-- data/io.github.majamato.Houra.metainfo.xml.in -->
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>io.github.majamato.WorkTimeTracker</id>
+  <id>io.github.majamato.Houra</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
-  <name>Work Time Tracker</name>
+  <name>Houra</name>
   <developer id="io.github.majamato"><name>majamato</name></developer>
   <summary>Private, local-first tracking for focused work</summary>
   <description>
     <p>Track projects and tasks, reconcile idle time, review weekly totals, and
     keep portable backups without creating an online account.</p>
   </description>
-  <launchable type="desktop-id">io.github.majamato.WorkTimeTracker.desktop</launchable>
-  <provides><binary>work-time-tracker</binary></provides>
-  <url type="homepage">https://github.com/majamato/work-time-tracker</url>
+  <launchable type="desktop-id">io.github.majamato.Houra.desktop</launchable>
+  <provides><binary>houra</binary></provides>
+  <url type="homepage">https://github.com/Majamato/houra</url>
   <content_rating type="oars-1.1"/>
   <releases>
     <release version="0.1.0" date="2026-08-27">
@@ -68,8 +68,10 @@ Copy the two icons from the original (they are artwork, not code):
 
 ```sh
 mkdir -p data/icons/hicolor/scalable/apps data/icons/hicolor/symbolic/apps
-cp ../work_time_tracker/data/icons/hicolor/scalable/apps/io.github.majamato.WorkTimeTracker.svg data/icons/hicolor/scalable/apps/
-cp ../work_time_tracker/data/icons/hicolor/symbolic/apps/io.github.majamato.WorkTimeTracker-symbolic.svg data/icons/hicolor/symbolic/apps/
+cp ../work_time_tracker/data/icons/hicolor/scalable/apps/io.github.majamato.WorkTimeTracker.svg \
+  data/icons/hicolor/scalable/apps/io.github.majamato.Houra.svg
+cp ../work_time_tracker/data/icons/hicolor/symbolic/apps/io.github.majamato.WorkTimeTracker-symbolic.svg \
+  data/icons/hicolor/symbolic/apps/io.github.majamato.Houra-symbolic.svg
 cp ../work_time_tracker/LICENSE .
 ```
 
@@ -78,7 +80,7 @@ launch. The *AppStream metainfo* is what software centres show
 (description, licence, releases). Both are `.in` files: Meson merges
 translations into them at build time (20.4).
 
-**Linux — the id everywhere.** `io.github.majamato.WorkTimeTracker` is the
+**Linux — the id everywhere.** `io.github.majamato.Houra` is the
 GApplication id (Chapter 14), the desktop file name, the icon name, the
 schema id, the notification source, and the AppStream `<id>`. GNOME
 matches a running window to its launcher and icon by that one string;
@@ -95,7 +97,7 @@ section; `Keywords` feed search. `StartupNotify` lets the shell show a
 ```meson
 # meson.build
 project(
-  'work-time-tracker',
+  'houra',
   'rust',
   version: '0.1.0',
   license: 'GPL-3.0-or-later',
@@ -105,13 +107,13 @@ project(
 gnome = import('gnome')
 i18n = import('i18n')
 
-app_id = 'io.github.majamato.WorkTimeTracker'
+app_id = 'io.github.majamato.Houra'
 
 cargo = find_program('cargo')
 glib_compile_schemas = find_program('glib-compile-schemas')
 
 gnome.compile_resources(
-  'work-time-tracker-resources',
+  'houra-resources',
   'data/' + app_id + '.gresource.xml',
   source_dir: 'data',
   gresource_bundle: true,
@@ -124,9 +126,9 @@ if get_option('offline')
 endif
 
 rust_binary = custom_target(
-  'work-time-tracker-rust',
+  'houra-rust',
   input: ['Cargo.toml', 'Cargo.lock'],
-  output: 'work-time-tracker',
+  output: 'houra',
   command: [
     find_program('bash'),
     files('build-aux/cargo-build.sh'),
@@ -172,7 +174,7 @@ install_data(
   install_dir: get_option('datadir') / 'icons/hicolor/symbolic/apps',
 )
 
-install_data('LICENSE', install_dir: get_option('datadir') / 'licenses/work-time-tracker')
+install_data('LICENSE', install_dir: get_option('datadir') / 'licenses/houra')
 
 subdir('po')
 
@@ -197,7 +199,7 @@ shift 3
 
 export CARGO_TARGET_DIR="$build_root/cargo-target"
 cargo build --manifest-path "$source_root/Cargo.toml" --release "$@"
-cp "$CARGO_TARGET_DIR/release/work-time-tracker" "$output"
+cp "$CARGO_TARGET_DIR/release/houra" "$output"
 ```
 
 ```python
@@ -251,7 +253,7 @@ not under `DESTDIR`, where a package's own scriptlets do it.
 ```meson
 # po/meson.build
 i18n.gettext(
-  'work-time-tracker',
+  'houra',
   preset: 'glib',
   args: ['--from-code=UTF-8'],
 )
@@ -259,9 +261,9 @@ i18n.gettext(
 
 ```text
 # po/POTFILES.in
-data/io.github.majamato.WorkTimeTracker.desktop.in
-data/io.github.majamato.WorkTimeTracker.metainfo.xml.in
-data/io.github.majamato.WorkTimeTracker.gschema.xml
+data/io.github.majamato.Houra.desktop.in
+data/io.github.majamato.Houra.metainfo.xml.in
+data/io.github.majamato.Houra.gschema.xml
 data/ui/window.ui
 crates/app/src/native/window.rs
 ```
@@ -275,8 +277,8 @@ The `.pot` template and the English `.po` are generated, not typed:
 
 ```sh
 meson setup build-meson --buildtype=release -Doffline=false
-meson compile -C build-meson work-time-tracker-pot
-cd po && msginit --no-translator --locale=en_US.UTF-8 --input=work-time-tracker.pot --output=en.po && cd ..
+meson compile -C build-meson houra-pot
+cd po && msginit --no-translator --locale=en_US.UTF-8 --input=houra.pot --output=en.po && cd ..
 ```
 
 **What.** gettext scans the files in `POTFILES.in` for translatable
@@ -324,14 +326,14 @@ find stage -type f | sed "s|$PWD/stage||" | sort
 Expected tree:
 
 ```
-/usr/local/bin/work-time-tracker
-/usr/local/share/applications/io.github.majamato.WorkTimeTracker.desktop
-/usr/local/share/glib-2.0/schemas/io.github.majamato.WorkTimeTracker.gschema.xml
-/usr/local/share/icons/hicolor/scalable/apps/io.github.majamato.WorkTimeTracker.svg
-/usr/local/share/icons/hicolor/symbolic/apps/io.github.majamato.WorkTimeTracker-symbolic.svg
-/usr/local/share/licenses/work-time-tracker/LICENSE
-/usr/local/share/locale/en/LC_MESSAGES/work-time-tracker.mo
-/usr/local/share/metainfo/io.github.majamato.WorkTimeTracker.metainfo.xml
+/usr/local/bin/houra
+/usr/local/share/applications/io.github.majamato.Houra.desktop
+/usr/local/share/glib-2.0/schemas/io.github.majamato.Houra.gschema.xml
+/usr/local/share/icons/hicolor/scalable/apps/io.github.majamato.Houra.svg
+/usr/local/share/icons/hicolor/symbolic/apps/io.github.majamato.Houra-symbolic.svg
+/usr/local/share/licenses/houra/LICENSE
+/usr/local/share/locale/en/LC_MESSAGES/houra.mo
+/usr/local/share/metainfo/io.github.majamato.Houra.metainfo.xml
 ```
 
 Validators:
@@ -348,8 +350,8 @@ from AppStream. Then run the staged binary with the staged schema:
 ```sh
 glib-compile-schemas stage/usr/local/share/glib-2.0/schemas
 GSETTINGS_SCHEMA_DIR=stage/usr/local/share/glib-2.0/schemas GSETTINGS_BACKEND=memory \
-  XDG_DATA_HOME=/tmp/wtt-study XDG_CONFIG_HOME=/tmp/wtt-config \
-  stage/usr/local/bin/work-time-tracker
+  XDG_DATA_HOME=/tmp/houra-study XDG_CONFIG_HOME=/tmp/houra-config \
+  stage/usr/local/bin/houra
 ```
 
 **Linux — `DESTDIR`.** Installs into `stage/` as if it were `/`. This is
@@ -371,11 +373,12 @@ Copy it as is; it is packaging metadata, and the interesting part is
 reading it:
 
 ```sh
-mkdir -p packaging/fedora && cp ../work_time_tracker/packaging/fedora/work-time-tracker.spec packaging/fedora/
+mkdir -p packaging/fedora
+cp ../work_time_tracker/packaging/fedora/work-time-tracker.spec packaging/fedora/houra.spec
 ```
 
 ```spec
-# packaging/fedora/work-time-tracker.spec (excerpt)
+# packaging/fedora/houra.spec (excerpt)
 BuildRequires:  cargo >= 1.85
 BuildRequires:  meson >= 1.3
 BuildRequires:  gtk4-devel >= 4.12
@@ -393,8 +396,8 @@ printf '[source.crates-io]\nreplace-with = "vendored-sources"\n[source.vendored-
 
 %check
 cargo test --workspace --all-targets --offline
-desktop-file-validate %{buildroot}%{_datadir}/applications/io.github.majamato.WorkTimeTracker.desktop
-appstream-util validate-relax --nonet %{buildroot}%{_metainfodir}/io.github.majamato.WorkTimeTracker.metainfo.xml
+desktop-file-validate %{buildroot}%{_datadir}/applications/io.github.majamato.Houra.desktop
+appstream-util validate-relax --nonet %{buildroot}%{_metainfodir}/io.github.majamato.Houra.metainfo.xml
 ```
 
 **What.** An RPM build has no network. The spec expects two tarballs: the
@@ -411,7 +414,7 @@ offline build is how every Rust desktop app reaches a distribution. Your
 ## 20.7 Exercises
 
 1. **Break the id.** Change `Icon=` in the desktop file to
-   `io.github.majamato.WorkTimeTracke` (drop a letter), rebuild, install
+   `io.github.majamato.Hour` (drop a letter), rebuild, install
    to `stage/`, run `desktop-file-validate`.
 
    <details><summary>Answer</summary>
@@ -425,8 +428,8 @@ offline build is how every Rust desktop app reaches a distribution. Your
 
 2. **See the translation pipeline.** In `window.ui`, change the *Tracker*
    page title to "Tracker!" and run
-   `meson compile -C build-meson work-time-tracker-pot`, then
-   `grep -n 'Tracker!' po/work-time-tracker.pot`.
+   `meson compile -C build-meson houra-pot`, then
+   `grep -n 'Tracker!' po/houra.pot`.
 
    <details><summary>Answer</summary>
 
@@ -434,8 +437,8 @@ offline build is how every Rust desktop app reaches a distribution. Your
    translator would now get it in their `.po`. Revert, and regenerate.
    </details>
 
-3. **Vendor.** Run `cargo vendor --locked /tmp/wtt-vendor | head` and look
-   at `/tmp/wtt-vendor`.
+3. **Vendor.** Run `cargo vendor --locked /tmp/houra-vendor | head` and look
+   at `/tmp/houra-vendor`.
 
    <details><summary>Answer</summary>
 

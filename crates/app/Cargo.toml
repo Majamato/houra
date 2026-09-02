@@ -1,13 +1,13 @@
 [package]
-name = "work-time-tracker"
-description = "A local-first GNOME work time tracker"
+name = "houra"
+description = "A local-first GNOME time tracker"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
-work-time-core = { path = "../core" }
+houra-core = { path = "../core" }
 
 [lints.rust]
 unsafe_code = "forbid"

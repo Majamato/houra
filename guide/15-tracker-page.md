@@ -29,8 +29,8 @@ Replace `window.ui`:
 <interface>
   <requires lib="gtk" version="4.12"/>
   <requires lib="Adw" version="1.5"/>
-  <template class="WorkTimeTrackerWindow" parent="AdwApplicationWindow">
-    <property name="title" translatable="yes">Work Time Tracker</property>
+  <template class="HouraWindow" parent="AdwApplicationWindow">
+    <property name="title" translatable="yes">Houra</property>
     <property name="default-width">720</property>
     <property name="default-height">680</property>
     <property name="width-request">360</property>
@@ -162,7 +162,7 @@ use gtk::subclass::prelude::*;
 use libadwaita as adw;
 use libadwaita::prelude::*;
 use libadwaita::subclass::prelude::*;
-use work_time_core::{Project, ProjectId, Task, TrackerCommand, TrackerState};
+use houra_core::{Project, ProjectId, Task, TrackerCommand, TrackerState};
 
 use crate::TrackerHandle;
 
@@ -171,7 +171,7 @@ mod imp {
 
     /// Private state of the window: template children plus Rust fields.
     #[derive(Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/github/majamato/WorkTimeTracker/ui/window.ui")]
+    #[template(resource = "/io/github/majamato/Houra/ui/window.ui")]
     pub struct MainWindow {
         #[template_child]
         pub timer_label: gtk::TemplateChild<gtk::Label>,
@@ -354,7 +354,7 @@ nothing.
             .map_or(ProjectId(1), |project| project.id)
     }
 
-    fn selected_task_id(&self) -> Option<work_time_core::TaskId> {
+    fn selected_task_id(&self) -> Option<houra_core::TaskId> {
         let selected = self.imp().task_dropdown.selected();
         if selected == 0 || selected == gtk::INVALID_LIST_POSITION {
             return None;
@@ -580,7 +580,7 @@ object. Chapter 17 makes the rows clickable.
 
 ```sh
 cargo build --features native-ui
-XDG_DATA_HOME=/tmp/wtt-study cargo run --features native-ui
+XDG_DATA_HOME=/tmp/houra-study cargo run --features native-ui
 ```
 
 You should see: a header with a *Tracker* switcher; the project dropdown
@@ -647,7 +647,7 @@ git add -A && git commit -m "Chapter 15: tracker page"
    }
    ```
 
-   Run `cargo test --features native-ui -p work-time-tracker --lib refcell`.
+   Run `cargo test --features native-ui -p houra --lib refcell`.
 
    <details><summary>Answer</summary>
 
@@ -674,7 +674,7 @@ git add -A && git commit -m "Chapter 15: tracker page"
    kept the marker dirty (Chapter 13) → `restore` produced
    `RecoveryPending` (Chapter 6) → `refresh_timer_only` rendered it.
    Chapter 17 adds the dialog that resolves it. To get unstuck now, delete
-   `/tmp/wtt-study/work-time-tracker/`.
+   `/tmp/houra-study/houra/`.
    </details>
 
 ## Recap

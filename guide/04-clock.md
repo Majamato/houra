@@ -237,8 +237,8 @@ explicitly except for `model`, whose whole content is the crate's vocabulary.
 ## 4.5 Checkpoint
 
 ```sh
-cargo build -p work-time-core
-cargo clippy -p work-time-core --all-targets -- -D warnings
+cargo build -p houra-core
+cargo clippy -p houra-core --all-targets -- -D warnings
 cargo fmt --all -- --check
 diff <(grep -v '^\s*//' ../work_time_tracker/crates/core/src/clock.rs) \
      <(grep -v '^\s*//' crates/core/src/clock.rs)
@@ -286,7 +286,7 @@ git add -A && git commit -m "Chapter 4: clock"
    }
    ```
 
-   Run `cargo test -p work-time-core clock::`.
+   Run `cargo test -p houra-core clock::`.
 
    <details><summary>Answer</summary>
 
