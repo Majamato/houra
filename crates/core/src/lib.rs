@@ -2,6 +2,7 @@
 //!
 //! This crate knows nothing about GTK, SQLite, D-Bus, or the filesystem.
 mod clock;
+mod engine;
 mod error;
 mod id;
 mod idle;
@@ -12,6 +13,7 @@ mod validation;
 mod work;
 
 pub use clock::*;
+pub use engine::*;
 pub use error::DomainError;
 pub use id::*;
 pub use idle::*;
