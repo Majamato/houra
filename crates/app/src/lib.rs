@@ -5,8 +5,10 @@
 //! and platform integrations.
 
 pub mod error;
+pub mod storage;
 
 pub use error::AppError;
+pub use storage::Store;
 
 /// Reverse-DNS application ID shared by GApplication, the desktop file,
 /// icons, GSettings, resources, notifications, and package metadata.
