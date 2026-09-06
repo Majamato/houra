@@ -4,9 +4,11 @@
 //! behavior run in CI or on a server. `native-ui` adds the GNOME presentation
 //! and platform integrations.
 
+pub mod backup;
 pub mod error;
 pub mod storage;
 
+pub use backup::BackupDocument;
 pub use error::AppError;
 pub use storage::Store;
 

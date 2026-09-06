@@ -1,5 +1,6 @@
+use houra::backup::BackupDocument;
 use houra::storage::Store;
-use houra_core::{EntryId, EntrySource, ProjectId, TaskId, TimeEntry};
+use houra_core::{EntryId, EntrySource, ProjectId, TaskId, TimeEntry, TrackerSnapshot};
 use tempfile::TempDir;
 
 fn temporary_store() -> (TempDir, Store) {
@@ -91,4 +92,58 @@ fn referenced_task_is_archived_not_deleted() {
     assert!(store.set_task_archived(task, true, 300).is_ok());
     assert!(store.delete_task_permanently(task).is_err());
     assert_eq!(task, TaskId(task.0));
+}
+
+#[test]
+fn backup_round_trip_preserves_data() {
+    let (_first_dir, mut first) = temporary_store();
+    assert!(first.add_entry(&manual(None, 1, 100, 200)).is_ok());
+    let backup = first
+        .backup(1_000)
+        .unwrap_or_else(|error| panic!("backup failed: {error}"));
+
+    let (_second_dir, mut second) = temporary_store();
+    assert!(second.restore(&backup).is_ok());
+    let restored = second
+        .list_all_entries()
+        .unwrap_or_else(|error| panic!("list failed: {error}"));
+    assert_eq!(restored.len(), 1);
+    assert_eq!(restored[0].start_ms, 100);
+}
+
+#[test]
+fn backup_file_round_trip_is_versioned_and_validated() {
+    let (directory, mut store) = temporary_store();
+    assert!(store.add_entry(&manual(None, 1, 100, 200)).is_ok());
+    let backup = store
+        .backup(1_000)
+        .unwrap_or_else(|error| panic!("backup failed: {error}"));
+    let path = directory.path().join("backup.json");
+    assert!(backup.write_to_path(&path).is_ok());
+    let read = BackupDocument::read_from_path(&path)
+        .unwrap_or_else(|error| panic!("read failed: {error}"));
+    assert_eq!(read.version, 1);
+    assert_eq!(read.entries.len(), 1);
+}
+
+#[test]
+fn invalid_restore_is_transactionally_rejected() {
+    let (_directory, mut store) = temporary_store();
+    assert!(store.add_entry(&manual(None, 1, 100, 200)).is_ok());
+    let invalid = BackupDocument {
+        format: "houra-backup".into(),
+        version: 1,
+        exported_at_ms: 1,
+        projects: store
+            .list_projects(true)
+            .unwrap_or_else(|error| panic!("projects failed: {error}")),
+        tasks: vec![],
+        entries: vec![manual(Some(10), 1, 100, 200), manual(Some(11), 1, 150, 250)],
+        tracker: TrackerSnapshot::default(),
+    };
+    assert!(store.restore(&invalid).is_err());
+    let original = store
+        .list_all_entries()
+        .unwrap_or_else(|error| panic!("list failed: {error}"));
+    assert_eq!(original.len(), 1);
 }
