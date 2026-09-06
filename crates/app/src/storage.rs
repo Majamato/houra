@@ -1,7 +1,10 @@
 use std::path::Path;
 
-use houra_core::{Project, ProjectId, TrackerSnapshot};
-use rusqlite::{Connection, OptionalExtension, params};
+use houra_core::{
+    EntryId, EntrySource, Project, ProjectId, Task, TaskId, TimeEntry, TrackerSnapshot,
+    TrackerState, Transition,
+};
+use rusqlite::{Connection, OptionalExtension, Transaction, params};
 
 use crate::error::AppError;
 
@@ -212,4 +215,323 @@ impl Store {
         )?;
         Ok(())
     }
+
+    fn validate_against_active(&self, entry: &TimeEntry) -> Result<(), AppError> {
+        if let Some(active) = self.load_snapshot()?.state.active()
+            && entry.end_ms > active.start_ms
+        {
+            return Err(AppError::InvalidBackup(
+                "entry overlaps the active timer; stop it before e<D-z>diting this interval".into(),
+            ));
+        }
+        Ok(())
+    }
+
+    pub fn set_task_archived(
+        &self,
+        id: TaskId,
+        archived: bool,
+        now_ms: i64,
+    ) -> Result<(), AppError> {
+        self.connection.execute(
+            "UPDATE tasks SET archived=?1, updated_at_ms=?2 WHERE id=?3",
+            params![archived, now_ms, id.0],
+        )?;
+        Ok(())
+    }
+
+    pub fn delete_project_permanently(&self, id: ProjectId) -> Result<(), AppError> {
+        if id == ProjectId(1) {
+            return Err(AppError::ReferencedItem);
+        }
+        let references: bool = self.connection.query_row(
+            "SELECT EXISTS(SELECT 1 FROM entries WHERE project_id=?1)",
+            [id.0],
+            |row| row.get(0),
+        )?;
+        if references {
+            return Err(AppError::ReferencedItem);
+        }
+        self.connection
+            .execute("DELETE FROM projects WHERE id=?1", [id.0])?;
+        Ok(())
+    }
+
+    pub fn delete_task_permanently(&self, id: TaskId) -> Result<(), AppError> {
+        let references: bool = self.connection.query_row(
+            "SELECT EXISTS(SELECT 1 FROM entries WHERE task_id=?1)",
+            [id.0],
+            |row| row.get(0),
+        )?;
+        if references {
+            return Err(AppError::ReferencedItem);
+        }
+        self.connection
+            .execute("DELETE FROM tasks WHERE id=?1", [id.0])?;
+        Ok(())
+    }
+
+    /// Writes completed entries and the new snapshot in one transaction.
+    pub fn persist_transition(&mut self, transition: &Transition) -> Result<(), AppError> {
+        let transaction = self.connection.transaction()?;
+        validate_active_references(&transaction, &transition.snapshot.state)?;
+        for entry in &transition.completed_entries {
+            insert_entry(&transaction, entry)?;
+        }
+        write_snapshot(&transaction, &transition.snapshot)?;
+        transaction.commit()?;
+        Ok(())
+    }
+
+    pub fn add_entry(&mut self, entry: &TimeEntry) -> Result<EntryId, AppError> {
+        entry.validate()?;
+        self.validate_against_active(entry)?;
+        let transaction = self.connection.transaction()?;
+        validate_entry_references(&transaction, entry)?;
+        reject_entry_overlaps(&transaction, entry, None)?;
+        insert_entry(&transaction, entry)?;
+        let id = EntryId(transaction.last_insert_rowid());
+        transaction.commit()?;
+        Ok(id)
+    }
+
+    pub fn update_entry(&mut self, entry: &TimeEntry) -> Result<(), AppError> {
+        entry.validate()?;
+        self.validate_against_active(entry)?;
+        let id = entry
+            .id
+            .ok_or_else(|| AppError::InvalidBackup("entry ID is required for update".into()))?;
+        let transaction = self.connection.transaction()?;
+        validate_entry_references(&transaction, entry)?;
+        reject_entry_overlaps(&transaction, entry, Some(id))?;
+        let changed = transaction.execute(
+            "UPDATE entries SET project_id=?1, task_id=?2, note=?3, start_ms=?4, end_ms=?5,
+             source=?6, updated_at_ms=?7 WHERE id=?8",
+            params![
+                entry.project_id.0,
+                entry.task_id.map(|value| value.0),
+                entry.note,
+                entry.start_ms,
+                entry.end_ms,
+                source_name(entry.source),
+                entry.updated_at_ms,
+                id.0
+            ],
+        )?;
+        if changed == 0 {
+            return Err(AppError::InvalidBackup(format!(
+                "entry {id:?} was not found"
+            )));
+        }
+        transaction.commit()?;
+        Ok(())
+    }
+
+    pub fn list_entries(&self, start_ms: i64, end_ms: i64) -> Result<Vec<TimeEntry>, AppError> {
+        let mut statement = self.connection.prepare(
+            "SELECT id, project_id, task_id, note, start_ms, end_ms, source, created_at_ms, updated_at_ms
+             FROM entries WHERE start_ms < ?2 AND end_ms > ?1 ORDER BY start_ms",
+        )?;
+        let rows = statement.query_map(params![start_ms, end_ms], read_entry)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(AppError::from)
+    }
+
+    pub fn list_all_entries(&self) -> Result<Vec<TimeEntry>, AppError> {
+        self.list_entries(i64::MIN, i64::MAX)
+    }
+
+    pub fn list_tasks(&self, include_archived: bool) -> Result<Vec<Task>, AppError> {
+        let mut statement = self.connection.prepare(
+            "SELECT id, project_id, name, archived, created_at_ms, updated_at_ms FROM tasks
+             WHERE ?1 OR archived = 0 ORDER BY project_id, archived, name COLLATE NOCASE",
+        )?;
+        let rows = statement.query_map([include_archived], |row| {
+            Ok(Task {
+                id: TaskId(row.get(0)?),
+                project_id: ProjectId(row.get(1)?),
+                name: row.get(2)?,
+                archived: row.get(3)?,
+                created_at_ms: row.get(4)?,
+                updated_at_ms: row.get(5)?,
+            })
+        })?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(AppError::from)
+    }
+
+    pub fn create_project(
+        &self,
+        name: &str,
+        color: &str,
+        now_ms: i64,
+    ) -> Result<ProjectId, AppError> {
+        let project = Project {
+            id: ProjectId(0),
+            name: name.trim().to_owned(),
+            color: color.to_owned(),
+            archived: false,
+            created_at_ms: now_ms,
+            updated_at_ms: now_ms,
+        };
+        project.validate()?;
+        self.connection.execute(
+            "INSERT INTO projects(name, color, archived, created_at_ms, updated_at_ms)
+             VALUES(?1, ?2, 0, ?3, ?3)",
+            params![project.name, project.color, now_ms],
+        )?;
+        Ok(ProjectId(self.connection.last_insert_rowid()))
+    }
+
+    pub fn create_task(
+        &self,
+        project_id: ProjectId,
+        name: &str,
+        now_ms: i64,
+    ) -> Result<TaskId, AppError> {
+        validate_project(&self.connection, project_id)?;
+        let trimmed = name.trim();
+        houra_core::validate_name(trimmed)?;
+        self.connection.execute(
+            "INSERT INTO tasks(project_id, name, archived, created_at_ms, updated_at_ms)
+             VALUES(?1, ?2, 0, ?3, ?3)",
+            params![project_id.0, trimmed, now_ms],
+        )?;
+        Ok(TaskId(self.connection.last_insert_rowid()))
+    }
+}
+
+fn validate_project(connection: &Connection, id: ProjectId) -> Result<(), AppError> {
+    let exists: bool = connection.query_row(
+        "SELECT EXISTS(SELECT 1 FROM projects WHERE id=?1 AND archived=0)",
+        [id.0],
+        |row| row.get(0),
+    )?;
+    if exists {
+        Ok(())
+    } else {
+        Err(AppError::InvalidProject(id))
+    }
+}
+
+fn validate_entry_references(connection: &Connection, entry: &TimeEntry) -> Result<(), AppError> {
+    validate_project(connection, entry.project_id)?;
+    if let Some(task_id) = entry.task_id {
+        let exists: bool = connection.query_row(
+            "SELECT EXISTS(SELECT 1 FROM tasks WHERE id=?1 AND project_id=?2 AND archived=0)",
+            params![task_id.0, entry.project_id.0],
+            |row| row.get(0),
+        )?;
+        if !exists {
+            return Err(AppError::InvalidTask(task_id));
+        }
+    }
+    Ok(())
+}
+
+fn validate_active_references(
+    connection: &Connection,
+    state: &TrackerState,
+) -> Result<(), AppError> {
+    if let Some(active) = state.active() {
+        let entry = TimeEntry {
+            id: None,
+            project_id: active.project_id,
+            task_id: active.task_id,
+            note: active.note.clone(),
+            start_ms: active.start_ms,
+            end_ms: active.start_ms.saturating_add(1),
+            source: EntrySource::Timer,
+            created_at_ms: active.start_ms,
+            updated_at_ms: active.start_ms,
+        };
+        validate_entry_references(connection, &entry)?;
+        let mut statement = connection
+            .prepare("SELECT id FROM entries WHERE end_ms > ?1 ORDER BY start_ms LIMIT 20")?;
+        let conflicts = statement
+            .query_map([active.start_ms], |row| row.get::<_, i64>(0).map(EntryId))?
+            .collect::<Result<Vec<_>, _>>()?;
+        if !conflicts.is_empty() {
+            return Err(houra_core::DomainError::Overlap { conflicts }.into());
+        }
+    }
+    Ok(())
+}
+
+fn reject_entry_overlaps(
+    connection: &Connection,
+    entry: &TimeEntry,
+    excluded_id: Option<EntryId>,
+) -> Result<(), AppError> {
+    let mut statement = connection.prepare(
+        "SELECT id FROM entries
+         WHERE ?1 < end_ms AND ?2 > start_ms AND (?3 IS NULL OR id != ?3)
+         ORDER BY start_ms LIMIT 20",
+    )?;
+    let conflicts = statement
+        .query_map(
+            params![entry.start_ms, entry.end_ms, excluded_id.map(|id| id.0)],
+            |row| row.get::<_, i64>(0).map(EntryId),
+        )?
+        .collect::<Result<Vec<_>, _>>()?;
+    if conflicts.is_empty() {
+        Ok(())
+    } else {
+        Err(houra_core::DomainError::Overlap { conflicts }.into())
+    }
+}
+
+fn insert_entry(transaction: &Transaction<'_>, entry: &TimeEntry) -> Result<(), AppError> {
+    validate_entry_references(transaction, entry)?;
+    transaction.execute(
+        "INSERT INTO entries(project_id,task_id,note,start_ms,end_ms,source,created_at_ms,updated_at_ms)
+         VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
+        params![entry.project_id.0, entry.task_id.map(|id| id.0), entry.note, entry.start_ms,
+            entry.end_ms, source_name(entry.source), entry.created_at_ms, entry.updated_at_ms],
+    )?;
+    Ok(())
+}
+
+fn write_snapshot(
+    transaction: &Transaction<'_>,
+    snapshot: &TrackerSnapshot,
+) -> Result<(), AppError> {
+    let json = serde_json::to_string(snapshot)?;
+    let updated_at_ms = snapshot
+        .state
+        .active()
+        .map_or(0, |active| active.last_heartbeat_ms);
+    transaction.execute(
+        "INSERT INTO tracker_state(singleton,snapshot_json,updated_at_ms) VALUES(1,?1,?2)
+         ON CONFLICT(singleton) DO UPDATE SET snapshot_json=excluded.snapshot_json, updated_at_ms=excluded.updated_at_ms",
+        params![json, updated_at_ms],
+    )?;
+    Ok(())
+}
+
+fn source_name(source: EntrySource) -> &'static str {
+    match source {
+        EntrySource::Timer => "timer",
+        EntrySource::Manual => "manual",
+        EntrySource::IdleReassignment => "idle_reassignment",
+        EntrySource::Recovery => "recovery",
+    }
+}
+
+fn read_entry(row: &rusqlite::Row<'_>) -> rusqlite::Result<TimeEntry> {
+    let source: String = row.get(6)?;
+    Ok(TimeEntry {
+        id: Some(EntryId(row.get(0)?)),
+        project_id: ProjectId(row.get(1)?),
+        task_id: row.get::<_, Option<i64>>(2)?.map(TaskId),
+        note: row.get(3)?,
+        start_ms: row.get(4)?,
+        end_ms: row.get(5)?,
+        source: match source.as_str() {
+            "manual" => EntrySource::Manual,
+            "idle_reassignment" => EntrySource::IdleReassignment,
+            "recovery" => EntrySource::Recovery,
+            _ => EntrySource::Timer,
+        },
+        created_at_ms: row.get(7)?,
+        updated_at_ms: row.get(8)?,
+    })
 }
