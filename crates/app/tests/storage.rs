@@ -1,5 +1,5 @@
-use houra::backup::BackupDocument;
 use houra::storage::Store;
+use houra::{TrackerService, backup::BackupDocument};
 use houra_core::{EntryId, EntrySource, ProjectId, TaskId, TimeEntry, TrackerSnapshot};
 use tempfile::TempDir;
 
@@ -146,4 +146,34 @@ fn invalid_restore_is_transactionally_rejected() {
         .list_all_entries()
         .unwrap_or_else(|error| panic!("list failed: {error}"));
     assert_eq!(original.len(), 1);
+}
+
+#[test]
+fn concurrent_start_commands_are_serialized() {
+    let directory = TempDir::new().unwrap_or_else(|error| panic!("tempdir failed: {error}"));
+    let service = TrackerService::start(directory.path().join("actor.sqlite3"))
+        .unwrap_or_else(|error| panic!("service failed: {error}"));
+    let first = service.handle.clone();
+    let second = service.handle.clone();
+    let command = || houra_core::TrackerCommand::Start {
+        project_id: ProjectId(1),
+        task_id: None,
+        note: "concurrent".into(),
+    };
+    let first_join = std::thread::spawn(move || first.apply(command()));
+    let second_join = std::thread::spawn(move || second.apply(command()));
+    let first_result = first_join
+        .join()
+        .unwrap_or_else(|_| panic!("first client panicked"));
+    let second_result = second_join
+        .join()
+        .unwrap_or_else(|_| panic!("second client panicked"));
+    assert_ne!(first_result.is_ok(), second_result.is_ok());
+    assert!(
+        service
+            .handle
+            .apply(houra_core::TrackerCommand::Stop)
+            .is_ok()
+    );
+    assert!(service.shutdown().is_ok());
 }
