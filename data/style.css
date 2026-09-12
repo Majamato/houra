@@ -1,0 +1,4 @@
+/* Equal-width digits stop the timer label from shifting each second. */
+.timer {
+  font-variant-numeric: tabular-nums;
+}

@@ -12,6 +12,9 @@ pub mod export;
 pub mod settings;
 pub mod storage;
 
+#[cfg(feature = "native-ui")]
+pub mod native;
+
 pub use actor::{TrackerHandle, TrackerService};
 pub use autostart::{default_path, set_enabled};
 pub use backup::BackupDocument;
