@@ -95,6 +95,70 @@
                     </property>
                   </object>
                 </child>
+                <child>
+                  <object class="AdwViewStackPage">
+                    <property name="name">reports</property>
+                    <property name="title" translatable="yes">Reports</property>
+                    <property name="icon-name">x-office-spreadsheet-symbolic</property>
+                    <property name="child">
+                      <object class="GtkScrolledWindow">
+                        <property name="hscrollbar-policy">never</property>
+                        <property name="child">
+                          <object class="AdwClamp">
+                            <property name="maximum-size">620</property>
+                            <property name="margin-top">24</property><property name="margin-bottom">24</property><property name="margin-start">18</property><property name="margin-end">18</property>
+                            <property name="child">
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property><property name="spacing">12</property>
+                                <child><object class="GtkLabel"><property name="label" translatable="yes">Weekly Report</property><property name="halign">start</property><style><class name="title-1"/></style></object></child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="spacing">6</property>
+                                    <child><object class="GtkButton" id="report_previous_button"><property name="icon-name">go-previous-symbolic</property><property name="tooltip-text" translatable="yes">Previous week</property></object></child>
+                                    <child><object class="GtkLabel" id="report_week_label"><property name="hexpand">true</property><style><class name="heading"/></style></object></child>
+                                    <child><object class="GtkButton" id="report_next_button"><property name="icon-name">go-next-symbolic</property><property name="tooltip-text" translatable="yes">Next week</property></object></child>
+                                  </object>
+                                </child>
+                                <child><object class="GtkButton" id="export_csv_button"><property name="label" translatable="yes">Export CSV</property><property name="halign">start</property></object></child>
+                                <child><object class="GtkBox" id="report_box"><property name="orientation">vertical</property><property name="spacing">6</property></object></child>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwViewStackPage">
+                    <property name="name">projects</property>
+                    <property name="title" translatable="yes">Projects</property>
+                    <property name="icon-name">folder-symbolic</property>
+                    <property name="child">
+                      <object class="GtkScrolledWindow">
+                        <property name="hscrollbar-policy">never</property>
+                        <property name="child">
+                          <object class="AdwClamp">
+                            <property name="maximum-size">620</property>
+                            <property name="margin-top">24</property>
+                            <property name="margin-bottom">24</property>
+                            <property name="margin-start">18</property>
+                            <property name="margin-end">18</property>
+                            <property name="child">
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <property name="spacing">12</property>
+                                <child><object class="GtkLabel"><property name="label" translatable="yes">Projects and Tasks</property><property name="halign">start</property><style><class name="title-1"/></style></object></child>
+                                <child><object class="GtkButton" id="add_project_button"><property name="label" translatable="yes">Add Project</property><property name="halign">start</property><style><class name="suggested-action"/></style></object></child>
+                                <child><object class="GtkBox" id="projects_box"><property name="orientation">vertical</property><property name="spacing">6</property></object></child>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

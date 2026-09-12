@@ -1,6 +1,6 @@
 use std::cell::{Cell, RefCell};
 
-use chrono::{Local, TimeZone};
+use chrono::{Datelike, Local, NaiveDate, TimeZone};
 use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -36,9 +36,24 @@ mod imp {
         pub day_previous_button: gtk::TemplateChild<gtk::Button>,
         #[template_child]
         pub day_next_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub add_project_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub projects_box: gtk::TemplateChild<gtk::Box>,
+        #[template_child]
+        pub report_box: gtk::TemplateChild<gtk::Box>,
+        #[template_child]
+        pub report_week_label: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
+        pub report_previous_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub report_next_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub export_csv_button: gtk::TemplateChild<gtk::Button>,
         pub handle: RefCell<Option<TrackerHandle>>,
         pub projects: RefCell<Vec<Project>>,
         pub tasks: RefCell<Vec<Task>>,
+        pub report_week_offset: Cell<i32>,
         pub selected_day_offset: Cell<i32>,
     }
 
@@ -87,6 +102,8 @@ impl MainWindow {
             .update_property(&[gtk::accessible::Property::Label("Elapsed tracked time")]);
         self.reload_projects();
         self.reload_tasks();
+        self.refresh_projects_page();
+        self.refresh_report();
         self.refresh();
         self.imp().start_button.connect_clicked(glib::clone!(
             #[weak(rename_to = window)]
@@ -114,6 +131,40 @@ impl MainWindow {
             #[weak(rename_to = window)]
             self,
             move |_| window.update_active_details()
+        ));
+        self.imp().add_project_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| window.show_new_project()
+        ));
+        self.imp()
+            .report_previous_button
+            .connect_clicked(glib::clone!(
+                #[weak(rename_to = window)]
+                self,
+                move |_| {
+                    window
+                        .imp()
+                        .report_week_offset
+                        .set(window.imp().report_week_offset.get().saturating_sub(1));
+                    window.refresh_report();
+                }
+            ));
+        self.imp().report_next_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| {
+                window
+                    .imp()
+                    .report_week_offset
+                    .set(window.imp().report_week_offset.get().saturating_add(1));
+                window.refresh_report();
+            }
+        ));
+        self.imp().export_csv_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| window.export_report_csv()
         ));
         self.imp().day_previous_button.connect_clicked(glib::clone!(
             #[weak(rename_to = window)]
@@ -372,6 +423,270 @@ impl MainWindow {
             .body(message)
             .build();
         dialog.add_response("close", "Close");
+        dialog.present(Some(self));
+    }
+
+    fn refresh_projects_page(&self) {
+        let Some(handle) = self.handle() else { return };
+        while let Some(child) = self.imp().projects_box.first_child() {
+            self.imp().projects_box.remove(&child);
+        }
+        let projects = match handle.projects(true) {
+            Ok(projects) => projects,
+            Err(error) => {
+                self.show_database_error(&error.to_string());
+                return;
+            }
+        };
+        let tasks = handle.tasks(true).unwrap_or_default();
+        for project in projects {
+            let row = adw::ActionRow::builder()
+                .title(&project.name)
+                .subtitle(if project.archived {
+                    "Archived"
+                } else {
+                    &project.color
+                })
+                .build();
+            let add_task = gtk::Button::builder()
+                .icon_name("list-add-symbolic")
+                .tooltip_text("Add task")
+                .valign(gtk::Align::Center)
+                .build();
+            add_task.connect_clicked(glib::clone!(
+                #[weak(rename_to = window)]
+                self,
+                move |_| window.show_new_task(project.id)
+            ));
+            row.add_suffix(&add_task);
+            if project.id != ProjectId(1) {
+                let archive = gtk::Button::builder()
+                    .icon_name(if project.archived {
+                        "view-refresh-symbolic"
+                    } else {
+                        "user-trash-symbolic"
+                    })
+                    .tooltip_text(if project.archived {
+                        "Restore"
+                    } else {
+                        "Archive"
+                    })
+                    .valign(gtk::Align::Center)
+                    .build();
+                archive.connect_clicked(glib::clone!(
+                    #[weak(rename_to = window)]
+                    self,
+                    #[strong]
+                    handle,
+                    move |_| {
+                        let now = chrono::Utc::now().timestamp_millis();
+                        if let Err(error) =
+                            handle.set_project_archived(project.id, !project.archived, now)
+                        {
+                            window.show_database_error(&error.to_string());
+                        }
+                        window.reload_projects();
+                        window.refresh_projects_page();
+                    }
+                ));
+                row.add_suffix(&archive);
+            }
+            self.imp().projects_box.append(&row);
+            for task in tasks.iter().filter(|task| task.project_id == project.id) {
+                let task_row = adw::ActionRow::builder()
+                    .title(format!("↳ {}", task.name))
+                    .subtitle(if task.archived {
+                        "Archived task"
+                    } else {
+                        "Task"
+                    })
+                    .build();
+                let archive = gtk::Button::builder()
+                    .icon_name(if task.archived {
+                        "view-refresh-symbolic"
+                    } else {
+                        "user-trash-symbolic"
+                    })
+                    .tooltip_text(if task.archived { "Restore" } else { "Archive" })
+                    .valign(gtk::Align::Center)
+                    .build();
+                let task_id = task.id;
+                let archived = task.archived;
+                archive.connect_clicked(glib::clone!(
+                    #[weak(rename_to = window)]
+                    self,
+                    #[strong]
+                    handle,
+                    move |_| {
+                        let now = chrono::Utc::now().timestamp_millis();
+                        if let Err(error) = handle.set_task_archived(task_id, !archived, now) {
+                            window.show_database_error(&error.to_string());
+                        }
+                        window.refresh_projects_page();
+                    }
+                ));
+                task_row.add_suffix(&archive);
+                self.imp().projects_box.append(&task_row);
+            }
+        }
+    }
+
+    fn report_bounds(&self) -> Option<(chrono::DateTime<Local>, chrono::DateTime<Local>)> {
+        let today = Local::now().date_naive();
+        let starts_monday = true;
+        let days_from_start = if starts_monday {
+            today.weekday().num_days_from_monday()
+        } else {
+            today.weekday().num_days_from_sunday()
+        };
+        let week_start =
+            today.checked_sub_signed(chrono::Duration::days(i64::from(days_from_start)))?;
+        let start_date = week_start.checked_add_signed(chrono::Duration::weeks(i64::from(
+            self.imp().report_week_offset.get(),
+        )))?;
+        let start = Local
+            .from_local_datetime(&start_date.and_hms_opt(0, 0, 0)?)
+            .earliest()?;
+        let end_date = start_date.checked_add_signed(chrono::Duration::weeks(1))?;
+        let end = Local
+            .from_local_datetime(&end_date.and_hms_opt(0, 0, 0)?)
+            .earliest()?;
+        Some((start, end))
+    }
+
+    fn refresh_report(&self) {
+        let Some(handle) = self.handle() else { return };
+        let Some((start, end)) = self.report_bounds() else {
+            return;
+        };
+        self.imp().report_week_label.set_label(&format!(
+            "{} – {}",
+            start.format("%x"),
+            end.date_naive()
+                .pred_opt()
+                .map_or_else(String::new, |date| date.format("%x").to_string())
+        ));
+        while let Some(child) = self.imp().report_box.first_child() {
+            self.imp().report_box.remove(&child);
+        }
+        let entries = match handle.entries(start.timestamp_millis(), end.timestamp_millis()) {
+            Ok(entries) => entries,
+            Err(error) => {
+                self.show_database_error(&error.to_string());
+                return;
+            }
+        };
+        let projects = handle.projects(true).unwrap_or_default();
+        let tasks = handle.tasks(true).unwrap_or_default();
+        let rows = houra_core::group_entries(&entries);
+        if rows.is_empty() {
+            self.imp()
+                .report_box
+                .append(&gtk::Label::new(Some("No tracked time this week")));
+            return;
+        }
+        for row in rows {
+            let date = NaiveDate::from_yo_opt(row.bucket.local_year, row.bucket.local_ordinal)
+                .map_or_else(
+                    || "Unknown day".into(),
+                    |date| date.format("%A, %x").to_string(),
+                );
+            let project = projects
+                .iter()
+                .find(|project| project.id == row.bucket.project_id)
+                .map_or("Missing project", |project| project.name.as_str());
+            let task = row
+                .bucket
+                .task_id
+                .and_then(|id| tasks.iter().find(|task| task.id == id))
+                .map(|task| format!(" / {}", task.name))
+                .unwrap_or_default();
+            let seconds = row.duration_ms / 1_000;
+            let report_row = adw::ActionRow::builder()
+                .title(format!("{project}{task}"))
+                .subtitle(format!(
+                    "{date} · {}h {:02}m",
+                    seconds / 3600,
+                    (seconds / 60) % 60
+                ))
+                .build();
+            self.imp().report_box.append(&report_row);
+        }
+    }
+
+    fn export_report_csv(&self) {
+        let Some(handle) = self.handle() else { return };
+        let Some((start, end)) = self.report_bounds() else {
+            return;
+        };
+        let chooser = gtk::FileDialog::builder()
+            .title("Export Weekly CSV")
+            .initial_name(format!("houra-{}.csv", start.format("%Y-%m-%d")))
+            .build();
+        let weak = self.downgrade();
+        chooser.save(Some(self), None::<&gio::Cancellable>, move |result| {
+            let Some(window) = weak.upgrade() else { return };
+            let result = result
+                .map_err(|error| crate::AppError::InvalidBackup(error.to_string()))
+                .and_then(|file| {
+                    let path = file.path().ok_or_else(|| {
+                        crate::AppError::InvalidBackup("CSV export requires a local file".into())
+                    })?;
+                    let entries =
+                        handle.entries(start.timestamp_millis(), end.timestamp_millis())?;
+                    let projects = handle.projects(true)?;
+                    let tasks = handle.tasks(true)?;
+                    crate::export::write_csv_path(&path, &entries, &projects, &tasks)
+                });
+            if let Err(error) = result {
+                window.show_database_error(&error.to_string());
+            }
+        });
+    }
+
+    fn show_new_project(&self) {
+        self.show_name_dialog("New Project", move |handle, name, now| {
+            handle
+                .create_project(name, "#3584e4".into(), now)
+                .map(|_| ())
+        });
+    }
+
+    fn show_new_task(&self, project_id: ProjectId) {
+        self.show_name_dialog("New Task", move |handle, name, now| {
+            handle.create_task(project_id, name, now).map(|_| ())
+        });
+    }
+
+    fn show_name_dialog<F>(&self, title: &str, save: F)
+    where
+        F: Fn(&TrackerHandle, String, i64) -> Result<(), crate::AppError> + 'static,
+    {
+        let Some(handle) = self.handle() else { return };
+        let dialog = adw::AlertDialog::builder().heading(title).build();
+        let entry = gtk::Entry::builder()
+            .placeholder_text("Name")
+            .activates_default(true)
+            .build();
+        dialog.set_extra_child(Some(&entry));
+        dialog.add_responses(&[("cancel", "Cancel"), ("save", "Save")]);
+        dialog.set_default_response(Some("save"));
+        dialog.set_response_appearance("save", adw::ResponseAppearance::Suggested);
+        let weak = self.downgrade();
+        dialog.connect_response(Some("save"), move |_, _| {
+            let result = save(
+                &handle,
+                entry.text().to_string(),
+                chrono::Utc::now().timestamp_millis(),
+            );
+            if let Some(window) = weak.upgrade() {
+                if let Err(error) = result {
+                    window.show_database_error(&error.to_string());
+                }
+                window.reload_projects();
+                window.refresh_projects_page();
+            }
+        });
         dialog.present(Some(self));
     }
 }
