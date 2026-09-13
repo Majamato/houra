@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- VISUAL: A symbolic icon combines simple paths at a 16px design grid.
+       GNOME treats the conventional fill as recolorable foreground. -->
+  <path d="M6 1h4v2H6zM8 3a6 6 0 1 0 0 12A6 6 0 0 0 8 3zm0 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm-.75 1v3.3l2.7 1.55.8-1.3L8.75 8.4V6z" fill="#2e3436"/>
+</svg>

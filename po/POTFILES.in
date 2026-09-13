@@ -1,0 +1,5 @@
+data/io.github.majamato.Houra.desktop.in
+data/io.github.majamato.Houra.metainfo.xml.in
+data/io.github.majamato.Houra.gschema.xml
+data/ui/window.ui
+crates/app/src/native/window.rs

@@ -1,0 +1,2 @@
+option('cargo-home', type: 'string', value: '', description: 'Optional CARGO_HOME containing vendored sources')
+option('offline', type: 'boolean', value: false, description: 'Pass --offline to Cargo')

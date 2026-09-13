@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.majamato.Houra</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Houra</name>
+  <developer id="io.github.majamato"><name>majamato</name></developer>
+  <summary>Private, local-first tracking for focused work</summary>
+  <description>
+    <p>Track projects and tasks, reconcile idle time, review weekly totals, and
+    keep portable backups without creating an online account.</p>
+  </description>
+  <launchable type="desktop-id">io.github.majamato.Houra.desktop</launchable>
+  <provides><binary>houra</binary></provides>
+  <url type="homepage">https://github.com/Majamato/houra</url>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.1.0" date="2026-08-27">
+      <description><p>Initial Fedora and GNOME release.</p></description>
+    </release>
+  </releases>
+</component>

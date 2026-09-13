@@ -270,15 +270,23 @@ crates/app/src/native/window.rs
 
 ```text
 # po/LINGUAS
-en
 ```
 
-The `.pot` template and the English `.po` are generated, not typed:
+Leave `LINGUAS` empty for the first Meson setup. If it already lists `en`,
+Meson expects `po/en.po` to exist and setup fails before it can create the
+`houra-pot` target.
+
+Generate the `.pot` template and the English `.po`, then add English to
+`LINGUAS` and reconfigure Meson:
 
 ```sh
 meson setup build-meson --buildtype=release -Doffline=false
 meson compile -C build-meson houra-pot
-cd po && msginit --no-translator --locale=en_US.UTF-8 --input=houra.pot --output=en.po && cd ..
+cd po
+msginit --no-translator --locale=en_US.UTF-8 --input=houra.pot --output=en.po
+printf 'en\n' > LINGUAS
+cd ..
+meson setup --reconfigure build-meson
 ```
 
 **What.** gettext scans the files in `POTFILES.in` for translatable

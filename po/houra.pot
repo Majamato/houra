@@ -1,0 +1,142 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the houra package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: houra\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-13 13:10-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: data/io.github.majamato.Houra.desktop.in:2 data/ui/window.ui:6
+msgid "Houra"
+msgstr ""
+
+#: data/io.github.majamato.Houra.desktop.in:3
+msgid "Track focused work locally"
+msgstr ""
+
+#: data/io.github.majamato.Houra.desktop.in:9
+msgid "time;work;project;task;report;"
+msgstr ""
+
+#: data/io.github.majamato.Houra.gschema.xml:7
+msgid "Idle threshold in minutes"
+msgstr ""
+
+#: data/io.github.majamato.Houra.gschema.xml:11
+msgid "Launch in the background when signing in"
+msgstr ""
+
+#: data/io.github.majamato.Houra.gschema.xml:15
+msgid "Show reconciliation notifications"
+msgstr ""
+
+#: data/io.github.majamato.Houra.gschema.xml:19
+msgid "Use Monday as the first day of reports"
+msgstr ""
+
+#: data/io.github.majamato.Houra.gschema.xml:23
+msgid "Whether first-run setup has completed"
+msgstr ""
+
+#: data/ui/window.ui:23
+msgid "Main Menu"
+msgstr ""
+
+#: data/ui/window.ui:36
+msgid "Automatic idle detection is unavailable"
+msgstr ""
+
+#: data/ui/window.ui:45
+msgid "Tracker"
+msgstr ""
+
+#: data/ui/window.ui:72
+msgid "Project"
+msgstr ""
+
+#: data/ui/window.ui:78
+msgid "Task"
+msgstr ""
+
+#: data/ui/window.ui:84
+msgid "Note"
+msgstr ""
+
+#: data/ui/window.ui:87
+msgid "What are you working on?"
+msgstr ""
+
+#: data/ui/window.ui:92
+msgid "Start"
+msgstr ""
+
+#: data/ui/window.ui:98
+msgid "Previous day"
+msgstr ""
+
+#: data/ui/window.ui:100
+msgid "Next day"
+msgstr ""
+
+#: data/ui/window.ui:115
+msgid "Reports"
+msgstr ""
+
+#: data/ui/window.ui:127
+msgid "Weekly Report"
+msgstr ""
+
+#: data/ui/window.ui:131
+msgid "Previous week"
+msgstr ""
+
+#: data/ui/window.ui:133
+msgid "Next week"
+msgstr ""
+
+#: data/ui/window.ui:136
+msgid "Export CSV"
+msgstr ""
+
+#: data/ui/window.ui:149
+msgid "Projects"
+msgstr ""
+
+#: data/ui/window.ui:165
+msgid "Projects and Tasks"
+msgstr ""
+
+#: data/ui/window.ui:166
+msgid "Add Project"
+msgstr ""
+
+#: data/ui/window.ui:185
+msgid "Add Manual Entry"
+msgstr ""
+
+#: data/ui/window.ui:186
+msgid "Preferences"
+msgstr ""
+
+#: data/ui/window.ui:187
+msgid "Back Up Data"
+msgstr ""
+
+#: data/ui/window.ui:188
+msgid "Restore Data"
+msgstr ""
+
+#: data/ui/window.ui:191
+msgid "Quit"
+msgstr ""
