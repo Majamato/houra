@@ -369,21 +369,23 @@ inspect exactly what a user would get. A real install is
 launcher appears in the app grid and the schema is found without any
 environment variables — Chapter 18's exercise 3 can be done then.
 
-```sh
-git add -A && git commit -m "Chapter 20: packaging"
-```
-
 Note `.gitignore` already excludes `build*/` and `stage/`.
 
 ## 20.6 The Fedora spec
 
-Copy it as is; it is packaging metadata, and the interesting part is
-reading it:
+Copy the original spec as a starting point:
 
 ```sh
 mkdir -p packaging/fedora
 cp ../work_time_tracker/packaging/fedora/work-time-tracker.spec packaging/fedora/houra.spec
 ```
+
+Then replace the original project's names and paths throughout the copied
+file: `work-time-tracker` becomes `houra`, `Work Time Tracker` becomes
+`Houra`, and `io.github.majamato.WorkTimeTracker` becomes
+`io.github.majamato.Houra`. Update the project URL as well. The result must
+describe the package and the files that Houra's Meson install actually
+produces.
 
 ```spec
 # packaging/fedora/houra.spec (excerpt)
@@ -418,6 +420,12 @@ and `%check` runs the tests and the same validators as your checkpoint.
 **Linux — the pattern.** Source + lock file + vendored dependencies +
 offline build is how every Rust desktop app reaches a distribution. Your
 `Cargo.lock` is part of the contract.
+
+Commit all of the chapter's packaging files, including the Fedora spec:
+
+```sh
+git add -A && git commit -m "Chapter 20: packaging"
+```
 
 ## 20.7 Exercises
 
