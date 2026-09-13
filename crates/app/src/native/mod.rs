@@ -1,3 +1,4 @@
+mod platform;
 mod window;
 
 use std::cell::{Cell, RefCell};
@@ -172,16 +173,16 @@ fn install_actions(
     let notifications = settings
         .as_ref()
         .is_none_or(|settings| settings.boolean("notifications"));
-    // if let Err(error) = platform::start_integrations(handle, idle_threshold, notifications) {
-    //     warn!(%error, "GNOME idle/session integration is unavailable; manual tracking remains active");
-    //     let message = error.to_string();
-    //     let window = Rc::clone(window);
-    //     glib::idle_add_local_once(move || {
-    //         if let Some(window) = window.borrow().as_ref() {
-    //             // window.show_integration_warning(&message);
-    //         }
-    //     });
-    // }
+    if let Err(error) = platform::start_integrations(handle, idle_threshold, notifications) {
+        warn!(%error, "GNOME idle/session integration is unavailable; manual tracking remains active");
+        let message = error.to_string();
+        let window = Rc::clone(window);
+        glib::idle_add_local_once(move || {
+            if let Some(window) = window.borrow().as_ref() {
+                window.show_integration_warning(&message);
+            }
+        });
+    }
 }
 
 pub(crate) fn log_background_error(context: &'static str, error: impl std::fmt::Display) {

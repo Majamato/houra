@@ -19,6 +19,8 @@ mod imp {
     #[template(resource = "/io/github/majamato/Houra/ui/window.ui")]
     pub struct MainWindow {
         #[template_child]
+        pub integration_banner: gtk::TemplateChild<adw::Banner>,
+        #[template_child]
         pub timer_label: gtk::TemplateChild<gtk::Label>,
         #[template_child]
         pub start_button: gtk::TemplateChild<gtk::Button>,
@@ -441,6 +443,11 @@ impl MainWindow {
             }
             Err(error) => self.show_database_error(&error.to_string()),
         }
+    }
+
+    pub fn show_integration_warning(&self, message: &str) {
+        self.imp().integration_banner.set_title(message);
+        self.imp().integration_banner.set_revealed(true);
     }
 
     fn show_database_error(&self, message: &str) {

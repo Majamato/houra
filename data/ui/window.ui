@@ -31,6 +31,12 @@
           <object class="GtkBox">
             <property name="orientation">vertical</property>
             <child>
+              <object class="AdwBanner" id="integration_banner">
+                <property name="revealed">false</property>
+                <property name="title" translatable="yes">Automatic idle detection is unavailable</property>
+              </object>
+            </child>
+            <child>
               <object class="AdwViewStack" id="view_stack">
                 <property name="vexpand">true</property>
                 <child>
