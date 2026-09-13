@@ -177,6 +177,7 @@
   <menu id="main_menu">
     <section>
       <item><attribute name="label" translatable="yes">Add Manual Entry</attribute><attribute name="action">app.add-entry</attribute></item>
+      <item><attribute name="label" translatable="yes">Preferences</attribute><attribute name="action">app.preferences</attribute></item>
       <item><attribute name="label" translatable="yes">Back Up Data</attribute><attribute name="action">app.backup</attribute></item>
       <item><attribute name="label" translatable="yes">Restore Data</attribute><attribute name="action">app.restore</attribute></item>
     </section>

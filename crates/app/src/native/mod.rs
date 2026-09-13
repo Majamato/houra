@@ -1,13 +1,13 @@
 mod window;
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::path::PathBuf;
 use std::rc::Rc;
 
 use gio::prelude::*;
 use gtk::prelude::*;
 use libadwaita as adw;
-use tracing::error;
+use tracing::{error, warn};
 
 use crate::{APP_ID, AppError, TrackerService};
 use window::MainWindow;
@@ -18,19 +18,34 @@ pub fn run(database_path: PathBuf) -> Result<(), AppError> {
     register_resources()?;
     let service = TrackerService::start(database_path)?;
     let handle = service.handle.clone();
+    let settings = load_settings();
+    complete_first_run(&settings);
+    let background = std::env::args().any(|argument| argument == "--background");
     let application = adw::Application::builder().application_id(APP_ID).build();
+    application.add_main_option(
+        "background",
+        glib::Char(0),
+        glib::OptionFlags::NONE,
+        glib::OptionArg::None,
+        "Start the tracker without presenting its window",
+        None,
+    );
+    let _application_hold = application.hold();
     let main_window: Rc<RefCell<Option<MainWindow>>> = Rc::new(RefCell::new(None));
+    let suppress_first_present = Rc::new(Cell::new(background));
 
     application.connect_startup(|application| {
         load_css();
         application.set_accels_for_action("app.toggle-timer", &["<Control>space"]);
         application.set_accels_for_action("app.add-entry", &["<Control>n"]);
+        application.set_accels_for_action("app.preferences", &["<Control>comma"]);
         application.set_accels_for_action("app.quit", &["<Control>q"]);
     });
 
     let activate_window = Rc::clone(&main_window);
     let activate_handle = handle.clone();
     application.connect_activate(move |application| {
+        let activate_suppression = Rc::clone(&suppress_first_present);
         if activate_window.borrow().is_none() {
             let window = MainWindow::new(application, activate_handle.clone());
             window.connect_close_request(|window| {
@@ -39,12 +54,13 @@ pub fn run(database_path: PathBuf) -> Result<(), AppError> {
             });
             activate_window.replace(Some(window));
         }
-        if let Some(window) = activate_window.borrow().as_ref() {
+        let suppress_present = activate_suppression.replace(false);
+        if !suppress_present && let Some(window) = activate_window.borrow().as_ref() {
             window.present();
         }
     });
 
-    install_actions(&application, &main_window, handle);
+    install_actions(&application, &main_window, handle, &settings);
     let _status = application.run();
     service.shutdown()
 }
@@ -75,6 +91,7 @@ fn install_actions(
     application: &adw::Application,
     window: &Rc<RefCell<Option<MainWindow>>>,
     handle: crate::TrackerHandle,
+    settings: &Option<gio::Settings>,
 ) {
     let toggle = gio::ActionEntry::builder("toggle-timer")
         .activate({
@@ -93,6 +110,16 @@ fn install_actions(
             move |_: &adw::Application, _, _| {
                 if let Some(window) = window.borrow().as_ref() {
                     window.show_manual_entry();
+                }
+            }
+        })
+        .build();
+    let preferences = gio::ActionEntry::builder("preferences")
+        .activate({
+            let window = Rc::clone(window);
+            move |_: &adw::Application, _, _| {
+                if let Some(window) = window.borrow().as_ref() {
+                    window.show_preferences();
                 }
             }
         })
@@ -136,9 +163,56 @@ fn install_actions(
             }
         })
         .build();
-    application.add_action_entries([toggle, add, backup, restore, quit]);
+    application.add_action_entries([toggle, add, preferences, backup, restore, quit]);
+
+    let idle_threshold = settings
+        .as_ref()
+        .map_or(5, |settings| settings.uint("idle-threshold-minutes"))
+        .clamp(1, 120);
+    let notifications = settings
+        .as_ref()
+        .is_none_or(|settings| settings.boolean("notifications"));
+    // if let Err(error) = platform::start_integrations(handle, idle_threshold, notifications) {
+    //     warn!(%error, "GNOME idle/session integration is unavailable; manual tracking remains active");
+    //     let message = error.to_string();
+    //     let window = Rc::clone(window);
+    //     glib::idle_add_local_once(move || {
+    //         if let Some(window) = window.borrow().as_ref() {
+    //             // window.show_integration_warning(&message);
+    //         }
+    //     });
+    // }
 }
 
 pub(crate) fn log_background_error(context: &'static str, error: impl std::fmt::Display) {
     error!(%error, %context, "background operation failed");
+}
+
+pub(crate) fn load_settings() -> Option<gio::Settings> {
+    gio::SettingsSchemaSource::default()
+        .and_then(|source| source.lookup(crate::APP_ID, true))
+        .map(|schema| gio::Settings::new_full(&schema, None::<&gio::SettingsBackend>, None))
+}
+
+fn complete_first_run(settings: &Option<gio::Settings>) {
+    let Some(settings) = settings else { return };
+    if settings.boolean("onboarding-complete") {
+        return;
+    }
+    let launch_enabled = match std::env::current_exe() {
+        Ok(executable) => {
+            if let Err(error) = crate::autostart::set_enabled(true, &executable) {
+                warn!(%error, "could not enable first-run autostart");
+                false
+            } else {
+                true
+            }
+        }
+        Err(error) => {
+            warn!(%error, "could not locate executable for first-run autostart");
+            false
+        }
+    };
+    let _ignored = settings.set_boolean("launch-at-login", launch_enabled);
+    let _ignored = settings.set_boolean("onboarding-complete", true);
 }

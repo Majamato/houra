@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="houra">
+  <schema id="io.github.majamato.Houra" path="/io/github/majamato/Houra/">
+    <key name="idle-threshold-minutes" type="u">
+      <default>5</default>
+      <range min="1" max="120"/>
+      <summary>Idle threshold in minutes</summary>
+    </key>
+    <key name="launch-at-login" type="b">
+      <default>true</default>
+      <summary>Launch in the background when signing in</summary>
+    </key>
+    <key name="notifications" type="b">
+      <default>true</default>
+      <summary>Show reconciliation notifications</summary>
+    </key>
+    <key name="week-starts-monday" type="b">
+      <default>true</default>
+      <summary>Use Monday as the first day of reports</summary>
+    </key>
+    <key name="onboarding-complete" type="b">
+      <default>false</default>
+      <summary>Whether first-run setup has completed</summary>
+    </key>
+  </schema>
+</schemalist>
