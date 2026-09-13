@@ -1,15 +1,15 @@
 use std::cell::{Cell, RefCell};
 
-use chrono::{Datelike, Local, NaiveDate, TimeZone};
+use chrono::{Datelike, Local, NaiveDate, NaiveDateTime, TimeZone};
 use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use houra_core::{Project, ProjectId, Task, TrackerCommand, TrackerState};
+use houra_core::{EntrySource, Project, ProjectId, Task, TimeEntry, TrackerCommand, TrackerState};
 use libadwaita as adw;
 use libadwaita::prelude::*;
 use libadwaita::subclass::prelude::*;
 
-use crate::TrackerHandle;
+use crate::{TrackerHandle, native::log_background_error};
 
 mod imp {
     use super::*;
@@ -296,7 +296,14 @@ impl MainWindow {
                 note: self.imp().note_entry.text().to_string(),
             },
             TrackerState::Running(_) => TrackerCommand::Stop,
-            TrackerState::IdlePending(_) | TrackerState::RecoveryPending(_) => return,
+            TrackerState::IdlePending(_) => {
+                self.show_idle_dialog();
+                return;
+            }
+            TrackerState::RecoveryPending(_) => {
+                self.show_recovery_dialog();
+                return;
+            }
         };
         match handle.apply(command) {
             Ok(_) => self.refresh(),
@@ -307,6 +314,17 @@ impl MainWindow {
     fn refresh(&self) {
         self.refresh_timer_only();
         self.refresh_entries();
+        if let Some(handle) = self.handle()
+            && let Ok(snapshot) = handle.snapshot()
+        {
+            match snapshot.state {
+                TrackerState::IdlePending(ref pending) if pending.return_ms.is_some() => {
+                    self.show_idle_dialog();
+                }
+                TrackerState::RecoveryPending(_) => self.show_recovery_dialog(),
+                _ => {}
+            }
+        }
     }
 
     fn refresh_timer_only(&self) {
@@ -410,6 +428,14 @@ impl MainWindow {
                             duration % 60
                         ))
                         .build();
+                    row.set_activatable(true);
+                    row.connect_activated(glib::clone!(
+                        #[weak(rename_to = window)]
+                        self,
+                        #[strong]
+                        entry,
+                        move |_| window.show_edit_entry(entry.clone())
+                    ));
                     self.imp().entries_box.append(&row);
                 }
             }
@@ -685,6 +711,458 @@ impl MainWindow {
                 }
                 window.reload_projects();
                 window.refresh_projects_page();
+            }
+        });
+        dialog.present(Some(self));
+    }
+
+    pub fn show_manual_entry(&self) {
+        let Some(handle) = self.handle() else { return };
+        let projects = self.imp().projects.borrow().clone();
+        let dialog = adw::Dialog::builder()
+            .title("Manual Entry")
+            .content_width(480)
+            .content_height(400)
+            .build();
+        let content = gtk::Box::builder()
+            .orientation(gtk::Orientation::Vertical)
+            .spacing(12)
+            .margin_top(24)
+            .margin_bottom(24)
+            .margin_start(24)
+            .margin_end(24)
+            .build();
+        let project_names: Vec<&str> = projects
+            .iter()
+            .map(|project| project.name.as_str())
+            .collect();
+        let project = gtk::DropDown::from_strings(&project_names);
+        let note = gtk::Entry::builder()
+            .placeholder_text("Optional note")
+            .build();
+        let end_local = Local::now();
+        let start_local = end_local - chrono::Duration::hours(1);
+        let start = gtk::Entry::builder()
+            .text(start_local.format("%Y-%m-%d %H:%M:%S").to_string())
+            .build();
+        let end = gtk::Entry::builder()
+            .text(end_local.format("%Y-%m-%d %H:%M:%S").to_string())
+            .build();
+        for (label_text, widget) in [
+            ("Project", project.clone().upcast::<gtk::Widget>()),
+            ("Note", note.clone().upcast()),
+            ("Start (local)", start.clone().upcast()),
+            ("End (local)", end.clone().upcast()),
+        ] {
+            let label = gtk::Label::builder()
+                .label(label_text)
+                .halign(gtk::Align::Start)
+                .build();
+            content.append(&label);
+            content.append(&widget);
+        }
+        let save = gtk::Button::with_label("Save Entry");
+        save.add_css_class("suggested-action");
+        content.append(&save);
+        dialog.set_child(Some(&content));
+        let weak = self.downgrade();
+        let dialog_for_save = dialog.clone();
+        save.connect_clicked(move |_| {
+            let parse_local = |text: &str| {
+                NaiveDateTime::parse_from_str(text, "%Y-%m-%d %H:%M:%S")
+                    .ok()
+                    .and_then(|value| Local.from_local_datetime(&value).single())
+                    .map(|value| value.timestamp_millis())
+            };
+            let Some(start_ms) = parse_local(&start.text()) else {
+                if let Some(window) = weak.upgrade() {
+                    window.show_database_error(
+                        "Start must use YYYY-MM-DD HH:MM:SS and identify one local time.",
+                    );
+                }
+                return;
+            };
+            let Some(end_ms) = parse_local(&end.text()) else {
+                if let Some(window) = weak.upgrade() {
+                    window.show_database_error(
+                        "End must use YYYY-MM-DD HH:MM:SS and identify one local time.",
+                    );
+                }
+                return;
+            };
+            let index = usize::try_from(project.selected()).unwrap_or(0);
+            let project_id = projects
+                .get(index)
+                .map_or(ProjectId(1), |project| project.id);
+            let now = chrono::Utc::now().timestamp_millis();
+            let entry = TimeEntry {
+                id: None,
+                project_id,
+                task_id: None,
+                note: note.text().to_string(),
+                start_ms,
+                end_ms,
+                source: EntrySource::Manual,
+                created_at_ms: now,
+                updated_at_ms: now,
+            };
+            match handle.add_entry(entry) {
+                Ok(_) => {
+                    dialog_for_save.close();
+                    if let Some(window) = weak.upgrade() {
+                        window.refresh();
+                    }
+                }
+                Err(error) => {
+                    if let Some(window) = weak.upgrade() {
+                        window.show_database_error(&error.to_string());
+                    }
+                }
+            }
+        });
+        dialog.present(Some(self));
+    }
+
+    fn show_edit_entry(&self, existing: TimeEntry) {
+        let Some(handle) = self.handle() else { return };
+        let projects = self.imp().projects.borrow().clone();
+        let dialog = adw::Dialog::builder()
+            .title("Edit Entry")
+            .content_width(480)
+            .content_height(400)
+            .build();
+        let content = gtk::Box::builder()
+            .orientation(gtk::Orientation::Vertical)
+            .spacing(12)
+            .margin_top(24)
+            .margin_bottom(24)
+            .margin_start(24)
+            .margin_end(24)
+            .build();
+        let project_names = projects
+            .iter()
+            .map(|project| project.name.as_str())
+            .collect::<Vec<_>>();
+        let project = gtk::DropDown::from_strings(&project_names);
+        if let Some(index) = projects
+            .iter()
+            .position(|project| project.id == existing.project_id)
+            .and_then(|index| u32::try_from(index).ok())
+        {
+            project.set_selected(index);
+        }
+        let note = gtk::Entry::builder().text(&existing.note).build();
+        let format_time = |timestamp| {
+            Local
+                .timestamp_millis_opt(timestamp)
+                .single()
+                .map_or_else(String::new, |value| {
+                    value.format("%Y-%m-%d %H:%M:%S").to_string()
+                })
+        };
+        let start = gtk::Entry::builder()
+            .text(format_time(existing.start_ms))
+            .build();
+        let end = gtk::Entry::builder()
+            .text(format_time(existing.end_ms))
+            .build();
+        for (label_text, widget) in [
+            ("Project", project.clone().upcast::<gtk::Widget>()),
+            ("Note", note.clone().upcast()),
+            ("Start (local)", start.clone().upcast()),
+            ("End (local)", end.clone().upcast()),
+        ] {
+            content.append(
+                &gtk::Label::builder()
+                    .label(label_text)
+                    .halign(gtk::Align::Start)
+                    .build(),
+            );
+            content.append(&widget);
+        }
+        let save = gtk::Button::with_label("Save Changes");
+        save.add_css_class("suggested-action");
+        content.append(&save);
+        dialog.set_child(Some(&content));
+        let dialog_for_save = dialog.clone();
+        let weak = self.downgrade();
+        save.connect_clicked(move |_| {
+            let parse = |entry: &gtk::Entry| {
+                NaiveDateTime::parse_from_str(&entry.text(), "%Y-%m-%d %H:%M:%S")
+                    .ok()
+                    .and_then(|value| Local.from_local_datetime(&value).single())
+                    .map(|value| value.timestamp_millis())
+            };
+            let (Some(start_ms), Some(end_ms)) = (parse(&start), parse(&end)) else {
+                if let Some(window) = weak.upgrade() {
+                    window.show_database_error(
+                        "Times must use YYYY-MM-DD HH:MM:SS and identify one local time.",
+                    );
+                }
+                return;
+            };
+            let index = usize::try_from(project.selected()).unwrap_or(0);
+            let project_id = projects
+                .get(index)
+                .map_or(existing.project_id, |project| project.id);
+            let task_id = (project_id == existing.project_id)
+                .then_some(existing.task_id)
+                .flatten();
+            let updated = TimeEntry {
+                project_id,
+                task_id,
+                note: note.text().to_string(),
+                start_ms,
+                end_ms,
+                updated_at_ms: chrono::Utc::now().timestamp_millis(),
+                ..existing.clone()
+            };
+            match handle.update_entry(updated) {
+                Ok(()) => {
+                    dialog_for_save.close();
+                    if let Some(window) = weak.upgrade() {
+                        window.refresh();
+                        window.refresh_report();
+                    }
+                }
+                Err(error) => {
+                    if let Some(window) = weak.upgrade() {
+                        window.show_database_error(&error.to_string());
+                    }
+                }
+            }
+        });
+        dialog.present(Some(self));
+    }
+
+    fn show_idle_dialog(&self) {
+        let dialog = adw::AlertDialog::builder()
+            .heading("You were away")
+            .body("How should the idle interval be counted?")
+            .build();
+        dialog.add_responses(&[
+            ("keep", "Keep"),
+            ("discard", "Discard and Resume"),
+            ("reassign", "Reassign and Resume"),
+            ("stop", "Stop"),
+        ]);
+        dialog.set_default_response(Some("discard"));
+        let handle = self.handle();
+        let weak = self.downgrade();
+        dialog.connect_response(None, move |_, response| {
+            if response == "reassign" {
+                if let Some(window) = weak.upgrade() {
+                    window.show_idle_reassign();
+                }
+                return;
+            }
+            let decision = match response {
+                "keep" => houra_core::IdleDecision::Keep,
+                "stop" => houra_core::IdleDecision::Stop,
+                _ => houra_core::IdleDecision::DiscardAndResume,
+            };
+            if let Some(handle) = &handle
+                && let Err(error) = handle.apply(TrackerCommand::ResolveIdle(decision))
+            {
+                log_background_error("resolving idle time", error);
+            }
+            if let Some(window) = weak.upgrade() {
+                window.refresh();
+            }
+        });
+        dialog.present(Some(self));
+    }
+
+    fn show_idle_reassign(&self) {
+        let Some(handle) = self.handle() else { return };
+        let projects = self.imp().projects.borrow().clone();
+        let names = projects
+            .iter()
+            .map(|project| project.name.as_str())
+            .collect::<Vec<_>>();
+        let dropdown = gtk::DropDown::from_strings(&names);
+        let dialog = adw::AlertDialog::builder()
+            .heading("Reassign idle interval")
+            .body("Choose the project that should receive the time you were away.")
+            .build();
+        dialog.set_extra_child(Some(&dropdown));
+        dialog.add_responses(&[("cancel", "Cancel"), ("reassign", "Reassign")]);
+        dialog.set_default_response(Some("reassign"));
+        let weak = self.downgrade();
+        dialog.connect_response(Some("reassign"), move |_, _| {
+            let index = usize::try_from(dropdown.selected()).unwrap_or(0);
+            let project_id = projects
+                .get(index)
+                .map_or(ProjectId(1), |project| project.id);
+            let result = handle.apply(TrackerCommand::ResolveIdle(
+                houra_core::IdleDecision::ReassignAndResume {
+                    project_id,
+                    task_id: None,
+                    note: "Idle time".into(),
+                },
+            ));
+            if let Some(window) = weak.upgrade() {
+                if let Err(error) = result {
+                    window.show_database_error(&error.to_string());
+                }
+                window.refresh();
+            }
+        });
+        dialog.present(Some(self));
+    }
+
+    fn show_recovery_dialog(&self) {
+        let Some(handle) = self.handle() else { return };
+        let Ok(snapshot) = handle.snapshot() else {
+            return;
+        };
+        let TrackerState::RecoveryPending(pending) = snapshot.state else {
+            return;
+        };
+        let dialog = adw::AlertDialog::builder()
+            .heading("Recover interrupted timer?")
+            .body(if pending.unresolved_idle_start_ms.is_some() {
+                "The app stopped during idle reconciliation. Edit the proposed end, then keep or discard it."
+            } else {
+                "Only time up to the last saved heartbeat is proposed. You may edit that end time."
+            })
+            .build();
+        let proposed_end = Local
+            .timestamp_millis_opt(pending.proposed_end_ms)
+            .single()
+            .map_or_else(String::new, |value| {
+                value.format("%Y-%m-%d %H:%M:%S").to_string()
+            });
+        let end_entry = gtk::Entry::builder()
+            .text(proposed_end)
+            .placeholder_text("YYYY-MM-DD HH:MM:SS")
+            .build();
+        dialog.set_extra_child(Some(&end_entry));
+        dialog.add_responses(&[
+            ("resume", "Keep and Resume"),
+            ("stop", "Keep and Stop"),
+            ("discard", "Discard"),
+        ]);
+        dialog.set_default_response(Some("stop"));
+        let weak = self.downgrade();
+        dialog.connect_response(None, move |_, response| {
+            let result = if response == "discard" {
+                handle.apply(TrackerCommand::DiscardRecovery)
+            } else {
+                let end_ms = NaiveDateTime::parse_from_str(&end_entry.text(), "%Y-%m-%d %H:%M:%S")
+                    .ok()
+                    .and_then(|value| Local.from_local_datetime(&value).single())
+                    .map_or(pending.proposed_end_ms, |value| value.timestamp_millis());
+                handle.apply(TrackerCommand::ResolveRecovery {
+                    end_ms,
+                    resume: response == "resume",
+                })
+            };
+            if let Err(error) = result {
+                log_background_error("recovering timer", error);
+            }
+            if let Some(window) = weak.upgrade() {
+                window.refresh();
+            }
+        });
+        dialog.present(Some(self));
+    }
+    pub fn confirm_quit(&self) {
+        let dialog = adw::AlertDialog::builder()
+            .heading("A timer is still running")
+            .body("Stop the timer and quit, or keep Houra running in the background.")
+            .build();
+        dialog.add_responses(&[("cancel", "Keep Running"), ("quit", "Stop and Quit")]);
+        dialog.set_response_appearance("quit", adw::ResponseAppearance::Destructive);
+        let handle = self.handle();
+        let application = self.application();
+        dialog.connect_response(Some("quit"), move |_, _| {
+            if let Some(handle) = &handle {
+                let _ignored = handle.apply(TrackerCommand::Stop);
+            }
+            if let Some(application) = &application {
+                application.quit();
+            }
+        });
+        dialog.present(Some(self));
+    }
+
+    pub fn backup_data(&self) {
+        let Some(handle) = self.handle() else { return };
+        let chooser = gtk::FileDialog::builder()
+            .title("Back Up Houra")
+            .initial_name(format!(
+                "houra-backup-{}.json",
+                Local::now().format("%Y-%m-%d")
+            ))
+            .build();
+        let weak = self.downgrade();
+        chooser.save(Some(self), None::<&gio::Cancellable>, move |result| {
+            let Some(window) = weak.upgrade() else { return };
+            let result = result
+                .map_err(|error| crate::AppError::InvalidBackup(error.to_string()))
+                .and_then(|file| {
+                    let path = file.path().ok_or_else(|| {
+                        crate::AppError::InvalidBackup("backup requires a local file".into())
+                    })?;
+                    let document = handle.backup(chrono::Utc::now().timestamp_millis())?;
+                    document.write_to_path(&path)
+                });
+            if let Err(error) = result {
+                window.show_database_error(&error.to_string());
+            }
+        });
+    }
+
+    pub fn restore_data(&self) {
+        let Some(handle) = self.handle() else { return };
+        if handle
+            .snapshot()
+            .is_ok_and(|snapshot| snapshot.state.active().is_some())
+        {
+            self.show_database_error("Stop the timer before restoring a backup.");
+            return;
+        }
+        let chooser = gtk::FileDialog::builder()
+            .title("Choose a Houra Backup")
+            .build();
+        let weak = self.downgrade();
+        chooser.open(Some(self), None::<&gio::Cancellable>, move |result| {
+            let Some(window) = weak.upgrade() else { return };
+            let document = result
+                .map_err(|error| crate::AppError::InvalidBackup(error.to_string()))
+                .and_then(|file| {
+                    let path = file.path().ok_or_else(|| {
+                        crate::AppError::InvalidBackup("restore requires a local file".into())
+                    })?;
+                    crate::backup::BackupDocument::read_from_path(&path)
+                });
+            match document {
+                Ok(document) => window.confirm_restore(handle.clone(), document),
+                Err(error) => window.show_database_error(&error.to_string()),
+            }
+        });
+    }
+
+    fn confirm_restore(&self, handle: TrackerHandle, document: crate::backup::BackupDocument) {
+        let dialog = adw::AlertDialog::builder()
+            .heading("Replace all local data?")
+            .body("The validated backup will replace projects, tasks, and entries. This cannot be undone.")
+            .build();
+        dialog.add_responses(&[("cancel", "Cancel"), ("restore", "Replace Data")]);
+        dialog.set_response_appearance("restore", adw::ResponseAppearance::Destructive);
+        let weak = self.downgrade();
+        dialog.connect_response(Some("restore"), move |_, _| {
+            let result = handle.restore(document.clone());
+            if let Some(window) = weak.upgrade() {
+                if let Err(error) = result {
+                    window.show_database_error(&error.to_string());
+                }
+                window.reload_projects();
+                window.reload_tasks();
+                window.refresh();
+                window.refresh_projects_page();
+                window.refresh_report();
             }
         });
         dialog.present(Some(self));

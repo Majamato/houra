@@ -7,6 +7,7 @@ use std::rc::Rc;
 use gio::prelude::*;
 use gtk::prelude::*;
 use libadwaita as adw;
+use tracing::error;
 
 use crate::{APP_ID, AppError, TrackerService};
 use window::MainWindow;
@@ -20,12 +21,22 @@ pub fn run(database_path: PathBuf) -> Result<(), AppError> {
     let application = adw::Application::builder().application_id(APP_ID).build();
     let main_window: Rc<RefCell<Option<MainWindow>>> = Rc::new(RefCell::new(None));
 
-    application.connect_startup(|_| load_css());
+    application.connect_startup(|application| {
+        load_css();
+        application.set_accels_for_action("app.toggle-timer", &["<Control>space"]);
+        application.set_accels_for_action("app.add-entry", &["<Control>n"]);
+        application.set_accels_for_action("app.quit", &["<Control>q"]);
+    });
 
     let activate_window = Rc::clone(&main_window);
+    let activate_handle = handle.clone();
     application.connect_activate(move |application| {
         if activate_window.borrow().is_none() {
-            let window = MainWindow::new(application, handle.clone());
+            let window = MainWindow::new(application, activate_handle.clone());
+            window.connect_close_request(|window| {
+                window.set_visible(false);
+                glib::Propagation::Stop
+            });
             activate_window.replace(Some(window));
         }
         if let Some(window) = activate_window.borrow().as_ref() {
@@ -33,6 +44,7 @@ pub fn run(database_path: PathBuf) -> Result<(), AppError> {
         }
     });
 
+    install_actions(&application, &main_window, handle);
     let _status = application.run();
     service.shutdown()
 }
@@ -57,4 +69,76 @@ fn load_css() {
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
     }
+}
+
+fn install_actions(
+    application: &adw::Application,
+    window: &Rc<RefCell<Option<MainWindow>>>,
+    handle: crate::TrackerHandle,
+) {
+    let toggle = gio::ActionEntry::builder("toggle-timer")
+        .activate({
+            let window = Rc::clone(window);
+            move |_: &adw::Application, _, _| {
+                if let Some(window) = window.borrow().as_ref() {
+                    window.present();
+                    window.toggle_timer();
+                }
+            }
+        })
+        .build();
+    let add = gio::ActionEntry::builder("add-entry")
+        .activate({
+            let window = Rc::clone(window);
+            move |_: &adw::Application, _, _| {
+                if let Some(window) = window.borrow().as_ref() {
+                    window.show_manual_entry();
+                }
+            }
+        })
+        .build();
+    let quit = gio::ActionEntry::builder("quit")
+        .activate({
+            let window = Rc::clone(window);
+            let handle = handle.clone();
+            move |application: &adw::Application, _, _| {
+                let active = handle
+                    .snapshot()
+                    .map(|snapshot| snapshot.state.active().is_some())
+                    .unwrap_or(false);
+                if active {
+                    if let Some(window) = window.borrow().as_ref() {
+                        window.confirm_quit();
+                    }
+                } else {
+                    application.quit();
+                }
+            }
+        })
+        .build();
+    let backup = gio::ActionEntry::builder("backup")
+        .activate({
+            let window = Rc::clone(window);
+            move |_: &adw::Application, _, _| {
+                if let Some(window) = window.borrow().as_ref() {
+                    window.backup_data();
+                }
+            }
+        })
+        .build();
+    let restore = gio::ActionEntry::builder("restore")
+        .activate({
+            let window = Rc::clone(window);
+            move |_: &adw::Application, _, _| {
+                if let Some(window) = window.borrow().as_ref() {
+                    window.restore_data();
+                }
+            }
+        })
+        .build();
+    application.add_action_entries([toggle, add, backup, restore, quit]);
+}
+
+pub(crate) fn log_background_error(context: &'static str, error: impl std::fmt::Display) {
+    error!(%error, %context, "background operation failed");
 }

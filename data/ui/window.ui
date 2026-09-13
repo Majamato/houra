@@ -17,6 +17,14 @@
                 <property name="policy">wide</property>
               </object>
             </property>
+            <child type="end">
+              <object class="GtkMenuButton">
+                <property name="icon-name">open-menu-symbolic</property>
+                <property name="tooltip-text" translatable="yes">Main Menu</property>
+                <property name="menu-model">main_menu</property>
+              </object>
+            </child>
+
           </object>
         </child>
         <property name="content">
@@ -166,4 +174,14 @@
       </object>
     </child>
   </template>
+  <menu id="main_menu">
+    <section>
+      <item><attribute name="label" translatable="yes">Add Manual Entry</attribute><attribute name="action">app.add-entry</attribute></item>
+      <item><attribute name="label" translatable="yes">Back Up Data</attribute><attribute name="action">app.backup</attribute></item>
+      <item><attribute name="label" translatable="yes">Restore Data</attribute><attribute name="action">app.restore</attribute></item>
+    </section>
+    <section>
+      <item><attribute name="label" translatable="yes">Quit</attribute><attribute name="action">app.quit</attribute></item>
+    </section>
+  </menu>
 </interface>
