@@ -25,7 +25,7 @@ fn data_path() -> Result<PathBuf, AppError> {
 
 #[cfg(feature = "native-ui")]
 fn run() -> Result<(), AppError> {
-    houra::native::run(data_path()?)
+    houra::desktop::run(data_path()?)
 }
 
 #[cfg(not(feature = "native-ui"))]

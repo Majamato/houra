@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// The user preferences. Native builds read them from GSettings (Chapter 18);
+/// The user preferences. Native builds read them from GSettings;
 /// this type documents the defaults and ranges.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub struct Preferences {

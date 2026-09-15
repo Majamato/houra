@@ -4,7 +4,7 @@ set -euo pipefail
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 project_root=$(cd -- "$script_dir/.." && pwd)
-build_dir=${WORK_TIME_BUILD_DIR:-"$project_root/build-release"}
+build_dir=${HOURA_BUILD_DIR:-${WORK_TIME_BUILD_DIR:-"$project_root/build-release"}}
 
 missing_packages=()
 
@@ -44,7 +44,7 @@ fi
 
 if ((${#missing_packages[@]} > 0)); then
     mapfile -t missing_packages < <(printf '%s\n' "${missing_packages[@]}" | sort -u)
-    printf 'Cannot build Work Time Tracker. Missing Fedora packages:\n' >&2
+    printf 'Cannot build Houra. Missing Fedora packages:\n' >&2
     printf '  - %s\n' "${missing_packages[@]}" >&2
     printf '\nInstall them yourself with:\n  sudo dnf install' >&2
     printf ' %q' "${missing_packages[@]}" >&2
@@ -61,6 +61,6 @@ fi
 
 printf 'Building the release application...\n'
 meson compile -C "$build_dir" "$@"
-printf '\nRelease binary:\n  %s/work-time-tracker\n' "$build_dir"
+printf '\nRelease binary:\n  %s/houra\n' "$build_dir"
 printf 'Stage a complete install with:\n  DESTDIR=%q meson install -C %q\n' \
     "$project_root/stage" "$build_dir"

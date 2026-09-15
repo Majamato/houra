@@ -38,7 +38,7 @@ fi
 
 if ((${#missing_packages[@]} > 0)); then
     mapfile -t missing_packages < <(printf '%s\n' "${missing_packages[@]}" | sort -u)
-    printf 'Cannot build Work Time Tracker. Missing Fedora packages:\n' >&2
+    printf 'Cannot build Houra. Missing Fedora packages:\n' >&2
     printf '  - %s\n' "${missing_packages[@]}" >&2
     printf '\nInstall them yourself with:\n  sudo dnf install' >&2
     printf ' %q' "${missing_packages[@]}" >&2
@@ -49,4 +49,4 @@ fi
 cd "$project_root"
 printf 'Building the development application...\n'
 cargo build --workspace --locked --features native-ui "$@"
-printf '\nDevelopment binary:\n  %s/target/debug/work-time-tracker\n' "$project_root"
+printf '\nDevelopment binary:\n  %s/target/debug/houra\n' "$project_root"

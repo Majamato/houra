@@ -1,6 +1,3 @@
-mod platform;
-mod window;
-
 use std::cell::{Cell, RefCell};
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -10,8 +7,8 @@ use gtk::prelude::*;
 use libadwaita as adw;
 use tracing::{error, warn};
 
+use super::{platform, window::MainWindow};
 use crate::{APP_ID, AppError, TrackerService};
-use window::MainWindow;
 
 /// Runs the GTK application until the main loop exits, then stops the
 /// storage thread.
