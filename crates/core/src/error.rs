@@ -2,7 +2,7 @@ use thiserror::Error;
 
 use crate::{
     TrackerState,
-    id::{EntryId, ProjectId, TaskId},
+    id::{ActivityId, EntryId, ProjectId},
 };
 
 /// A rejected domain operation. Infrastructure errors belong in the app crate.
@@ -25,10 +25,10 @@ pub enum DomainError {
     #[error("return time {return_ms} is before idle start {idle_start_ms}")]
     InvalidReturn { idle_start_ms: i64, return_ms: i64 },
 
-    #[error("task {task_id} does not belong to project {project_id}")]
-    TaskProjectMismatch {
+    #[error("activity {activity_id} does not belong to project {project_id}")]
+    ActivityProjectMismatch {
         project_id: ProjectId,
-        task_id: TaskId,
+        activity_id: ActivityId,
     },
 
     #[error("entry overlaps existing entries: {conflicts:?}")]

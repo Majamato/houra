@@ -22,7 +22,7 @@ Requires:       gtk4 >= 4.12
 Requires:       libadwaita >= 1.5
 
 %description
-Houra records one project or task at a time, reconciles GNOME idle
+Houra records one project or activity at a time, reconciles GNOME idle
 periods, and exports reports and backups. All user data stays on the local
 machine under the user's XDG data directory.
 

@@ -12,7 +12,7 @@ pub fn manual(id: Option<i64>, project_id: i64, start_ms: i64, end_ms: i64) -> T
     TimeEntry {
         id: id.map(EntryId),
         project_id: ProjectId(project_id),
-        task_id: None,
+        activity_id: None,
         note: "manual".into(),
         start_ms,
         end_ms,
@@ -27,7 +27,7 @@ pub fn assert_document_eq(a: &houra::backup::BackupDocument, b: &houra::backup::
     assert_eq!(a.version, b.version);
     assert_eq!(a.exported_at_ms, b.exported_at_ms);
     assert_eq!(a.projects, b.projects);
-    assert_eq!(a.tasks, b.tasks);
+    assert_eq!(a.activities, b.activities);
     assert_eq!(a.entries, b.entries);
     assert_eq!(a.tracker, b.tracker);
 }

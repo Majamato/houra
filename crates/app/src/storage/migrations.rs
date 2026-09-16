@@ -32,7 +32,7 @@ impl Store {
                     created_at_ms INTEGER NOT NULL,
                     updated_at_ms INTEGER NOT NULL
                 );
-                CREATE TABLE tasks (
+                CREATE TABLE activities (
                     id INTEGER PRIMARY KEY,
                     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
                     name TEXT NOT NULL COLLATE NOCASE CHECK(length(trim(name)) > 0),
@@ -44,7 +44,7 @@ impl Store {
                 CREATE TABLE entries (
                     id INTEGER PRIMARY KEY,
                     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
-                    task_id INTEGER REFERENCES tasks(id) ON DELETE RESTRICT,
+                    activity_id INTEGER REFERENCES activities(id) ON DELETE RESTRICT,
                     note TEXT NOT NULL DEFAULT '',
                     start_ms INTEGER NOT NULL,
                     end_ms INTEGER NOT NULL CHECK(end_ms > start_ms),
@@ -65,14 +65,14 @@ impl Store {
                     SELECT 1 FROM entries
                     WHERE id != NEW.id AND NEW.start_ms < end_ms AND NEW.end_ms > start_ms
                 ) BEGIN SELECT RAISE(ABORT, 'time entry overlaps existing entry'); END;
-                CREATE TRIGGER entry_task_project_insert BEFORE INSERT ON entries
-                WHEN NEW.task_id IS NOT NULL AND NOT EXISTS (
-                    SELECT 1 FROM tasks WHERE id = NEW.task_id AND project_id = NEW.project_id
-                ) BEGIN SELECT RAISE(ABORT, 'task does not belong to project'); END;
-                CREATE TRIGGER entry_task_project_update BEFORE UPDATE OF project_id, task_id ON entries
-                WHEN NEW.task_id IS NOT NULL AND NOT EXISTS (
-                    SELECT 1 FROM tasks WHERE id = NEW.task_id AND project_id = NEW.project_id
-                ) BEGIN SELECT RAISE(ABORT, 'task does not belong to project'); END;
+                CREATE TRIGGER entry_activity_project_insert BEFORE INSERT ON entries
+                WHEN NEW.activity_id IS NOT NULL AND NOT EXISTS (
+                    SELECT 1 FROM activities WHERE id = NEW.activity_id AND project_id = NEW.project_id
+                ) BEGIN SELECT RAISE(ABORT, 'activity does not belong to project'); END;
+                CREATE TRIGGER entry_activity_project_update BEFORE UPDATE OF project_id, activity_id ON entries
+                WHEN NEW.activity_id IS NOT NULL AND NOT EXISTS (
+                    SELECT 1 FROM activities WHERE id = NEW.activity_id AND project_id = NEW.project_id
+                ) BEGIN SELECT RAISE(ABORT, 'activity does not belong to project'); END;
                 CREATE TABLE tracker_state (
                     singleton INTEGER PRIMARY KEY CHECK(singleton = 1),
                     snapshot_json TEXT NOT NULL,

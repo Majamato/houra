@@ -53,7 +53,7 @@ impl MainWindow {
             }
         };
         let projects = handle.projects(true).unwrap_or_default();
-        let tasks = handle.tasks(true).unwrap_or_default();
+        let activities = handle.activities(true).unwrap_or_default();
         let rows = houra_core::group_entries(&entries);
         if rows.is_empty() {
             self.imp()
@@ -71,15 +71,15 @@ impl MainWindow {
                 .iter()
                 .find(|project| project.id == row.bucket.project_id)
                 .map_or("Missing project", |project| project.name.as_str());
-            let task = row
+            let activity = row
                 .bucket
-                .task_id
-                .and_then(|id| tasks.iter().find(|task| task.id == id))
-                .map(|task| format!(" / {}", task.name))
+                .activity_id
+                .and_then(|id| activities.iter().find(|activity| activity.id == id))
+                .map(|activity| format!(" / {}", activity.name))
                 .unwrap_or_default();
             let seconds = row.duration_ms / 1_000;
             let report_row = adw::ActionRow::builder()
-                .title(format!("{project}{task}"))
+                .title(format!("{project}{activity}"))
                 .subtitle(format!(
                     "{date} · {}h {:02}m",
                     seconds / 3600,
@@ -111,8 +111,8 @@ impl MainWindow {
                     let entries =
                         handle.entries(start.timestamp_millis(), end.timestamp_millis())?;
                     let projects = handle.projects(true)?;
-                    let tasks = handle.tasks(true)?;
-                    crate::export::write_csv_path(&path, &entries, &projects, &tasks)
+                    let activities = handle.activities(true)?;
+                    crate::export::write_csv_path(&path, &entries, &projects, &activities)
                 });
             if let Err(error) = result {
                 window.show_database_error(&error.to_string());

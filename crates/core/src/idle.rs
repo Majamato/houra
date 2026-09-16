@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{ProjectId, TaskId};
+use crate::{ActivityId, ProjectId};
 
 /// How the user wants an idle interval to be counted.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -10,7 +10,7 @@ pub enum IdleDecision {
     DiscardAndResume,
     ReassignAndResume {
         project_id: ProjectId,
-        task_id: Option<TaskId>,
+        activity_id: Option<ActivityId>,
         note: String,
     },
     Stop,

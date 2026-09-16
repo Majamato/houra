@@ -3,8 +3,8 @@ use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread::{self, JoinHandle};
 
 use houra_core::{
-    Project, ProjectId, SystemClock, Task, TaskId, TimeEntry, TrackerCommand, TrackerEngine,
-    TrackerSnapshot, Transition,
+    Activity, ActivityId, Project, ProjectId, SystemClock, TimeEntry, TrackerCommand,
+    TrackerEngine, TrackerSnapshot, Transition,
 };
 
 use crate::AppError;
@@ -23,11 +23,11 @@ enum Request {
     AddEntry(TimeEntry, Reply<houra_core::EntryId>),
     UpdateEntry(TimeEntry, Reply<()>),
     Projects(bool, Reply<Vec<Project>>),
-    Tasks(bool, Reply<Vec<Task>>),
+    Activities(bool, Reply<Vec<Activity>>),
     CreateProject(String, String, i64, Reply<ProjectId>),
-    CreateTask(ProjectId, String, i64, Reply<TaskId>),
+    CreateActivity(ProjectId, String, i64, Reply<ActivityId>),
     ArchiveProject(ProjectId, bool, i64, Reply<()>),
-    ArchiveTask(TaskId, bool, i64, Reply<()>),
+    ArchiveActivity(ActivityId, bool, i64, Reply<()>),
     Backup(i64, Reply<BackupDocument>),
     Restore(Box<BackupDocument>, Reply<()>),
     Shutdown(Reply<()>),
@@ -68,8 +68,8 @@ impl TrackerHandle {
         self.request(|reply| Request::Projects(include_archived, reply))
     }
 
-    pub fn tasks(&self, include_archived: bool) -> Result<Vec<Task>, AppError> {
-        self.request(|reply| Request::Tasks(include_archived, reply))
+    pub fn activities(&self, include_archived: bool) -> Result<Vec<Activity>, AppError> {
+        self.request(|reply| Request::Activities(include_archived, reply))
     }
 
     pub fn create_project(
@@ -81,13 +81,13 @@ impl TrackerHandle {
         self.request(|reply| Request::CreateProject(name, color, now_ms, reply))
     }
 
-    pub fn create_task(
+    pub fn create_activity(
         &self,
         project_id: ProjectId,
         name: String,
         now_ms: i64,
-    ) -> Result<TaskId, AppError> {
-        self.request(|reply| Request::CreateTask(project_id, name, now_ms, reply))
+    ) -> Result<ActivityId, AppError> {
+        self.request(|reply| Request::CreateActivity(project_id, name, now_ms, reply))
     }
 
     pub fn set_project_archived(
@@ -99,13 +99,13 @@ impl TrackerHandle {
         self.request(|reply| Request::ArchiveProject(id, archived, now_ms, reply))
     }
 
-    pub fn set_task_archived(
+    pub fn set_activity_archived(
         &self,
-        id: TaskId,
+        id: ActivityId,
         archived: bool,
         now_ms: i64,
     ) -> Result<(), AppError> {
-        self.request(|reply| Request::ArchiveTask(id, archived, now_ms, reply))
+        self.request(|reply| Request::ArchiveActivity(id, archived, now_ms, reply))
     }
 
     pub fn backup(&self, exported_at_ms: i64) -> Result<BackupDocument, AppError> {
@@ -201,20 +201,20 @@ fn worker_loop(
             Request::Projects(include_archived, reply) => {
                 let _ignored = reply.send(store.list_projects(include_archived));
             }
-            Request::Tasks(include_archived, reply) => {
-                let _ignored = reply.send(store.list_tasks(include_archived));
+            Request::Activities(include_archived, reply) => {
+                let _ignored = reply.send(store.list_activities(include_archived));
             }
             Request::CreateProject(name, color, now, reply) => {
                 let _ignored = reply.send(store.create_project(&name, &color, now));
             }
-            Request::CreateTask(project_id, name, now, reply) => {
-                let _ignored = reply.send(store.create_task(project_id, &name, now));
+            Request::CreateActivity(project_id, name, now, reply) => {
+                let _ignored = reply.send(store.create_activity(project_id, &name, now));
             }
             Request::ArchiveProject(id, archived, now, reply) => {
                 let _ignored = reply.send(store.set_project_archived(id, archived, now));
             }
-            Request::ArchiveTask(id, archived, now, reply) => {
-                let _ignored = reply.send(store.set_task_archived(id, archived, now));
+            Request::ArchiveActivity(id, archived, now, reply) => {
+                let _ignored = reply.send(store.set_activity_archived(id, archived, now));
             }
             Request::Backup(now, reply) => {
                 let _ignored = reply.send(store.backup(now));

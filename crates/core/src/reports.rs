@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use chrono::{DateTime, Datelike, Local, TimeZone};
 use serde::{Deserialize, Serialize};
 
-use crate::{DomainError, ProjectId, TaskId, TimeEntry};
+use crate::{ActivityId, DomainError, ProjectId, TimeEntry};
 
 /// Rejects entries whose half-open intervals overlap; adjacent ones are fine.
 pub fn validate_no_overlaps(entries: &[TimeEntry]) -> Result<(), DomainError> {
@@ -35,13 +35,13 @@ pub fn validate_no_overlaps(entries: &[TimeEntry]) -> Result<(), DomainError> {
     }
 }
 
-/// One local day, project and task. Derived `Ord` sorts by those fields in order.
+/// One local day, project and activity. Derived `Ord` sorts by those fields in order.
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct ReportBucket {
     pub local_year: i32,
     pub local_ordinal: u32,
     pub project_id: ProjectId,
-    pub task_id: Option<TaskId>,
+    pub activity_id: Option<ActivityId>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -51,7 +51,7 @@ pub struct ReportRow {
     pub entry_count: usize,
 }
 
-/// Groups entries by local day, project, and task.
+/// Groups entries by local day, project, and activity.
 ///
 /// Entries crossing midnight are split at the local boundary, including DST
 /// days whose actual length is not 24 hours.
@@ -68,7 +68,7 @@ pub fn group_entries(entries: &[TimeEntry]) -> Vec<ReportRow> {
                 local_year: local.year(),
                 local_ordinal: local.ordinal(),
                 project_id: entry.project_id,
-                task_id: entry.task_id,
+                activity_id: entry.activity_id,
             };
             let total = totals.entry(bucket).or_default();
             total.0 = total.0.saturating_add(next_midnight.saturating_sub(cursor));
@@ -103,7 +103,7 @@ mod tests {
         TimeEntry {
             id: id.map(EntryId),
             project_id: ProjectId(1),
-            task_id: None,
+            activity_id: None,
             note: String::new(),
             start_ms,
             end_ms,
@@ -174,7 +174,7 @@ mod tests {
                 let entry = TimeEntry {
                     id: None,
                     project_id: ProjectId(1),
-                    task_id: None,
+                    activity_id: None,
                     note: String::new(),
                     start_ms: start.timestamp_millis(),
                     end_ms: end.timestamp_millis() + 1000,
@@ -184,7 +184,7 @@ mod tests {
                 };
                 let mut other = entry.clone();
                 other.end_ms = other.start_ms + 1000;
-                other.task_id = Some(TaskId(2));
+                other.activity_id = Some(ActivityId(2));
                 let mut project = other.clone();
                 project.project_id = ProjectId(2);
                 let rows = group_entries(&[entry.clone(), entry, other, project]);
@@ -196,7 +196,7 @@ mod tests {
                                 local_year: 2024,
                                 local_ordinal: ordinal,
                                 project_id: ProjectId(1),
-                                task_id: None
+                                activity_id: None
                             },
                             duration_ms: if zone == "UTC" {
                                 172_800_000
@@ -210,7 +210,7 @@ mod tests {
                                 local_year: 2024,
                                 local_ordinal: ordinal,
                                 project_id: ProjectId(1),
-                                task_id: Some(TaskId(2))
+                                activity_id: Some(ActivityId(2))
                             },
                             duration_ms: 1000,
                             entry_count: 1
@@ -220,7 +220,7 @@ mod tests {
                                 local_year: 2024,
                                 local_ordinal: ordinal,
                                 project_id: ProjectId(2),
-                                task_id: Some(TaskId(2))
+                                activity_id: Some(ActivityId(2))
                             },
                             duration_ms: 1000,
                             entry_count: 1
@@ -230,7 +230,7 @@ mod tests {
                                 local_year: 2024,
                                 local_ordinal: ordinal + 1,
                                 project_id: ProjectId(1),
-                                task_id: None
+                                activity_id: None
                             },
                             duration_ms: 2000,
                             entry_count: 2

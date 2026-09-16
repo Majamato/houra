@@ -70,7 +70,7 @@ impl MainWindow {
             let result = handle.apply(TrackerCommand::ResolveIdle(
                 houra_core::IdleDecision::ReassignAndResume {
                     project_id,
-                    task_id: None,
+                    activity_id: None,
                     note: "Idle time".into(),
                 },
             ));

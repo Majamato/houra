@@ -10,7 +10,7 @@ fn concurrent_start_commands_are_serialized() {
     let second = service.handle.clone();
     let command = || houra_core::TrackerCommand::Start {
         project_id: ProjectId(1),
-        task_id: None,
+        activity_id: None,
         note: "concurrent".into(),
     };
     let barrier = std::sync::Arc::new(std::sync::Barrier::new(2));
@@ -60,7 +60,7 @@ fn rejected_persistence_keeps_engine_unchanged_and_shutdown_stops_handles()
     assert!(matches!(
         handle.apply(TrackerCommand::Start {
             project_id: ProjectId(99),
-            task_id: None,
+            activity_id: None,
             note: String::new()
         }),
         Err(AppError::InvalidProject(ProjectId(99)))
@@ -69,13 +69,13 @@ fn rejected_persistence_keeps_engine_unchanged_and_shutdown_stops_handles()
     assert_eq!(handle.live_elapsed()?, std::time::Duration::ZERO);
     let started = handle.apply(TrackerCommand::Start {
         project_id: ProjectId(1),
-        task_id: None,
+        activity_id: None,
         note: "work".into(),
     })?;
     assert!(matches!(
         handle.apply(TrackerCommand::EditActive {
             project_id: ProjectId(99),
-            task_id: None,
+            activity_id: None,
             note: "bad".into()
         }),
         Err(AppError::InvalidProject(ProjectId(99)))
@@ -107,11 +107,11 @@ fn service_data_survives_restart_and_restore_refreshes_snapshot()
     let service = TrackerService::start(path.clone())?;
     let handle = &service.handle;
     let project = handle.create_project("Work".into(), "#123456".into(), 1)?;
-    let task = handle.create_task(project, "Task".into(), 2)?;
+    let activity = handle.create_activity(project, "Activity".into(), 2)?;
     let mut entry = TimeEntry {
         id: None,
         project_id: project,
-        task_id: Some(task),
+        activity_id: Some(activity),
         note: "note".into(),
         start_ms: 100,
         end_ms: 200,
@@ -123,14 +123,14 @@ fn service_data_survives_restart_and_restore_refreshes_snapshot()
     entry.note = "updated".into();
     entry.updated_at_ms = 300;
     handle.update_entry(entry.clone())?;
-    handle.set_task_archived(task, true, 400)?;
+    handle.set_activity_archived(activity, true, 400)?;
     handle.set_project_archived(project, true, 400)?;
     let backup = handle.backup(500)?;
     service.shutdown()?;
     let service = TrackerService::start(path)?;
     assert_eq!(service.handle.entries(0, 300)?, vec![entry]);
     assert_eq!(service.handle.projects(true)?, backup.projects);
-    assert_eq!(service.handle.tasks(true)?, backup.tasks);
+    assert_eq!(service.handle.activities(true)?, backup.activities);
     let mut restored = backup.clone();
     restored.tracker.revision = 42;
     service.handle.restore(restored.clone())?;
@@ -149,7 +149,7 @@ fn interrupted_timer_recovers_only_persisted_interval() -> Result<(), Box<dyn st
     let mut engine = TrackerEngine::new(clock.clone());
     store.persist_transition(&engine.apply(TrackerCommand::Start {
         project_id: ProjectId(1),
-        task_id: None,
+        activity_id: None,
         note: "interrupted".into(),
     })?)?;
     clock.advance(std::time::Duration::from_millis(100));
@@ -180,7 +180,7 @@ fn interrupted_timer_recovers_only_persisted_interval() -> Result<(), Box<dyn st
         vec![TimeEntry {
             id: Some(EntryId(1)),
             project_id: ProjectId(1),
-            task_id: None,
+            activity_id: None,
             note: "interrupted".into(),
             start_ms: 100,
             end_ms: 200,

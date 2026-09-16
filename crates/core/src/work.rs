@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::DomainError;
-use crate::id::{ProjectId, TaskId};
+use crate::id::{ActivityId, ProjectId};
 use crate::validation::{validate_color, validate_name};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -22,8 +22,8 @@ impl Project {
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
-pub struct Task {
-    pub id: TaskId,
+pub struct Activity {
+    pub id: ActivityId,
     pub project_id: ProjectId,
     pub name: String,
     pub archived: bool,
@@ -31,7 +31,7 @@ pub struct Task {
     pub updated_at_ms: i64,
 }
 
-impl Task {
+impl Activity {
     pub fn validate(&self) -> Result<(), DomainError> {
         validate_name(&self.name)
     }
@@ -41,7 +41,7 @@ impl Task {
 mod tests {
     use super::*;
     #[test]
-    fn project_and_task_validate_names_and_project_color() {
+    fn project_and_activity_validate_names_and_project_color() {
         let mut project = Project {
             id: ProjectId(1),
             name: "Work".into(),
@@ -55,16 +55,16 @@ mod tests {
         assert_eq!(project.validate(), Err(DomainError::InvalidColor));
         project.name = " ".into();
         assert_eq!(project.validate(), Err(DomainError::EmptyName));
-        let mut task = Task {
-            id: TaskId(1),
+        let mut activity = Activity {
+            id: ActivityId(1),
             project_id: project.id,
-            name: "Task".into(),
+            name: "Activity".into(),
             archived: true,
             created_at_ms: 0,
             updated_at_ms: 0,
         };
-        assert_eq!(task.validate(), Ok(()));
-        task.name.clear();
-        assert_eq!(task.validate(), Err(DomainError::EmptyName));
+        assert_eq!(activity.validate(), Ok(()));
+        activity.name.clear();
+        assert_eq!(activity.validate(), Err(DomainError::EmptyName));
     }
 }

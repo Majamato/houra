@@ -44,7 +44,7 @@ fn validate_active_references(
         let entry = TimeEntry {
             id: None,
             project_id: active.project_id,
-            task_id: active.task_id,
+            activity_id: active.activity_id,
             note: active.note.clone(),
             start_ms: active.start_ms,
             end_ms: active.start_ms.saturating_add(1),

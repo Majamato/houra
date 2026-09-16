@@ -1,7 +1,7 @@
-//! Project and task records.
+//! Project and activity records.
 
 use crate::AppError;
-use houra_core::{Project, ProjectId, Task, TaskId};
+use houra_core::{Activity, ActivityId, Project, ProjectId};
 use rusqlite::{Connection, params};
 
 use super::Store;
@@ -51,14 +51,14 @@ impl Store {
         Ok(())
     }
 
-    pub fn set_task_archived(
+    pub fn set_activity_archived(
         &self,
-        id: TaskId,
+        id: ActivityId,
         archived: bool,
         now_ms: i64,
     ) -> Result<(), AppError> {
         self.connection.execute(
-            "UPDATE tasks SET archived=?1, updated_at_ms=?2 WHERE id=?3",
+            "UPDATE activities SET archived=?1, updated_at_ms=?2 WHERE id=?3",
             params![archived, now_ms, id.0],
         )?;
         Ok(())
@@ -81,9 +81,9 @@ impl Store {
         Ok(())
     }
 
-    pub fn delete_task_permanently(&self, id: TaskId) -> Result<(), AppError> {
+    pub fn delete_activity_permanently(&self, id: ActivityId) -> Result<(), AppError> {
         let references: bool = self.connection.query_row(
-            "SELECT EXISTS(SELECT 1 FROM entries WHERE task_id=?1)",
+            "SELECT EXISTS(SELECT 1 FROM entries WHERE activity_id=?1)",
             [id.0],
             |row| row.get(0),
         )?;
@@ -91,18 +91,18 @@ impl Store {
             return Err(AppError::ReferencedItem);
         }
         self.connection
-            .execute("DELETE FROM tasks WHERE id=?1", [id.0])?;
+            .execute("DELETE FROM activities WHERE id=?1", [id.0])?;
         Ok(())
     }
 
-    pub fn list_tasks(&self, include_archived: bool) -> Result<Vec<Task>, AppError> {
+    pub fn list_activities(&self, include_archived: bool) -> Result<Vec<Activity>, AppError> {
         let mut statement = self.connection.prepare(
-            "SELECT id, project_id, name, archived, created_at_ms, updated_at_ms FROM tasks
+            "SELECT id, project_id, name, archived, created_at_ms, updated_at_ms FROM activities
              WHERE ?1 OR archived = 0 ORDER BY project_id, archived, name COLLATE NOCASE",
         )?;
         let rows = statement.query_map([include_archived], |row| {
-            Ok(Task {
-                id: TaskId(row.get(0)?),
+            Ok(Activity {
+                id: ActivityId(row.get(0)?),
                 project_id: ProjectId(row.get(1)?),
                 name: row.get(2)?,
                 archived: row.get(3)?,
@@ -136,21 +136,21 @@ impl Store {
         Ok(ProjectId(self.connection.last_insert_rowid()))
     }
 
-    pub fn create_task(
+    pub fn create_activity(
         &self,
         project_id: ProjectId,
         name: &str,
         now_ms: i64,
-    ) -> Result<TaskId, AppError> {
+    ) -> Result<ActivityId, AppError> {
         validate_project(&self.connection, project_id)?;
         let trimmed = name.trim();
         houra_core::validate_name(trimmed)?;
         self.connection.execute(
-            "INSERT INTO tasks(project_id, name, archived, created_at_ms, updated_at_ms)
+            "INSERT INTO activities(project_id, name, archived, created_at_ms, updated_at_ms)
              VALUES(?1, ?2, 0, ?3, ?3)",
             params![project_id.0, trimmed, now_ms],
         )?;
-        Ok(TaskId(self.connection.last_insert_rowid()))
+        Ok(ActivityId(self.connection.last_insert_rowid()))
     }
 }
 

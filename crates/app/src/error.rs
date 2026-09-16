@@ -44,10 +44,10 @@ pub enum AppError {
     #[error("project {0:?} does not exist or is archived")]
     InvalidProject(houra_core::ProjectId),
 
-    #[error("task {0:?} does not exist, is archived, or belongs to another project")]
-    InvalidTask(houra_core::TaskId),
+    #[error("activity {0:?} does not exist, is archived, or belongs to another project")]
+    InvalidActivity(houra_core::ActivityId),
 
-    #[error("project/task cannot be permanently deleted because history references it")]
+    #[error("project/activity cannot be permanently deleted because history references it")]
     ReferencedItem,
 }
 

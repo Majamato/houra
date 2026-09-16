@@ -31,31 +31,37 @@ impl MainWindow {
             .map_or(ProjectId(1), |project| project.id)
     }
 
-    fn selected_task_id(&self) -> Option<houra_core::TaskId> {
-        let selected = self.imp().task_dropdown.selected();
+    fn selected_activity_id(&self) -> Option<houra_core::ActivityId> {
+        let selected = self.imp().activity_dropdown.selected();
         if selected == 0 || selected == gtk::INVALID_LIST_POSITION {
             return None;
         }
         usize::try_from(selected.saturating_sub(1))
             .ok()
-            .and_then(|index| self.imp().tasks.borrow().get(index).map(|task| task.id))
+            .and_then(|index| {
+                self.imp()
+                    .activities
+                    .borrow()
+                    .get(index)
+                    .map(|activity| activity.id)
+            })
     }
 
-    pub(in crate::desktop) fn reload_tasks(&self) {
+    pub(in crate::desktop) fn reload_activities(&self) {
         let Some(handle) = self.handle() else { return };
         let project_id = self.selected_project_id();
-        let tasks = handle
-            .tasks(false)
+        let activities = handle
+            .activities(false)
             .unwrap_or_default()
             .into_iter()
-            .filter(|task| task.project_id == project_id)
+            .filter(|activity| activity.project_id == project_id)
             .collect::<Vec<_>>();
-        let mut names = vec!["No task"];
-        names.extend(tasks.iter().map(|task| task.name.as_str()));
+        let mut names = vec!["No activity"];
+        names.extend(activities.iter().map(|activity| activity.name.as_str()));
         self.imp()
-            .task_dropdown
+            .activity_dropdown
             .set_model(Some(&gtk::StringList::new(&names)));
-        self.imp().tasks.replace(tasks);
+        self.imp().activities.replace(activities);
     }
 
     pub(in crate::desktop) fn update_active_details(&self) {
@@ -66,7 +72,7 @@ impl MainWindow {
         if matches!(snapshot.state, TrackerState::Running(_)) {
             let result = handle.apply(TrackerCommand::EditActive {
                 project_id: self.selected_project_id(),
-                task_id: self.selected_task_id(),
+                activity_id: self.selected_activity_id(),
                 note: self.imp().note_entry.text().to_string(),
             });
             if let Err(error) = result {
@@ -87,7 +93,7 @@ impl MainWindow {
         let command = match state {
             TrackerState::Stopped => TrackerCommand::Start {
                 project_id: self.selected_project_id(),
-                task_id: self.selected_task_id(),
+                activity_id: self.selected_activity_id(),
                 note: self.imp().note_entry.text().to_string(),
             },
             TrackerState::Running(_) => TrackerCommand::Stop,

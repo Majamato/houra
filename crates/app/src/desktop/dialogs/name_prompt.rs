@@ -15,9 +15,9 @@ impl MainWindow {
         });
     }
 
-    pub(in crate::desktop) fn show_new_task(&self, project_id: ProjectId) {
-        self.show_name_dialog("New Task", move |handle, name, now| {
-            handle.create_task(project_id, name, now).map(|_| ())
+    pub(in crate::desktop) fn show_new_activity(&self, project_id: ProjectId) {
+        self.show_name_dialog("New Activity", move |handle, name, now| {
+            handle.create_activity(project_id, name, now).map(|_| ())
         });
     }
 

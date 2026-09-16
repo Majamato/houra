@@ -1,7 +1,7 @@
 use crate::DomainError;
 use serde::{Deserialize, Serialize};
 
-use crate::id::{EntryId, ProjectId, TaskId};
+use crate::id::{ActivityId, EntryId, ProjectId};
 
 /// How a time entry came into existence.
 #[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Eq, Serialize)]
@@ -19,7 +19,7 @@ pub enum EntrySource {
 pub struct TimeEntry {
     pub id: Option<EntryId>,
     pub project_id: ProjectId,
-    pub task_id: Option<TaskId>,
+    pub activity_id: Option<ActivityId>,
     pub note: String,
     pub start_ms: i64,
     pub end_ms: i64,
@@ -48,7 +48,7 @@ impl TimeEntry {
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub struct ActiveTimer {
     pub project_id: ProjectId,
-    pub task_id: Option<TaskId>,
+    pub activity_id: Option<ActivityId>,
     pub note: String,
     /// Wall-clock start, stored on disk.
     pub start_ms: i64,
@@ -89,7 +89,7 @@ mod tests {
             let entry = TimeEntry {
                 id: None,
                 project_id: ProjectId(1),
-                task_id: None,
+                activity_id: None,
                 note: String::new(),
                 start_ms,
                 end_ms,

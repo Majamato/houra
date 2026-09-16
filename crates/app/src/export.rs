@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::Path;
 
 use chrono::{Local, TimeZone};
-use houra_core::{Project, Task, TimeEntry};
+use houra_core::{Activity, Project, TimeEntry};
 
 use crate::AppError;
 
@@ -12,7 +12,7 @@ pub fn write_csv<W: Write>(
     writer: W,
     entries: &[TimeEntry],
     projects: &[Project],
-    tasks: &[Task],
+    activities: &[Activity],
 ) -> Result<(), AppError> {
     let mut csv = csv::Writer::from_writer(writer);
     csv.write_record([
@@ -21,7 +21,7 @@ pub fn write_csv<W: Write>(
         "end_local",
         "duration_seconds",
         "project",
-        "task",
+        "activity",
         "note",
         "source",
     ])?;
@@ -32,10 +32,10 @@ pub fn write_csv<W: Write>(
             .iter()
             .find(|project| project.id == entry.project_id)
             .map_or("(missing)", |project| project.name.as_str());
-        let task = entry
-            .task_id
-            .and_then(|id| tasks.iter().find(|task| task.id == id))
-            .map_or("", |task| task.name.as_str());
+        let activity = entry
+            .activity_id
+            .and_then(|id| activities.iter().find(|activity| activity.id == id))
+            .map_or("", |activity| activity.name.as_str());
         let date = start.map_or_else(String::new, |value| value.format("%x").to_string());
         let start_local = start.map_or_else(String::new, |value| value.to_rfc3339());
         let end_local = end.map_or_else(String::new, |value| value.to_rfc3339());
@@ -45,7 +45,7 @@ pub fn write_csv<W: Write>(
             end_local,
             (entry.duration_ms() / 1_000).to_string(),
             project.to_owned(),
-            task.to_owned(),
+            activity.to_owned(),
             entry.note.clone(),
             format!("{:?}", entry.source),
         ])?;
@@ -59,7 +59,7 @@ pub fn write_csv_path(
     path: &Path,
     entries: &[TimeEntry],
     projects: &[Project],
-    tasks: &[Task],
+    activities: &[Activity],
 ) -> Result<(), AppError> {
     let Some(parent) = path.parent() else {
         return Err(AppError::DataDirectoryUnavailable);
@@ -67,7 +67,7 @@ pub fn write_csv_path(
     fs::create_dir_all(parent).map_err(|source| AppError::io(parent, source))?;
     let temporary =
         tempfile::NamedTempFile::new_in(parent).map_err(|source| AppError::io(parent, source))?;
-    write_csv(temporary.as_file(), entries, projects, tasks)?;
+    write_csv(temporary.as_file(), entries, projects, activities)?;
     temporary
         .as_file()
         .sync_all()

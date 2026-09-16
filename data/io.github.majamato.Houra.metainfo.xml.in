@@ -7,7 +7,7 @@
   <developer id="io.github.majamato"><name>majamato</name></developer>
   <summary>Private, local-first tracking for focused work</summary>
   <description>
-    <p>Track projects and tasks, reconcile idle time, review weekly totals, and
+    <p>Track projects and activities, reconcile idle time, review weekly totals, and
     keep portable backups without creating an online account.</p>
   </description>
   <launchable type="desktop-id">io.github.majamato.Houra.desktop</launchable>

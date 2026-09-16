@@ -75,10 +75,10 @@
                                       <object class="GtkDropDown" id="project_dropdown"><property name="hexpand">true</property><layout><property name="column">1</property><property name="row">0</property></layout></object>
                                     </child>
                                     <child>
-                                      <object class="GtkLabel"><property name="label" translatable="yes">Task</property><property name="halign">start</property><layout><property name="column">0</property><property name="row">1</property></layout></object>
+                                      <object class="GtkLabel"><property name="label" translatable="yes">Activity</property><property name="halign">start</property><layout><property name="column">0</property><property name="row">1</property></layout></object>
                                     </child>
                                     <child>
-                                      <object class="GtkDropDown" id="task_dropdown"><property name="hexpand">true</property><layout><property name="column">1</property><property name="row">1</property></layout></object>
+                                      <object class="GtkDropDown" id="activity_dropdown"><property name="hexpand">true</property><layout><property name="column">1</property><property name="row">1</property></layout></object>
                                     </child>
                                     <child>
                                       <object class="GtkLabel"><property name="label" translatable="yes">Note</property><property name="halign">start</property><layout><property name="column">0</property><property name="row">2</property></layout></object>
@@ -162,7 +162,7 @@
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>
                                 <property name="spacing">12</property>
-                                <child><object class="GtkLabel"><property name="label" translatable="yes">Projects and Tasks</property><property name="halign">start</property><style><class name="title-1"/></style></object></child>
+                                <child><object class="GtkLabel"><property name="label" translatable="yes">Projects and Activities</property><property name="halign">start</property><style><class name="title-1"/></style></object></child>
                                 <child><object class="GtkButton" id="add_project_button"><property name="label" translatable="yes">Add Project</property><property name="halign">start</property><style><class name="suggested-action"/></style></object></child>
                                 <child><object class="GtkBox" id="projects_box"><property name="orientation">vertical</property><property name="spacing">6</property></object></child>
                               </object>

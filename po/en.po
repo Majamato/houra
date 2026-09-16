@@ -26,8 +26,8 @@ msgid "Track focused work locally"
 msgstr "Track focused work locally"
 
 #: data/io.github.majamato.Houra.desktop.in:9
-msgid "time;work;project;task;report;"
-msgstr "time;work;project;task;report;"
+msgid "time;work;project;activity;report;"
+msgstr "time;work;project;activity;report;"
 
 #: data/io.github.majamato.Houra.gschema.xml:7
 msgid "Idle threshold in minutes"
@@ -66,8 +66,8 @@ msgid "Project"
 msgstr "Project"
 
 #: data/ui/window.ui:78
-msgid "Task"
-msgstr "Task"
+msgid "Activity"
+msgstr "Activity"
 
 #: data/ui/window.ui:84
 msgid "Note"
@@ -114,8 +114,8 @@ msgid "Projects"
 msgstr "Projects"
 
 #: data/ui/window.ui:165
-msgid "Projects and Tasks"
-msgstr "Projects and Tasks"
+msgid "Projects and Activities"
+msgstr "Projects and Activities"
 
 #: data/ui/window.ui:166
 msgid "Add Project"

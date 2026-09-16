@@ -90,7 +90,7 @@ impl MainWindow {
             let entry = TimeEntry {
                 id: None,
                 project_id,
-                task_id: None,
+                activity_id: None,
                 note: note.text().to_string(),
                 start_ms,
                 end_ms,
@@ -197,12 +197,12 @@ impl MainWindow {
             let project_id = projects
                 .get(index)
                 .map_or(existing.project_id, |project| project.id);
-            let task_id = (project_id == existing.project_id)
-                .then_some(existing.task_id)
+            let activity_id = (project_id == existing.project_id)
+                .then_some(existing.activity_id)
                 .flatten();
             let updated = TimeEntry {
                 project_id,
-                task_id,
+                activity_id,
                 note: note.text().to_string(),
                 start_ms,
                 end_ms,

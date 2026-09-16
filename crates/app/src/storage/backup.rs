@@ -16,7 +16,7 @@ impl Store {
             version: BACKUP_VERSION,
             exported_at_ms,
             projects: self.list_projects(true)?,
-            tasks: self.list_tasks(true)?,
+            activities: self.list_activities(true)?,
             entries: self.list_all_entries()?,
             tracker: self.load_snapshot()?,
         })
@@ -31,7 +31,7 @@ impl Store {
         let transaction = self.connection.transaction()?;
         transaction.execute("DELETE FROM tracker_state", [])?;
         transaction.execute("DELETE FROM entries", [])?;
-        transaction.execute("DELETE FROM tasks", [])?;
+        transaction.execute("DELETE FROM activities", [])?;
         transaction.execute("DELETE FROM projects", [])?;
         for project in &document.projects {
             transaction.execute(
@@ -39,17 +39,17 @@ impl Store {
                 params![project.id.0, project.name, project.color, project.archived, project.created_at_ms, project.updated_at_ms],
             )?;
         }
-        for task in &document.tasks {
+        for activity in &document.activities {
             transaction.execute(
-                "INSERT INTO tasks(id,project_id,name,archived,created_at_ms,updated_at_ms) VALUES(?1,?2,?3,?4,?5,?6)",
-                params![task.id.0, task.project_id.0, task.name, task.archived, task.created_at_ms, task.updated_at_ms],
+                "INSERT INTO activities(id,project_id,name,archived,created_at_ms,updated_at_ms) VALUES(?1,?2,?3,?4,?5,?6)",
+                params![activity.id.0, activity.project_id.0, activity.name, activity.archived, activity.created_at_ms, activity.updated_at_ms],
             )?;
         }
         for entry in &document.entries {
             transaction.execute(
-                "INSERT INTO entries(id,project_id,task_id,note,start_ms,end_ms,source,created_at_ms,updated_at_ms)
+                "INSERT INTO entries(id,project_id,activity_id,note,start_ms,end_ms,source,created_at_ms,updated_at_ms)
                  VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
-                params![entry.id.map(|id| id.0), entry.project_id.0, entry.task_id.map(|id| id.0), entry.note,
+                params![entry.id.map(|id| id.0), entry.project_id.0, entry.activity_id.map(|id| id.0), entry.note,
                     entry.start_ms, entry.end_ms, source_name(entry.source), entry.created_at_ms, entry.updated_at_ms],
             )?;
         }

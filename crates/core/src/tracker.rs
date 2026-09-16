@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    ActiveTimer, IdleDecision, Notification, PendingIdle, PendingRecovery, ProjectId, TaskId,
+    ActiveTimer, ActivityId, IdleDecision, Notification, PendingIdle, PendingRecovery, ProjectId,
     TimeEntry,
 };
 
@@ -41,12 +41,12 @@ pub enum TrackerCommand {
     Stop,
     Start {
         project_id: ProjectId,
-        task_id: Option<TaskId>,
+        activity_id: Option<ActivityId>,
         note: String,
     },
     EditActive {
         project_id: ProjectId,
-        task_id: Option<TaskId>,
+        activity_id: Option<ActivityId>,
         note: String,
     },
     IdleDetected {
@@ -79,7 +79,7 @@ mod tests {
     fn active_access_covers_every_state() {
         let active = ActiveTimer {
             project_id: ProjectId(1),
-            task_id: None,
+            activity_id: None,
             note: String::new(),
             start_ms: 1,
             started_monotonic_ms: 0,

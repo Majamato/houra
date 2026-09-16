@@ -1,7 +1,7 @@
 # Houra
 
 Houra is a GNOME time tracker written in Rust with GTK 4 and libadwaita.
-It tracks time by project and task, handles idle time and interrupted timers,
+It tracks time by project and activity, handles idle time and interrupted timers,
 and exports CSV reports and JSON backups. Data is stored locally in SQLite.
 
 ## Project layout
@@ -47,9 +47,9 @@ Desktop code lives in `crates/app/src/desktop/`:
   registers application actions and shortcuts.
 - `window.rs` defines the main window, connects its controls, and coordinates
   refreshes. Its GTK template is `data/ui/window.ui`.
-- `pages/tracker.rs` handles timer controls and project/task selection.
+- `pages/tracker.rs` handles timer controls and project/activity selection.
 - `pages/entries.rs` presents the selected day's entries.
-- `pages/projects.rs` presents project and task management.
+- `pages/projects.rs` presents project and activity management.
 - `pages/reports.rs` presents weekly reports and the CSV export chooser.
 - `dialogs/` contains entry editing, name prompts, preferences, idle and recovery
   decisions, backup/restore, and quit confirmation.
@@ -61,13 +61,13 @@ window state; they are not independent widget classes. Methods needed by other
 desktop modules have visibility restricted to the desktop module.
 
 SQLite code lives in `crates/app/src/storage/`. `mod.rs` defines `Store` and opens
-the connection. Private modules group migrations, project/task queries, entry
+the connection. Private modules group migrations, project/activity queries, entry
 queries, snapshots, and backup restoration. Callers still use `Store` without
 needing to know which file implements each method. `storage/backup.rs` handles
 database operations; the application's `backup.rs` handles the backup document.
 
 Use a file for a coherent subject and a directory when that subject needs several
-files. Related small types can share a file, as `Project` and `Task` do in
+files. Related small types can share a file, as `Project` and `Activity` do in
 `core/src/work.rs`. There is no one-type-per-file requirement. Keep module names
 in `snake_case`, and prefer names that describe the feature or responsibility.
 

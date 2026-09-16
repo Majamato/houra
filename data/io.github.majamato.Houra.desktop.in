@@ -6,5 +6,5 @@ Icon=io.github.majamato.Houra
 Terminal=false
 Type=Application
 Categories=Office;ProjectManagement;GTK;GNOME;
-Keywords=time;work;project;task;report;
+Keywords=time;work;project;activity;report;
 StartupNotify=true

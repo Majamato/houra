@@ -3,7 +3,7 @@ pub fn entry(id: Option<i64>, start_ms: i64, end_ms: i64) -> TimeEntry {
     TimeEntry {
         id: id.map(EntryId),
         project_id: ProjectId(1),
-        task_id: None,
+        activity_id: None,
         note: String::new(),
         start_ms,
         end_ms,

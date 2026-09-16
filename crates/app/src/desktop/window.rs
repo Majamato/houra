@@ -3,7 +3,7 @@ use std::cell::{Cell, RefCell};
 use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use houra_core::{Project, Task, TrackerCommand, TrackerState};
+use houra_core::{Activity, Project, TrackerCommand, TrackerState};
 use libadwaita as adw;
 use libadwaita::prelude::*;
 use libadwaita::subclass::prelude::*;
@@ -26,7 +26,7 @@ pub(super) mod imp {
         #[template_child]
         pub project_dropdown: gtk::TemplateChild<gtk::DropDown>,
         #[template_child]
-        pub task_dropdown: gtk::TemplateChild<gtk::DropDown>,
+        pub activity_dropdown: gtk::TemplateChild<gtk::DropDown>,
         #[template_child]
         pub note_entry: gtk::TemplateChild<gtk::Entry>,
         #[template_child]
@@ -53,7 +53,7 @@ pub(super) mod imp {
         pub export_csv_button: gtk::TemplateChild<gtk::Button>,
         pub handle: RefCell<Option<TrackerHandle>>,
         pub projects: RefCell<Vec<Project>>,
-        pub tasks: RefCell<Vec<Task>>,
+        pub activities: RefCell<Vec<Activity>>,
         pub report_week_offset: Cell<i32>,
         pub selected_day_offset: Cell<i32>,
     }
@@ -102,7 +102,7 @@ impl MainWindow {
             .timer_label
             .update_property(&[gtk::accessible::Property::Label("Elapsed tracked time")]);
         self.reload_projects();
-        self.reload_tasks();
+        self.reload_activities();
         self.refresh_projects_page();
         self.refresh_report();
         self.refresh();
@@ -117,12 +117,12 @@ impl MainWindow {
                 #[weak(rename_to = window)]
                 self,
                 move |_| {
-                    window.reload_tasks();
+                    window.reload_activities();
                     window.update_active_details();
                 }
             ));
         self.imp()
-            .task_dropdown
+            .activity_dropdown
             .connect_selected_notify(glib::clone!(
                 #[weak(rename_to = window)]
                 self,

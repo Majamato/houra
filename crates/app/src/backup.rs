@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::Path;
 
-use houra_core::{Project, Task, TimeEntry, TrackerSnapshot, validate_no_overlaps};
+use houra_core::{Activity, Project, TimeEntry, TrackerSnapshot, validate_no_overlaps};
 use serde::{Deserialize, Serialize};
 
 use crate::AppError;
@@ -16,7 +16,7 @@ pub struct BackupDocument {
     pub version: u32,
     pub exported_at_ms: i64,
     pub projects: Vec<Project>,
-    pub tasks: Vec<Task>,
+    pub activities: Vec<Activity>,
     pub entries: Vec<TimeEntry>,
     pub tracker: TrackerSnapshot,
 }
@@ -77,16 +77,16 @@ impl BackupDocument {
         for project in &self.projects {
             project.validate()?;
         }
-        for task in &self.tasks {
-            task.validate()?;
+        for activity in &self.activities {
+            activity.validate()?;
             if !self
                 .projects
                 .iter()
-                .any(|project| project.id == task.project_id)
+                .any(|project| project.id == activity.project_id)
             {
                 return Err(AppError::InvalidBackup(format!(
-                    "task {:?} references a missing project",
-                    task.id
+                    "activity {:?} references a missing project",
+                    activity.id
                 )));
             }
         }
@@ -102,14 +102,13 @@ impl BackupDocument {
                     entry.id
                 )));
             }
-            if let Some(task_id) = entry.task_id {
-                let task_matches = self
-                    .tasks
-                    .iter()
-                    .any(|task| task.id == task_id && task.project_id == entry.project_id);
-                if !task_matches {
+            if let Some(activity_id) = entry.activity_id {
+                let activity_matches = self.activities.iter().any(|activity| {
+                    activity.id == activity_id && activity.project_id == entry.project_id
+                });
+                if !activity_matches {
                     return Err(AppError::InvalidBackup(format!(
-                        "entry {:?} has a missing or foreign task",
+                        "entry {:?} has a missing or foreign activity",
                         entry.id
                     )));
                 }

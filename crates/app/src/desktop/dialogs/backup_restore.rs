@@ -67,7 +67,7 @@ impl MainWindow {
     fn confirm_restore(&self, handle: TrackerHandle, document: crate::backup::BackupDocument) {
         let dialog = adw::AlertDialog::builder()
             .heading("Replace all local data?")
-            .body("The validated backup will replace projects, tasks, and entries. This cannot be undone.")
+            .body("The validated backup will replace projects, activities, and entries. This cannot be undone.")
             .build();
         dialog.add_responses(&[("cancel", "Cancel"), ("restore", "Replace Data")]);
         dialog.set_response_appearance("restore", adw::ResponseAppearance::Destructive);
@@ -79,7 +79,7 @@ impl MainWindow {
                     window.show_database_error(&error.to_string());
                 }
                 window.reload_projects();
-                window.reload_tasks();
+                window.reload_activities();
                 window.refresh();
                 window.refresh_projects_page();
                 window.refresh_report();

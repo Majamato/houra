@@ -71,19 +71,19 @@ impl<C: Clock> TrackerEngine<C> {
         let mut notifications = Vec::new();
 
         let next_state = match (self.snapshot.state.clone(), command) {
-            // Start a new timer with the selected project, task, and note.
+            // Start a new timer with the selected project, activity, and note.
             (
                 TrackerState::Stopped,
                 TrackerCommand::Start {
                     project_id,
-                    task_id,
+                    activity_id,
                     note,
                 },
             ) => {
                 notifications.push(Notification::TimerStarted);
                 TrackerState::Running(ActiveTimer {
                     project_id,
-                    task_id,
+                    activity_id,
                     note,
                     start_ms: now,
                     started_monotonic_ms: monotonic_ms,
@@ -107,12 +107,12 @@ impl<C: Clock> TrackerEngine<C> {
                 TrackerState::Running(mut active),
                 TrackerCommand::EditActive {
                     project_id,
-                    task_id,
+                    activity_id,
                     note,
                 },
             ) => {
                 active.project_id = project_id;
-                active.task_id = task_id;
+                active.activity_id = activity_id;
                 active.note = note;
                 active.last_heartbeat_ms = now.max(active.start_ms);
                 TrackerState::Running(active)
@@ -234,7 +234,7 @@ fn push_entry(
     completed.push(TimeEntry {
         id: None,
         project_id: active.project_id,
-        task_id: active.task_id,
+        activity_id: active.activity_id,
         note: active.note.clone(),
         start_ms,
         end_ms,
@@ -267,7 +267,7 @@ fn resolve_idle(
         }
         IdleDecision::ReassignAndResume {
             project_id,
-            task_id,
+            activity_id,
             note,
         } => {
             push_entry(
@@ -279,7 +279,7 @@ fn resolve_idle(
             );
             let reassigned = ActiveTimer {
                 project_id,
-                task_id,
+                activity_id,
                 note,
                 start_ms: pending.idle_start_ms,
                 started_monotonic_ms: 0,

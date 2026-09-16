@@ -8,7 +8,7 @@ use houra_core::{
 fn start(engine: &mut TrackerEngine<ManualClock>) {
     let result = engine.apply(TrackerCommand::Start {
         project_id: ProjectId(1),
-        task_id: None,
+        activity_id: None,
         note: "design".into(),
     });
     assert!(result.is_ok());
@@ -98,7 +98,7 @@ fn reassign_idle_preserves_whole_timeline() {
     let result = engine.apply(TrackerCommand::ResolveIdle(
         IdleDecision::ReassignAndResume {
             project_id: ProjectId(2),
-            task_id: None,
+            activity_id: None,
             note: "break".into(),
         },
     ));
@@ -147,7 +147,7 @@ fn every_command_state_combination_accepts_or_preserves_snapshot() {
     use houra_core::*;
     let active = ActiveTimer {
         project_id: ProjectId(1),
-        task_id: None,
+        activity_id: None,
         note: "design".into(),
         start_ms: 100,
         started_monotonic_ms: 0,
@@ -170,13 +170,13 @@ fn every_command_state_combination_accepts_or_preserves_snapshot() {
     let commands = [
         TrackerCommand::Start {
             project_id: ProjectId(1),
-            task_id: None,
+            activity_id: None,
             note: "design".into(),
         },
         TrackerCommand::Stop,
         TrackerCommand::EditActive {
             project_id: ProjectId(2),
-            task_id: Some(TaskId(3)),
+            activity_id: Some(ActivityId(3)),
             note: "edited".into(),
         },
         TrackerCommand::Heartbeat,
@@ -221,7 +221,7 @@ fn every_command_state_combination_accepts_or_preserves_snapshot() {
                         .cloned()
                         .unwrap_or_else(|| panic!("active"));
                     expected.project_id = ProjectId(2);
-                    expected.task_id = Some(TaskId(3));
+                    expected.activity_id = Some(ActivityId(3));
                     expected.note = "edited".into();
                     expected.last_heartbeat_ms = 300;
                     assert_eq!(transition.snapshot.state, TrackerState::Running(expected));
@@ -289,7 +289,7 @@ fn idle_decisions_produce_exact_records() {
         IdleDecision::DiscardAndResume,
         IdleDecision::ReassignAndResume {
             project_id: ProjectId(2),
-            task_id: None,
+            activity_id: None,
             note: "away".into(),
         },
     ] {
@@ -317,7 +317,7 @@ fn idle_decisions_produce_exact_records() {
             expected.push(TimeEntry {
                 id: None,
                 project_id: ProjectId(1),
-                task_id: None,
+                activity_id: None,
                 note: "design".into(),
                 start_ms: 100,
                 end_ms: 150,
@@ -330,7 +330,7 @@ fn idle_decisions_produce_exact_records() {
             expected.push(TimeEntry {
                 id: None,
                 project_id: ProjectId(2),
-                task_id: None,
+                activity_id: None,
                 note: "away".into(),
                 start_ms: 150,
                 end_ms: 200,
@@ -436,7 +436,7 @@ fn restore_recovery_boundaries_resume_discard_and_revision_saturation() {
         vec![TimeEntry {
             id: None,
             project_id: ProjectId(1),
-            task_id: None,
+            activity_id: None,
             note: "design".into(),
             start_ms: 100,
             end_ms: 200,

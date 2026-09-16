@@ -43,7 +43,7 @@ fn overlapping_restore_is_rejected_before_writes() {
         projects: store
             .list_projects(true)
             .unwrap_or_else(|error| panic!("projects failed: {error}")),
-        tasks: vec![],
+        activities: vec![],
         entries: vec![manual(Some(10), 1, 100, 200), manual(Some(11), 1, 150, 250)],
         tracker: TrackerSnapshot::default(),
     };
@@ -63,7 +63,7 @@ fn full_round_trip_preserves_archives_sources_and_snapshot() -> Result<(), houra
     use houra_core::{EntrySource, TrackerSnapshot, Transition};
     let (directory, mut store) = temporary_store();
     let project = store.create_project("Work", "#123456", 1)?;
-    let task = store.create_task(project, "Task", 2)?;
+    let activity = store.create_activity(project, "Activity", 2)?;
     for (index, source) in [
         EntrySource::Timer,
         EntrySource::Manual,
@@ -75,11 +75,11 @@ fn full_round_trip_preserves_archives_sources_and_snapshot() -> Result<(), houra
     {
         let start = index as i64 * 100;
         let mut entry = manual(None, project.0, start, start + 100);
-        entry.task_id = Some(task);
+        entry.activity_id = Some(activity);
         entry.source = source;
         store.add_entry(&entry)?;
     }
-    store.set_task_archived(task, true, 500)?;
+    store.set_activity_archived(activity, true, 500)?;
     store.set_project_archived(project, true, 600)?;
     store.persist_transition(&Transition {
         snapshot: TrackerSnapshot {
@@ -108,9 +108,9 @@ fn full_round_trip_preserves_archives_sources_and_snapshot() -> Result<(), houra
 fn restore_database_failure_after_deletes_rolls_back_every_table() -> Result<(), houra::AppError> {
     let (_, mut store) = temporary_store();
     let project = store.create_project("Work", "#123456", 1)?;
-    let task = store.create_task(project, "Task", 2)?;
+    let activity = store.create_activity(project, "Activity", 2)?;
     let mut entry = manual(None, project.0, 100, 200);
-    entry.task_id = Some(task);
+    entry.activity_id = Some(activity);
     store.add_entry(&entry)?;
     store.persist_transition(&houra_core::Transition {
         snapshot: TrackerSnapshot {
@@ -163,26 +163,26 @@ fn invalid_documents_and_files_report_specific_errors() -> Result<(), Box<dyn st
         matches!(bad.validate(), Err(AppError::InvalidBackup(message)) if message == "entry None references a missing project")
     );
     bad.entries[0].project_id = ProjectId(1);
-    bad.entries[0].task_id = Some(TaskId(99));
+    bad.entries[0].activity_id = Some(ActivityId(99));
     assert!(
-        matches!(bad.validate(), Err(AppError::InvalidBackup(message)) if message == "entry None has a missing or foreign task")
+        matches!(bad.validate(), Err(AppError::InvalidBackup(message)) if message == "entry None has a missing or foreign activity")
     );
     bad = original.clone();
-    bad.tasks.push(Task {
-        id: TaskId(1),
+    bad.activities.push(Activity {
+        id: ActivityId(1),
         project_id: ProjectId(99),
-        name: "Task".into(),
+        name: "Activity".into(),
         archived: false,
         created_at_ms: 0,
         updated_at_ms: 0,
     });
     assert!(
-        matches!(bad.validate(), Err(AppError::InvalidBackup(message)) if message == "task TaskId(1) references a missing project")
+        matches!(bad.validate(), Err(AppError::InvalidBackup(message)) if message == "activity ActivityId(1) references a missing project")
     );
     let mut engine = TrackerEngine::new(ManualClock::at(100));
     let started = engine.apply(TrackerCommand::Start {
         project_id: ProjectId(1),
-        task_id: None,
+        activity_id: None,
         note: String::new(),
     })?;
     bad = original.clone();

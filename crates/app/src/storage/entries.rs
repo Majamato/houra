@@ -2,7 +2,7 @@
 
 use super::projects::validate_project;
 use crate::AppError;
-use houra_core::{EntryId, EntrySource, ProjectId, TaskId, TimeEntry};
+use houra_core::{ActivityId, EntryId, EntrySource, ProjectId, TimeEntry};
 use rusqlite::{Connection, Transaction, params};
 
 use super::Store;
@@ -41,11 +41,11 @@ impl Store {
         validate_entry_references(&transaction, entry)?;
         reject_entry_overlaps(&transaction, entry, Some(id))?;
         let changed = transaction.execute(
-            "UPDATE entries SET project_id=?1, task_id=?2, note=?3, start_ms=?4, end_ms=?5,
+            "UPDATE entries SET project_id=?1, activity_id=?2, note=?3, start_ms=?4, end_ms=?5,
              source=?6, updated_at_ms=?7 WHERE id=?8",
             params![
                 entry.project_id.0,
-                entry.task_id.map(|value| value.0),
+                entry.activity_id.map(|value| value.0),
                 entry.note,
                 entry.start_ms,
                 entry.end_ms,
@@ -65,7 +65,7 @@ impl Store {
 
     pub fn list_entries(&self, start_ms: i64, end_ms: i64) -> Result<Vec<TimeEntry>, AppError> {
         let mut statement = self.connection.prepare(
-            "SELECT id, project_id, task_id, note, start_ms, end_ms, source, created_at_ms, updated_at_ms
+            "SELECT id, project_id, activity_id, note, start_ms, end_ms, source, created_at_ms, updated_at_ms
              FROM entries WHERE start_ms < ?2 AND end_ms > ?1 ORDER BY start_ms",
         )?;
         let rows = statement.query_map(params![start_ms, end_ms], read_entry)?;
@@ -82,14 +82,14 @@ pub(super) fn validate_entry_references(
     entry: &TimeEntry,
 ) -> Result<(), AppError> {
     validate_project(connection, entry.project_id)?;
-    if let Some(task_id) = entry.task_id {
+    if let Some(activity_id) = entry.activity_id {
         let exists: bool = connection.query_row(
-            "SELECT EXISTS(SELECT 1 FROM tasks WHERE id=?1 AND project_id=?2 AND archived=0)",
-            params![task_id.0, entry.project_id.0],
+            "SELECT EXISTS(SELECT 1 FROM activities WHERE id=?1 AND project_id=?2 AND archived=0)",
+            params![activity_id.0, entry.project_id.0],
             |row| row.get(0),
         )?;
         if !exists {
-            return Err(AppError::InvalidTask(task_id));
+            return Err(AppError::InvalidActivity(activity_id));
         }
     }
     Ok(())
@@ -124,9 +124,9 @@ pub(super) fn insert_entry(
 ) -> Result<(), AppError> {
     validate_entry_references(transaction, entry)?;
     transaction.execute(
-        "INSERT INTO entries(project_id,task_id,note,start_ms,end_ms,source,created_at_ms,updated_at_ms)
+        "INSERT INTO entries(project_id,activity_id,note,start_ms,end_ms,source,created_at_ms,updated_at_ms)
          VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
-        params![entry.project_id.0, entry.task_id.map(|id| id.0), entry.note, entry.start_ms,
+        params![entry.project_id.0, entry.activity_id.map(|id| id.0), entry.note, entry.start_ms,
             entry.end_ms, source_name(entry.source), entry.created_at_ms, entry.updated_at_ms],
     )?;
     Ok(())
@@ -146,7 +146,7 @@ fn read_entry(row: &rusqlite::Row<'_>) -> rusqlite::Result<TimeEntry> {
     Ok(TimeEntry {
         id: Some(EntryId(row.get(0)?)),
         project_id: ProjectId(row.get(1)?),
-        task_id: row.get::<_, Option<i64>>(2)?.map(TaskId),
+        activity_id: row.get::<_, Option<i64>>(2)?.map(ActivityId),
         note: row.get(3)?,
         start_ms: row.get(4)?,
         end_ms: row.get(5)?,

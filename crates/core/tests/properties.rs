@@ -19,7 +19,7 @@ proptest! {
         let mut engine = TrackerEngine::new(clock.clone());
         let started = engine.apply(TrackerCommand::Start {
             project_id: ProjectId(1),
-            task_id: None,
+            activity_id: None,
             note: "focus".into(),
         });
         prop_assert!(started.is_ok());
@@ -36,7 +36,7 @@ proptest! {
         let transition = engine.apply(TrackerCommand::ResolveIdle(
             IdleDecision::ReassignAndResume {
                 project_id: ProjectId(2),
-                task_id: None,
+                activity_id: None,
                 note: "away".into(),
             },
         ));
@@ -62,7 +62,7 @@ proptest! {
         let clock = ManualClock::at(start_ms);
         let mut engine = TrackerEngine::new(clock.clone());
         let started = engine.apply(TrackerCommand::Start {
-            project_id: ProjectId(1), task_id: None, note: String::new(),
+            project_id: ProjectId(1), activity_id: None, note: String::new(),
         });
         prop_assert!(started.is_ok());
         clock.advance(Duration::from_millis(u64::try_from(focused_ms + idle_ms).unwrap_or(u64::MAX)));

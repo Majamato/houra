@@ -19,7 +19,7 @@ impl MainWindow {
                 return;
             }
         };
-        let tasks = handle.tasks(true).unwrap_or_default();
+        let activities = handle.activities(true).unwrap_or_default();
         for project in projects {
             let row = adw::ActionRow::builder()
                 .title(&project.name)
@@ -29,17 +29,17 @@ impl MainWindow {
                     &project.color
                 })
                 .build();
-            let add_task = gtk::Button::builder()
+            let add_activity = gtk::Button::builder()
                 .icon_name("list-add-symbolic")
-                .tooltip_text("Add task")
+                .tooltip_text("Add activity")
                 .valign(gtk::Align::Center)
                 .build();
-            add_task.connect_clicked(glib::clone!(
+            add_activity.connect_clicked(glib::clone!(
                 #[weak(rename_to = window)]
                 self,
-                move |_| window.show_new_task(project.id)
+                move |_| window.show_new_activity(project.id)
             ));
-            row.add_suffix(&add_task);
+            row.add_suffix(&add_activity);
             if project.id != ProjectId(1) {
                 let archive = gtk::Button::builder()
                     .icon_name(if project.archived {
@@ -73,26 +73,33 @@ impl MainWindow {
                 row.add_suffix(&archive);
             }
             self.imp().projects_box.append(&row);
-            for task in tasks.iter().filter(|task| task.project_id == project.id) {
-                let task_row = adw::ActionRow::builder()
-                    .title(format!("↳ {}", task.name))
-                    .subtitle(if task.archived {
-                        "Archived task"
+            for activity in activities
+                .iter()
+                .filter(|activity| activity.project_id == project.id)
+            {
+                let activity_row = adw::ActionRow::builder()
+                    .title(format!("↳ {}", activity.name))
+                    .subtitle(if activity.archived {
+                        "Archived activity"
                     } else {
-                        "Task"
+                        "Activity"
                     })
                     .build();
                 let archive = gtk::Button::builder()
-                    .icon_name(if task.archived {
+                    .icon_name(if activity.archived {
                         "view-refresh-symbolic"
                     } else {
                         "user-trash-symbolic"
                     })
-                    .tooltip_text(if task.archived { "Restore" } else { "Archive" })
+                    .tooltip_text(if activity.archived {
+                        "Restore"
+                    } else {
+                        "Archive"
+                    })
                     .valign(gtk::Align::Center)
                     .build();
-                let task_id = task.id;
-                let archived = task.archived;
+                let activity_id = activity.id;
+                let archived = activity.archived;
                 archive.connect_clicked(glib::clone!(
                     #[weak(rename_to = window)]
                     self,
@@ -100,14 +107,16 @@ impl MainWindow {
                     handle,
                     move |_| {
                         let now = chrono::Utc::now().timestamp_millis();
-                        if let Err(error) = handle.set_task_archived(task_id, !archived, now) {
+                        if let Err(error) =
+                            handle.set_activity_archived(activity_id, !archived, now)
+                        {
                             window.show_database_error(&error.to_string());
                         }
                         window.refresh_projects_page();
                     }
                 ));
-                task_row.add_suffix(&archive);
-                self.imp().projects_box.append(&task_row);
+                activity_row.add_suffix(&archive);
+                self.imp().projects_box.append(&activity_row);
             }
         }
     }
