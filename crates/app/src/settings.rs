@@ -26,3 +26,38 @@ impl Preferences {
         self.idle_threshold_minutes = minutes.clamp(1, 120);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn defaults_and_threshold_clamping() {
+        let mut preferences = Preferences::default();
+        assert_eq!(
+            preferences,
+            Preferences {
+                idle_threshold_minutes: 5,
+                launch_at_login: true,
+                notifications: true,
+                week_starts_monday: true
+            }
+        );
+        for (input, expected) in [
+            (0, 1),
+            (1, 1),
+            (60, 60),
+            (120, 120),
+            (121, 120),
+            (u32::MAX, 120),
+        ] {
+            preferences.set_idle_threshold_minutes(input);
+            assert_eq!(
+                preferences,
+                Preferences {
+                    idle_threshold_minutes: expected,
+                    ..Preferences::default()
+                }
+            );
+        }
+    }
+}

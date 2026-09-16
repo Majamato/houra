@@ -1,39 +1,3 @@
-mod tests {
-    use houra_core::{
-        DomainError, EntrySource, ProjectId, TimeEntry, validate_color, validate_name,
-    };
-
-    #[test]
-    fn blank_names_are_rejected() {
-        assert_eq!(validate_name("   "), Err(DomainError::EmptyName));
-        assert!(validate_name("Design").is_ok());
-    }
-
-    #[test]
-    fn colors_must_be_seven_char_hex() {
-        assert!(validate_color("#3584e4").is_ok());
-        assert_eq!(validate_color("3584e4"), Err(DomainError::InvalidColor));
-        assert_eq!(validate_color("#35g4e4"), Err(DomainError::InvalidColor));
-    }
-
-    #[test]
-    fn duration_never_goes_negative() {
-        let entry = TimeEntry {
-            id: None,
-            project_id: ProjectId(1),
-            task_id: None,
-            note: String::new(),
-            start_ms: 200,
-            end_ms: 100,
-            source: EntrySource::Manual,
-            created_at_ms: 0,
-            updated_at_ms: 0,
-        };
-        assert_eq!(entry.duration_ms(), 0);
-        assert!(entry.validate().is_err());
-    }
-}
-
 use std::time::Duration;
 
 use houra_core::{
@@ -115,5 +79,27 @@ proptest! {
             .map(|entry| entry.duration_ms())
             .sum::<i64>();
         prop_assert_eq!(recorded, focused_ms);
+    }
+}
+
+mod common;
+proptest! {
+    #[test]
+    fn overlap_detection_matches_pairwise_oracle(intervals in prop::collection::vec((0_i64..100, 1_i64..100, prop::option::of(0_i64..10)), 0..40)) {
+        use houra_core::{DomainError, validate_no_overlaps};
+        let entries: Vec<_> = intervals.into_iter().map(|(start, length, id)| common::entry(id, start, start + length)).collect();
+        let mut conflicts = std::collections::BTreeSet::new();
+        let mut overlap = false;
+        for (i, a) in entries.iter().enumerate() {
+            for b in &entries[i + 1..] {
+                if a.start_ms < b.end_ms && b.start_ms < a.end_ms {
+                    overlap = true;
+                    conflicts.extend(a.id);
+                    conflicts.extend(b.id);
+                }
+            }
+        }
+        let expected = if overlap { Err(DomainError::Overlap { conflicts: conflicts.into_iter().collect() }) } else { Ok(()) };
+        prop_assert_eq!(validate_no_overlaps(&entries), expected);
     }
 }

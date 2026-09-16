@@ -129,3 +129,32 @@ cargo clippy --workspace --all-targets --locked --features native-ui -- -D warni
 The desktop-enabled tests also compile the GTK modules, but do not automate GUI
 interaction. For UI changes, exercise the affected pages and dialogs in a GNOME
 session as well.
+
+Tests follow the [Rust Book's organization guidance](https://doc.rust-lang.org/book/ch11-03-test-organization.html).
+Focused tests live beside their implementation in `#[cfg(test)] mod tests`.
+Core integration tests cover timer workflows in `tests/transition.rs` and
+cross-module properties in `tests/properties.rs`. Application integration tests
+are split into `storage.rs`, `backup.rs`, `export.rs`, and `tracker_service.rs`.
+They use public APIs; reusable fixtures live in each crate's `tests/common/mod.rs`.
+
+Run a focused suite with:
+
+```sh
+cargo test -p houra-core --lib
+cargo test -p houra-core --test transition
+cargo test -p houra-core --test properties
+cargo test -p houra --test storage
+cargo test -p houra --test backup
+cargo test -p houra --test export
+cargo test -p houra --test tracker_service
+cargo test -p houra --lib
+cargo test --workspace --doc --locked
+cargo test --workspace --doc --locked --features native-ui
+cargo clippy --workspace --all-targets --locked -- -D warnings
+```
+
+Storage and filesystem tests use temporary directories or in-memory SQLite.
+Autostart tests pass a temporary launcher path and never change login settings.
+Timer tests use `ManualClock`; concurrent service clients synchronize with a
+barrier and join their threads. Calendar tests launch child test processes with
+`TZ=UTC` and `TZ=America/New_York`, leaving the parent environment unchanged.

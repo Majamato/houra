@@ -71,3 +71,35 @@ pub struct Transition {
     pub completed_entries: Vec<TimeEntry>,
     pub notifications: Vec<Notification>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn active_access_covers_every_state() {
+        let active = ActiveTimer {
+            project_id: ProjectId(1),
+            task_id: None,
+            note: String::new(),
+            start_ms: 1,
+            started_monotonic_ms: 0,
+            last_heartbeat_ms: 2,
+        };
+        assert_eq!(TrackerState::Stopped.active(), None);
+        for state in [
+            TrackerState::Running(active.clone()),
+            TrackerState::IdlePending(PendingIdle {
+                active: active.clone(),
+                idle_start_ms: 1,
+                return_ms: None,
+            }),
+            TrackerState::RecoveryPending(PendingRecovery {
+                active: active.clone(),
+                proposed_end_ms: 2,
+                unresolved_idle_start_ms: None,
+            }),
+        ] {
+            assert_eq!(state.active(), Some(&active));
+        }
+    }
+}

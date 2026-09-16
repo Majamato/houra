@@ -74,3 +74,38 @@ pub struct PendingRecovery {
     pub proposed_end_ms: i64,
     pub unresolved_idle_start_ms: Option<i64>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn interval_validation_and_saturating_duration() {
+        for (start_ms, end_ms, duration) in [
+            (100, 200, 100),
+            (200, 100, 0),
+            (100, 100, 0),
+            (i64::MIN, i64::MAX, i64::MAX),
+        ] {
+            let entry = TimeEntry {
+                id: None,
+                project_id: ProjectId(1),
+                task_id: None,
+                note: String::new(),
+                start_ms,
+                end_ms,
+                source: EntrySource::Manual,
+                created_at_ms: 0,
+                updated_at_ms: 0,
+            };
+            assert_eq!(entry.duration_ms(), duration);
+            assert_eq!(
+                entry.validate(),
+                if end_ms > start_ms {
+                    Ok(())
+                } else {
+                    Err(DomainError::InvalidInterval { start_ms, end_ms })
+                }
+            );
+        }
+    }
+}
