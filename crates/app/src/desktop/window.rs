@@ -42,6 +42,10 @@ pub(super) mod imp {
         #[template_child]
         pub projects_box: gtk::TemplateChild<gtk::Box>,
         #[template_child]
+        pub add_activity_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub activities_box: gtk::TemplateChild<gtk::Box>,
+        #[template_child]
         pub report_box: gtk::TemplateChild<gtk::Box>,
         #[template_child]
         pub report_week_label: gtk::TemplateChild<gtk::Label>,
@@ -56,6 +60,7 @@ pub(super) mod imp {
         pub activities: RefCell<Vec<Activity>>,
         pub report_week_offset: Cell<i32>,
         pub selected_day_offset: Cell<i32>,
+        pub updating_activity_dropdown: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -117,7 +122,6 @@ impl MainWindow {
                 #[weak(rename_to = window)]
                 self,
                 move |_| {
-                    window.reload_activities();
                     window.update_active_details();
                 }
             ));
@@ -126,7 +130,11 @@ impl MainWindow {
             .connect_selected_notify(glib::clone!(
                 #[weak(rename_to = window)]
                 self,
-                move |_| window.update_active_details()
+                move |_| {
+                    if !window.imp().updating_activity_dropdown.get() {
+                        window.update_active_details();
+                    }
+                }
             ));
         self.imp().note_entry.connect_changed(glib::clone!(
             #[weak(rename_to = window)]
@@ -137,6 +145,11 @@ impl MainWindow {
             #[weak(rename_to = window)]
             self,
             move |_| window.show_new_project()
+        ));
+        self.imp().add_activity_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| window.show_new_activity()
         ));
         self.imp()
             .report_previous_button

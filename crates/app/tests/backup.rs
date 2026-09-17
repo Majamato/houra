@@ -27,9 +27,43 @@ fn backup_file_round_trip_is_versioned_and_validated() {
         .unwrap_or_else(|error| panic!("backup failed: {error}"));
     let path = directory.path().join("backup.json");
     assert!(backup.write_to_path(&path).is_ok());
+    let value: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(&path).unwrap_or_else(|error| panic!("read failed: {error}")),
+    )
+    .unwrap_or_else(|error| panic!("JSON failed: {error}"));
+    assert_eq!(value["version"], 2);
+    assert!(value["activities"].as_array().is_some_and(|activities| {
+        activities
+            .iter()
+            .all(|activity| activity.get("project_id").is_none())
+    }));
     let read = BackupDocument::read_from_path(&path)
         .unwrap_or_else(|error| panic!("read failed: {error}"));
     assert_document_eq(&backup, &read);
+}
+
+#[test]
+fn version_one_backup_is_rejected_without_modifying_the_file()
+-> Result<(), Box<dyn std::error::Error>> {
+    let (directory, store) = temporary_store();
+    let mut value = serde_json::to_value(store.backup(1)?)?;
+    value["version"] = serde_json::json!(1);
+    for activity in value["activities"].as_array_mut().into_iter().flatten() {
+        activity["project_id"] = serde_json::json!(1);
+    }
+    let bytes = serde_json::to_vec_pretty(&value)?;
+    let path = directory.path().join("version-one.json");
+    std::fs::write(&path, &bytes)?;
+
+    assert!(matches!(
+        BackupDocument::read_from_path(&path),
+        Err(houra::AppError::UnsupportedBackupVersion {
+            found: 1,
+            expected: 2
+        })
+    ));
+    assert_eq!(std::fs::read(path)?, bytes);
+    Ok(())
 }
 
 #[test]
@@ -38,7 +72,7 @@ fn overlapping_restore_is_rejected_before_writes() {
     assert!(store.add_entry(&manual(None, 1, 100, 200)).is_ok());
     let invalid = BackupDocument {
         format: "houra-backup".into(),
-        version: 1,
+        version: 2,
         exported_at_ms: 1,
         projects: store
             .list_projects(true)
@@ -63,7 +97,7 @@ fn full_round_trip_preserves_archives_sources_and_snapshot() -> Result<(), houra
     use houra_core::{EntrySource, TrackerSnapshot, Transition};
     let (directory, mut store) = temporary_store();
     let project = store.create_project("Work", "#123456", 1)?;
-    let activity = store.create_activity(project, "Activity", 2)?;
+    let activity = store.create_activity("Custom", 2)?;
     for (index, source) in [
         EntrySource::Timer,
         EntrySource::Manual,
@@ -108,7 +142,7 @@ fn full_round_trip_preserves_archives_sources_and_snapshot() -> Result<(), houra
 fn restore_database_failure_after_deletes_rolls_back_every_table() -> Result<(), houra::AppError> {
     let (_, mut store) = temporary_store();
     let project = store.create_project("Work", "#123456", 1)?;
-    let activity = store.create_activity(project, "Activity", 2)?;
+    let activity = store.create_activity("Custom", 2)?;
     let mut entry = manual(None, project.0, 100, 200);
     entry.activity_id = Some(activity);
     store.add_entry(&entry)?;
@@ -139,12 +173,12 @@ fn invalid_documents_and_files_report_specific_errors() -> Result<(), Box<dyn st
     let (directory, mut store) = temporary_store();
     let original = store.backup(1)?;
     let mut bad = original.clone();
-    bad.version = 2;
+    bad.version = 1;
     assert!(matches!(
         bad.validate(),
         Err(AppError::UnsupportedBackupVersion {
-            found: 2,
-            expected: 1
+            found: 1,
+            expected: 2
         })
     ));
     bad = original.clone();
@@ -165,19 +199,7 @@ fn invalid_documents_and_files_report_specific_errors() -> Result<(), Box<dyn st
     bad.entries[0].project_id = ProjectId(1);
     bad.entries[0].activity_id = Some(ActivityId(99));
     assert!(
-        matches!(bad.validate(), Err(AppError::InvalidBackup(message)) if message == "entry None has a missing or foreign activity")
-    );
-    bad = original.clone();
-    bad.activities.push(Activity {
-        id: ActivityId(1),
-        project_id: ProjectId(99),
-        name: "Activity".into(),
-        archived: false,
-        created_at_ms: 0,
-        updated_at_ms: 0,
-    });
-    assert!(
-        matches!(bad.validate(), Err(AppError::InvalidBackup(message)) if message == "activity ActivityId(1) references a missing project")
+        matches!(bad.validate(), Err(AppError::InvalidBackup(message)) if message == "entry None references a missing activity")
     );
     let mut engine = TrackerEngine::new(ManualClock::at(100));
     let started = engine.apply(TrackerCommand::Start {

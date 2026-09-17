@@ -41,8 +41,8 @@ impl Store {
         }
         for activity in &document.activities {
             transaction.execute(
-                "INSERT INTO activities(id,project_id,name,archived,created_at_ms,updated_at_ms) VALUES(?1,?2,?3,?4,?5,?6)",
-                params![activity.id.0, activity.project_id.0, activity.name, activity.archived, activity.created_at_ms, activity.updated_at_ms],
+                "INSERT INTO activities(id,name,archived,created_at_ms,updated_at_ms) VALUES(?1,?2,?3,?4,?5)",
+                params![activity.id.0, activity.name, activity.archived, activity.created_at_ms, activity.updated_at_ms],
             )?;
         }
         for entry in &document.entries {

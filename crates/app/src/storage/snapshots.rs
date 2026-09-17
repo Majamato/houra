@@ -25,10 +25,19 @@ impl Store {
 
     /// Writes completed entries and the new snapshot in one transaction.
     pub fn persist_transition(&mut self, transition: &Transition) -> Result<(), AppError> {
+        let previous_activity = self
+            .load_snapshot()?
+            .state
+            .active()
+            .and_then(|active| active.activity_id);
         let transaction = self.connection.transaction()?;
-        validate_active_references(&transaction, &transition.snapshot.state)?;
+        validate_active_references(&transaction, &transition.snapshot.state, previous_activity)?;
         for entry in &transition.completed_entries {
-            insert_entry(&transaction, entry)?;
+            insert_entry(
+                &transaction,
+                entry,
+                entry.activity_id.is_some() && entry.activity_id == previous_activity,
+            )?;
         }
         write_snapshot(&transaction, &transition.snapshot)?;
         transaction.commit()?;
@@ -39,6 +48,7 @@ impl Store {
 fn validate_active_references(
     connection: &Connection,
     state: &TrackerState,
+    previous_activity: Option<houra_core::ActivityId>,
 ) -> Result<(), AppError> {
     if let Some(active) = state.active() {
         let entry = TimeEntry {
@@ -52,7 +62,11 @@ fn validate_active_references(
             created_at_ms: active.start_ms,
             updated_at_ms: active.start_ms,
         };
-        validate_entry_references(connection, &entry)?;
+        validate_entry_references(
+            connection,
+            &entry,
+            active.activity_id.is_some() && active.activity_id == previous_activity,
+        )?;
         let mut statement = connection
             .prepare("SELECT id FROM entries WHERE end_ms > ?1 ORDER BY start_ms LIMIT 20")?;
         let conflicts = statement

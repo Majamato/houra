@@ -4,13 +4,32 @@ use houra::{AppError, storage::Store};
 use houra_core::{DomainError, EntryId, ProjectId};
 use tempfile::TempDir;
 #[test]
-fn migration_creates_non_archivable_general_project() {
+fn fresh_store_seeds_general_and_global_activities() {
     let (_directory, store) = temporary_store();
     let projects = store
         .list_projects(false)
         .unwrap_or_else(|error| panic!("list failed: {error}"));
     assert_eq!(projects.len(), 1);
     assert_eq!(projects[0].name, "General");
+    let activities = store
+        .list_activities(false)
+        .unwrap_or_else(|error| panic!("list failed: {error}"));
+    assert_eq!(
+        activities
+            .iter()
+            .map(|activity| activity.name.as_str())
+            .collect::<std::collections::BTreeSet<_>>(),
+        std::collections::BTreeSet::from([
+            "Code Review",
+            "Design",
+            "Documentation",
+            "Meetings",
+            "Planning",
+            "Programming",
+            "Research",
+            "Testing",
+        ])
+    );
     assert!(
         matches!(store.set_project_archived(ProjectId(1), true, 1), Err(AppError::InvalidBackup(message)) if message == "General cannot be archived")
     );
@@ -40,26 +59,28 @@ fn overlapping_manual_entries_report_conflicting_id() {
 }
 
 #[test]
-fn activity_must_belong_to_entry_project() {
+fn activity_can_be_used_under_multiple_projects() {
     let (_directory, mut store) = temporary_store();
     let second = store
         .create_project("Second", "#ff0000", 1)
         .unwrap_or_else(|error| panic!("project failed: {error}"));
     let activity = store
-        .create_activity(second, "Activity", 1)
+        .create_activity("Custom", 1)
         .unwrap_or_else(|error| panic!("activity failed: {error}"));
     let mut entry = manual(None, 1, 100, 200);
     entry.activity_id = Some(activity);
-    assert!(
-        matches!(store.add_entry(&entry), Err(AppError::InvalidActivity(id)) if id == activity)
-    );
+    assert!(store.add_entry(&entry).is_ok());
+    entry.project_id = second;
+    entry.start_ms = 200;
+    entry.end_ms = 300;
+    assert!(store.add_entry(&entry).is_ok());
 }
 
 #[test]
 fn referenced_activity_is_archived_not_deleted() {
     let (_directory, mut store) = temporary_store();
     let activity = store
-        .create_activity(ProjectId(1), "Activity", 1)
+        .create_activity("Custom", 1)
         .unwrap_or_else(|error| panic!("activity failed: {error}"));
     let mut entry = manual(None, 1, 100, 200);
     entry.activity_id = Some(activity);
@@ -69,19 +90,82 @@ fn referenced_activity_is_archived_not_deleted() {
         store.delete_activity_permanently(activity),
         Err(AppError::ReferencedItem)
     ));
-    assert_eq!(
-        store
-            .list_activities(true)
-            .unwrap_or_else(|e| panic!("{e}")),
-        vec![houra_core::Activity {
-            id: activity,
-            project_id: ProjectId(1),
-            name: "Activity".into(),
-            archived: true,
-            created_at_ms: 1,
-            updated_at_ms: 300
-        }]
+    let archived = store
+        .list_activities(true)
+        .unwrap_or_else(|e| panic!("{e}"))
+        .into_iter()
+        .find(|candidate| candidate.id == activity)
+        .unwrap_or_else(|| panic!("activity"));
+    assert_eq!(archived.name, "Custom");
+    assert!(archived.archived);
+}
+
+#[test]
+fn activity_used_by_active_timer_cannot_be_deleted() -> Result<(), AppError> {
+    use houra_core::{ManualClock, TrackerCommand, TrackerEngine};
+    let mut store = Store::open_in_memory()?;
+    let activity = store.create_activity("Custom", 1)?;
+    let mut engine = TrackerEngine::new(ManualClock::at(100));
+    let started = engine.apply(TrackerCommand::Start {
+        project_id: ProjectId(1),
+        activity_id: Some(activity),
+        note: String::new(),
+    })?;
+    store.persist_transition(&started)?;
+    assert!(matches!(
+        store.delete_activity_permanently(activity),
+        Err(AppError::ReferencedItem)
+    ));
+    Ok(())
+}
+
+#[test]
+fn archived_activity_can_remain_on_an_edited_entry() -> Result<(), AppError> {
+    let mut store = Store::open_in_memory()?;
+    let second = store.create_project("Second", "#ff0000", 1)?;
+    let activity = store.create_activity("Custom", 2)?;
+    let mut entry = manual(None, 1, 100, 200);
+    entry.activity_id = Some(activity);
+    entry.id = Some(store.add_entry(&entry)?);
+    store.set_activity_archived(activity, true, 3)?;
+
+    entry.project_id = second;
+    entry.updated_at_ms = 4;
+    store.update_entry(&entry)?;
+    assert_eq!(store.list_all_entries()?, vec![entry.clone()]);
+
+    let mut new_entry = entry;
+    new_entry.id = None;
+    new_entry.start_ms = 200;
+    new_entry.end_ms = 300;
+    assert!(matches!(
+        store.add_entry(&new_entry),
+        Err(AppError::InvalidActivity(id)) if id == activity
+    ));
+    Ok(())
+}
+
+#[test]
+fn archived_default_activity_is_not_reseeded_on_reopen() -> Result<(), AppError> {
+    let (directory, store) = temporary_store();
+    let activity = store
+        .list_activities(false)?
+        .into_iter()
+        .find(|activity| activity.name == "Programming")
+        .unwrap_or_else(|| panic!("Programming activity"));
+    store.set_activity_archived(activity.id, true, 1)?;
+    drop(store);
+
+    let reopened = Store::open(&directory.path().join("tracker.sqlite3"))?;
+    assert_eq!(reopened.list_activities(false)?.len(), 7);
+    let all = reopened.list_activities(true)?;
+    assert_eq!(all.len(), 8);
+    assert!(
+        all.iter()
+            .find(|candidate| candidate.id == activity.id)
+            .is_some_and(|candidate| candidate.archived)
     );
+    Ok(())
 }
 
 #[test]
@@ -112,33 +196,39 @@ fn reopening_preserves_records_snapshot_and_shutdown_marker() -> Result<(), AppE
 }
 
 #[test]
-fn newer_schema_is_rejected() -> Result<(), Box<dyn std::error::Error>> {
+fn unsupported_schemas_are_rejected_without_modification() -> Result<(), Box<dyn std::error::Error>>
+{
     let directory = TempDir::new()?;
     let path = directory.path().join("future.sqlite3");
     let connection = rusqlite::Connection::open(&path)?;
-    connection.pragma_update(None, "user_version", 2)?;
+    connection.execute_batch("CREATE TABLE legacy(value TEXT); INSERT INTO legacy VALUES('keep'); PRAGMA user_version=1;")?;
     drop(connection);
-    assert!(
-        matches!(Store::open(&path), Err(AppError::InvalidBackup(message)) if message == "database schema 2 is newer than supported 1")
-    );
+    let before = std::fs::read(&path)?;
+    assert!(matches!(
+        Store::open(&path),
+        Err(AppError::UnsupportedDatabaseSchema {
+            found: 1,
+            expected: 2
+        })
+    ));
+    assert_eq!(std::fs::read(&path)?, before);
     Ok(())
 }
 
 #[test]
-fn project_activity_uniqueness_archiving_and_deletion() -> Result<(), AppError> {
+fn global_activity_uniqueness_archiving_and_deletion() -> Result<(), AppError> {
     let mut store = Store::open_in_memory()?;
     let project = store.create_project(" Work ", "#123456", 10)?;
     assert!(matches!(
         store.create_project("work", "#123456", 11),
         Err(AppError::Database(_))
     ));
-    let activity = store.create_activity(project, " Activity ", 12)?;
+    let activity = store.create_activity(" Activity ", 12)?;
     assert!(matches!(
-        store.create_activity(project, "activity", 13),
+        store.create_activity("activity", 13),
         Err(AppError::Database(_))
     ));
-    let general_activity = store.create_activity(ProjectId(1), "Activity", 14)?;
-    assert_eq!(store.list_activities(false)?.len(), 2);
+    assert_eq!(store.list_activities(false)?.len(), 9);
     let mut entry = manual(None, project.0, 100, 200);
     entry.activity_id = Some(activity);
     store.add_entry(&entry)?;
@@ -151,7 +241,7 @@ fn project_activity_uniqueness_archiving_and_deletion() -> Result<(), AppError> 
         Err(AppError::ReferencedItem)
     ));
     store.set_activity_archived(activity, true, 20)?;
-    assert_eq!(store.list_activities(false)?.len(), 1);
+    assert_eq!(store.list_activities(false)?.len(), 8);
     let archived = store
         .list_activities(true)?
         .into_iter()
@@ -161,7 +251,6 @@ fn project_activity_uniqueness_archiving_and_deletion() -> Result<(), AppError> 
         archived,
         houra_core::Activity {
             id: activity,
-            project_id: project,
             name: "Activity".into(),
             archived: true,
             created_at_ms: 12,
@@ -176,17 +265,17 @@ fn project_activity_uniqueness_archiving_and_deletion() -> Result<(), AppError> 
     store.set_project_archived(project, true, 30)?;
     assert_eq!(store.list_projects(false)?.len(), 1);
     assert_eq!(store.list_projects(true)?.len(), 2);
+    let other = store.create_activity("Other", 30)?;
     assert!(
-        matches!(store.create_activity(project, "Other", 30), Err(AppError::InvalidProject(id)) if id == project)
+        matches!(store.add_entry(&entry), Err(AppError::InvalidActivity(id)) if id == activity)
     );
-    assert!(matches!(store.add_entry(&entry), Err(AppError::InvalidProject(id)) if id == project));
     store.set_project_archived(project, false, 40)?;
     store.set_activity_archived(activity, false, 40)?;
     store.add_entry(&entry)?;
-    store.delete_activity_permanently(general_activity)?;
+    store.delete_activity_permanently(other)?;
     let empty = store.create_project("Empty", "#ffffff", 50)?;
     store.delete_project_permanently(empty)?;
-    assert_eq!(store.list_activities(true)?.len(), 1);
+    assert_eq!(store.list_activities(true)?.len(), 9);
     assert_eq!(store.list_projects(true)?.len(), 2);
     Ok(())
 }

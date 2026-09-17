@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::AppError;
 
-pub const BACKUP_VERSION: u32 = 1;
+pub const BACKUP_VERSION: u32 = 2;
 
 /// A complete copy of the database as one JSON document.
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -79,16 +79,6 @@ impl BackupDocument {
         }
         for activity in &self.activities {
             activity.validate()?;
-            if !self
-                .projects
-                .iter()
-                .any(|project| project.id == activity.project_id)
-            {
-                return Err(AppError::InvalidBackup(format!(
-                    "activity {:?} references a missing project",
-                    activity.id
-                )));
-            }
         }
         for entry in &self.entries {
             entry.validate()?;
@@ -103,12 +93,13 @@ impl BackupDocument {
                 )));
             }
             if let Some(activity_id) = entry.activity_id {
-                let activity_matches = self.activities.iter().any(|activity| {
-                    activity.id == activity_id && activity.project_id == entry.project_id
-                });
+                let activity_matches = self
+                    .activities
+                    .iter()
+                    .any(|activity| activity.id == activity_id);
                 if !activity_matches {
                     return Err(AppError::InvalidBackup(format!(
-                        "entry {:?} has a missing or foreign activity",
+                        "entry {:?} references a missing activity",
                         entry.id
                     )));
                 }

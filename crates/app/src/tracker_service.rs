@@ -25,7 +25,7 @@ enum Request {
     Projects(bool, Reply<Vec<Project>>),
     Activities(bool, Reply<Vec<Activity>>),
     CreateProject(String, String, i64, Reply<ProjectId>),
-    CreateActivity(ProjectId, String, i64, Reply<ActivityId>),
+    CreateActivity(String, i64, Reply<ActivityId>),
     ArchiveProject(ProjectId, bool, i64, Reply<()>),
     ArchiveActivity(ActivityId, bool, i64, Reply<()>),
     Backup(i64, Reply<BackupDocument>),
@@ -81,13 +81,8 @@ impl TrackerHandle {
         self.request(|reply| Request::CreateProject(name, color, now_ms, reply))
     }
 
-    pub fn create_activity(
-        &self,
-        project_id: ProjectId,
-        name: String,
-        now_ms: i64,
-    ) -> Result<ActivityId, AppError> {
-        self.request(|reply| Request::CreateActivity(project_id, name, now_ms, reply))
+    pub fn create_activity(&self, name: String, now_ms: i64) -> Result<ActivityId, AppError> {
+        self.request(|reply| Request::CreateActivity(name, now_ms, reply))
     }
 
     pub fn set_project_archived(
@@ -207,8 +202,8 @@ fn worker_loop(
             Request::CreateProject(name, color, now, reply) => {
                 let _ignored = reply.send(store.create_project(&name, &color, now));
             }
-            Request::CreateActivity(project_id, name, now, reply) => {
-                let _ignored = reply.send(store.create_activity(project_id, &name, now));
+            Request::CreateActivity(name, now, reply) => {
+                let _ignored = reply.send(store.create_activity(&name, now));
             }
             Request::ArchiveProject(id, archived, now, reply) => {
                 let _ignored = reply.send(store.set_project_archived(id, archived, now));

@@ -24,7 +24,6 @@ impl Project {
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub struct Activity {
     pub id: ActivityId,
-    pub project_id: ProjectId,
     pub name: String,
     pub archived: bool,
     pub created_at_ms: i64,
@@ -57,7 +56,6 @@ mod tests {
         assert_eq!(project.validate(), Err(DomainError::EmptyName));
         let mut activity = Activity {
             id: ActivityId(1),
-            project_id: project.id,
             name: "Activity".into(),
             archived: true,
             created_at_ms: 0,

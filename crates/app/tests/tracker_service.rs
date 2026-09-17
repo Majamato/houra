@@ -107,7 +107,7 @@ fn service_data_survives_restart_and_restore_refreshes_snapshot()
     let service = TrackerService::start(path.clone())?;
     let handle = &service.handle;
     let project = handle.create_project("Work".into(), "#123456".into(), 1)?;
-    let activity = handle.create_activity(project, "Activity".into(), 2)?;
+    let activity = handle.create_activity("Custom".into(), 2)?;
     let mut entry = TimeEntry {
         id: None,
         project_id: project,
@@ -135,6 +135,38 @@ fn service_data_survives_restart_and_restore_refreshes_snapshot()
     restored.tracker.revision = 42;
     service.handle.restore(restored.clone())?;
     assert_eq!(service.handle.snapshot()?, restored.tracker);
+    service.shutdown()?;
+    Ok(())
+}
+
+#[test]
+fn active_timer_keeps_global_activity_across_projects_and_archiving()
+-> Result<(), Box<dyn std::error::Error>> {
+    use houra_core::{TrackerCommand, TrackerState};
+    let directory = TempDir::new()?;
+    let service = TrackerService::start(directory.path().join("global-activity.sqlite3"))?;
+    let project = service
+        .handle
+        .create_project("Second".into(), "#123456".into(), 1)?;
+    let activity = service.handle.create_activity("Custom".into(), 2)?;
+    service.handle.apply(TrackerCommand::Start {
+        project_id: ProjectId(1),
+        activity_id: Some(activity),
+        note: String::new(),
+    })?;
+    service.handle.apply(TrackerCommand::EditActive {
+        project_id: project,
+        activity_id: Some(activity),
+        note: String::new(),
+    })?;
+    service.handle.set_activity_archived(activity, true, 3)?;
+    service.handle.apply(TrackerCommand::Heartbeat)?;
+    assert!(matches!(
+        service.handle.snapshot()?.state,
+        TrackerState::Running(ref active)
+            if active.project_id == project && active.activity_id == Some(activity)
+    ));
+    service.handle.apply(TrackerCommand::Stop)?;
     service.shutdown()?;
     Ok(())
 }

@@ -16,7 +16,6 @@ fn csv_headers_escaping_names_sources_and_fallbacks() -> Result<(), Box<dyn std:
     };
     let activity = Activity {
         id: ActivityId(1),
-        project_id: project.id,
         name: "line\nbreak".into(),
         archived: true,
         created_at_ms: 0,

@@ -2,7 +2,7 @@
 
 use crate::AppError;
 
-const SCHEMA_VERSION: i64 = 1;
+const SCHEMA_VERSION: i64 = 2;
 
 use super::Store;
 
@@ -11,12 +11,13 @@ impl Store {
         let version: i64 = self
             .connection
             .query_row("PRAGMA user_version", [], |row| row.get(0))?;
-        if version > SCHEMA_VERSION {
-            return Err(AppError::InvalidBackup(format!(
-                "database schema {version} is newer than supported {SCHEMA_VERSION}"
-            )));
+        if version != 0 && version != SCHEMA_VERSION {
+            return Err(AppError::UnsupportedDatabaseSchema {
+                found: version,
+                expected: SCHEMA_VERSION,
+            });
         }
-        if version < 1 {
+        if version == 0 {
             let transaction = self.connection.transaction()?;
             transaction.execute_batch(
                 "
@@ -34,12 +35,10 @@ impl Store {
                 );
                 CREATE TABLE activities (
                     id INTEGER PRIMARY KEY,
-                    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
-                    name TEXT NOT NULL COLLATE NOCASE CHECK(length(trim(name)) > 0),
+                    name TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK(length(trim(name)) > 0),
                     archived INTEGER NOT NULL DEFAULT 0 CHECK(archived IN (0, 1)),
                     created_at_ms INTEGER NOT NULL,
-                    updated_at_ms INTEGER NOT NULL,
-                    UNIQUE(project_id, name)
+                    updated_at_ms INTEGER NOT NULL
                 );
                 CREATE TABLE entries (
                     id INTEGER PRIMARY KEY,
@@ -65,20 +64,23 @@ impl Store {
                     SELECT 1 FROM entries
                     WHERE id != NEW.id AND NEW.start_ms < end_ms AND NEW.end_ms > start_ms
                 ) BEGIN SELECT RAISE(ABORT, 'time entry overlaps existing entry'); END;
-                CREATE TRIGGER entry_activity_project_insert BEFORE INSERT ON entries
-                WHEN NEW.activity_id IS NOT NULL AND NOT EXISTS (
-                    SELECT 1 FROM activities WHERE id = NEW.activity_id AND project_id = NEW.project_id
-                ) BEGIN SELECT RAISE(ABORT, 'activity does not belong to project'); END;
-                CREATE TRIGGER entry_activity_project_update BEFORE UPDATE OF project_id, activity_id ON entries
-                WHEN NEW.activity_id IS NOT NULL AND NOT EXISTS (
-                    SELECT 1 FROM activities WHERE id = NEW.activity_id AND project_id = NEW.project_id
-                ) BEGIN SELECT RAISE(ABORT, 'activity does not belong to project'); END;
                 CREATE TABLE tracker_state (
                     singleton INTEGER PRIMARY KEY CHECK(singleton = 1),
                     snapshot_json TEXT NOT NULL,
                     updated_at_ms INTEGER NOT NULL
                 );
-                PRAGMA user_version = 1;
+                INSERT INTO projects(id, name, color, archived, created_at_ms, updated_at_ms)
+                VALUES(1, 'General', '#3584e4', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000);
+                INSERT INTO activities(name, archived, created_at_ms, updated_at_ms) VALUES
+                    ('Programming', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000),
+                    ('Design', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000),
+                    ('Planning', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000),
+                    ('Code Review', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000),
+                    ('Testing', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000),
+                    ('Documentation', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000),
+                    ('Meetings', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000),
+                    ('Research', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000);
+                PRAGMA user_version = 2;
                 ",
             )?;
             transaction.commit()?;

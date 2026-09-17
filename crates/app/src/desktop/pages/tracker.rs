@@ -49,19 +49,23 @@ impl MainWindow {
 
     pub(in crate::desktop) fn reload_activities(&self) {
         let Some(handle) = self.handle() else { return };
-        let project_id = self.selected_project_id();
-        let activities = handle
-            .activities(false)
-            .unwrap_or_default()
-            .into_iter()
-            .filter(|activity| activity.project_id == project_id)
+        let selected_id = self.selected_activity_id();
+        let activities = handle.activities(false).unwrap_or_default();
+        let selected = selected_id
+            .and_then(|id| activities.iter().position(|activity| activity.id == id))
+            .and_then(|index| u32::try_from(index + 1).ok())
+            .unwrap_or(0);
+        let names = std::iter::once("No activity".to_owned())
+            .chain(activities.iter().map(|activity| activity.name.clone()))
             .collect::<Vec<_>>();
-        let mut names = vec!["No activity"];
-        names.extend(activities.iter().map(|activity| activity.name.as_str()));
+        let name_refs = names.iter().map(String::as_str).collect::<Vec<_>>();
+        self.imp().updating_activity_dropdown.set(true);
+        self.imp().activities.replace(activities);
         self.imp()
             .activity_dropdown
-            .set_model(Some(&gtk::StringList::new(&names)));
-        self.imp().activities.replace(activities);
+            .set_model(Some(&gtk::StringList::new(&name_refs)));
+        self.imp().activity_dropdown.set_selected(selected);
+        self.imp().updating_activity_dropdown.set(false);
     }
 
     pub(in crate::desktop) fn update_active_details(&self) {

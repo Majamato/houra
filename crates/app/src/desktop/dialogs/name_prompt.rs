@@ -1,6 +1,5 @@
 use crate::TrackerHandle;
 use gtk::prelude::*;
-use houra_core::ProjectId;
 use libadwaita as adw;
 use libadwaita::prelude::*;
 
@@ -15,9 +14,9 @@ impl MainWindow {
         });
     }
 
-    pub(in crate::desktop) fn show_new_activity(&self, project_id: ProjectId) {
+    pub(in crate::desktop) fn show_new_activity(&self) {
         self.show_name_dialog("New Activity", move |handle, name, now| {
-            handle.create_activity(project_id, name, now).map(|_| ())
+            handle.create_activity(name, now).map(|_| ())
         });
     }
 
@@ -47,6 +46,7 @@ impl MainWindow {
                     window.show_database_error(&error.to_string());
                 }
                 window.reload_projects();
+                window.reload_activities();
                 window.refresh_projects_page();
             }
         });

@@ -3,7 +3,7 @@
 use super::projects::validate_project;
 use crate::AppError;
 use houra_core::{ActivityId, EntryId, EntrySource, ProjectId, TimeEntry};
-use rusqlite::{Connection, Transaction, params};
+use rusqlite::{Connection, OptionalExtension, Transaction, params};
 
 use super::Store;
 
@@ -13,7 +13,7 @@ impl Store {
             && entry.end_ms > active.start_ms
         {
             return Err(AppError::InvalidBackup(
-                "entry overlaps the active timer; stop it before e<D-z>diting this interval".into(),
+                "entry overlaps the active timer; stop it before editing this interval".into(),
             ));
         }
         Ok(())
@@ -23,9 +23,9 @@ impl Store {
         entry.validate()?;
         self.validate_against_active(entry)?;
         let transaction = self.connection.transaction()?;
-        validate_entry_references(&transaction, entry)?;
+        validate_entry_references(&transaction, entry, false)?;
         reject_entry_overlaps(&transaction, entry, None)?;
-        insert_entry(&transaction, entry)?;
+        insert_entry(&transaction, entry, false)?;
         let id = EntryId(transaction.last_insert_rowid());
         transaction.commit()?;
         Ok(id)
@@ -38,7 +38,16 @@ impl Store {
             .id
             .ok_or_else(|| AppError::InvalidBackup("entry ID is required for update".into()))?;
         let transaction = self.connection.transaction()?;
-        validate_entry_references(&transaction, entry)?;
+        let existing_activity = transaction
+            .query_row(
+                "SELECT activity_id FROM entries WHERE id=?1",
+                [id.0],
+                |row| row.get::<_, Option<i64>>(0),
+            )
+            .optional()?
+            .flatten()
+            .map(ActivityId);
+        validate_entry_references(&transaction, entry, entry.activity_id == existing_activity)?;
         reject_entry_overlaps(&transaction, entry, Some(id))?;
         let changed = transaction.execute(
             "UPDATE entries SET project_id=?1, activity_id=?2, note=?3, start_ms=?4, end_ms=?5,
@@ -80,12 +89,13 @@ impl Store {
 pub(super) fn validate_entry_references(
     connection: &Connection,
     entry: &TimeEntry,
+    allow_archived_activity: bool,
 ) -> Result<(), AppError> {
     validate_project(connection, entry.project_id)?;
     if let Some(activity_id) = entry.activity_id {
         let exists: bool = connection.query_row(
-            "SELECT EXISTS(SELECT 1 FROM activities WHERE id=?1 AND project_id=?2 AND archived=0)",
-            params![activity_id.0, entry.project_id.0],
+            "SELECT EXISTS(SELECT 1 FROM activities WHERE id=?1 AND (?2 OR archived=0))",
+            params![activity_id.0, allow_archived_activity],
             |row| row.get(0),
         )?;
         if !exists {
@@ -121,8 +131,9 @@ fn reject_entry_overlaps(
 pub(super) fn insert_entry(
     transaction: &Transaction<'_>,
     entry: &TimeEntry,
+    allow_archived_activity: bool,
 ) -> Result<(), AppError> {
-    validate_entry_references(transaction, entry)?;
+    validate_entry_references(transaction, entry, allow_archived_activity)?;
     transaction.execute(
         "INSERT INTO entries(project_id,activity_id,note,start_ms,end_ms,source,created_at_ms,updated_at_ms)
          VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",

@@ -24,7 +24,6 @@ impl Store {
             std::fs::create_dir_all(parent).map_err(|source| AppError::io(parent, source))?;
         }
         let connection = Connection::open(path)?;
-        connection.pragma_update(None, "journal_mode", "WAL")?;
         connection.pragma_update(None, "foreign_keys", "ON")?;
         connection.busy_timeout(std::time::Duration::from_secs(5))?;
         let mut store = Self {
@@ -32,7 +31,9 @@ impl Store {
             previous_shutdown_clean: true,
         };
         store.migrate()?;
-        store.ensure_general_project()?;
+        store
+            .connection
+            .pragma_update(None, "journal_mode", "WAL")?;
         store.previous_shutdown_clean = store.meta_bool("clean_shutdown")?.unwrap_or(true);
         store.set_meta("clean_shutdown", "0")?;
         Ok(store)
@@ -47,7 +48,6 @@ impl Store {
             previous_shutdown_clean: true,
         };
         store.migrate()?;
-        store.ensure_general_project()?;
         store.set_meta("clean_shutdown", "0")?;
         Ok(store)
     }

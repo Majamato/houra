@@ -35,19 +35,24 @@ pub enum AppError {
     #[error("backup version {found} is unsupported; expected {expected}")]
     UnsupportedBackupVersion { found: u32, expected: u32 },
 
+    #[error(
+        "database schema {found} is unsupported; Houra requires schema {expected}. Remove the old database file before starting Houra"
+    )]
+    UnsupportedDatabaseSchema { found: i64, expected: i64 },
+
     #[error("restore requires a stopped timer")]
     RestoreWhileActive,
 
     #[error("backup validation failed: {0}")]
     InvalidBackup(String),
 
-    #[error("project {0:?} does not exist or is archived")]
+    #[error("project {0:?} does not exist")]
     InvalidProject(houra_core::ProjectId),
 
-    #[error("activity {0:?} does not exist, is archived, or belongs to another project")]
+    #[error("activity {0:?} does not exist or is archived")]
     InvalidActivity(houra_core::ActivityId),
 
-    #[error("project/activity cannot be permanently deleted because history references it")]
+    #[error("project or activity cannot be permanently deleted because history references it")]
     ReferencedItem,
 }
 
