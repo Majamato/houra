@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="HouraEntryRow" parent="GtkBox">
+    <property name="spacing">10</property>
+    <property name="margin-top">13</property>
+    <property name="margin-bottom">13</property>
+    <property name="margin-start">14</property>
+    <property name="margin-end">14</property>
+    <child><object class="GtkDrawingArea" id="dot"><property name="width-request">10</property><property name="height-request">10</property><property name="valign">center</property></object></child>
+    <child><object class="GtkButton" id="edit_button"><property name="has-frame">false</property><property name="hexpand">true</property><style><class name="entry-details"/></style><property name="child"><object class="GtkBox"><property name="orientation">vertical</property><property name="spacing">2</property>
+      <child><object class="GtkLabel" id="title"><property name="halign">start</property><property name="ellipsize">end</property><style><class name="entry-title"/></style></object></child>
+      <child><object class="GtkLabel" id="subtitle"><property name="halign">start</property><property name="ellipsize">end</property><style><class name="entry-meta"/></style></object></child>
+    </object></property></object></child>
+    <child><object class="GtkLabel" id="duration"><style><class name="entry-duration"/></style></object></child>
+    <child><object class="GtkButton" id="continue_button"><property name="tooltip-text" translatable="yes">Continue this work</property><style><class name="flat"/><class name="continue-button"/></style></object></child>
+  </template>
+</interface>

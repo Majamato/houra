@@ -2,6 +2,9 @@ data/io.github.majamato.Houra.desktop.in
 data/io.github.majamato.Houra.metainfo.xml.in
 data/io.github.majamato.Houra.gschema.xml
 data/ui/window.ui
+data/ui/week-day-cell.ui
+data/ui/entry-row.ui
+data/ui/management-row.ui
 crates/app/src/desktop/application.rs
 crates/app/src/desktop/dialogs/backup_restore.rs
 crates/app/src/desktop/dialogs/entry_editor.rs
@@ -16,3 +19,8 @@ crates/app/src/desktop/pages/reports.rs
 crates/app/src/desktop/pages/tracker.rs
 crates/app/src/desktop/platform.rs
 crates/app/src/desktop/window.rs
+crates/app/src/desktop/widgets/entry_row.rs
+crates/app/src/desktop/widgets/management_row.rs
+crates/app/src/desktop/widgets/mod.rs
+crates/app/src/desktop/widgets/timer_action_button.rs
+crates/app/src/desktop/widgets/week_day_cell.rs

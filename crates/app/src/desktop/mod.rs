@@ -4,6 +4,7 @@ mod application;
 mod dialogs;
 mod pages;
 mod platform;
+mod widgets;
 mod window;
 
 pub use application::run;

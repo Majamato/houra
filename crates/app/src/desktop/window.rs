@@ -10,6 +10,7 @@ use libadwaita::prelude::*;
 use libadwaita::subclass::prelude::*;
 
 use crate::TrackerHandle;
+use crate::desktop::widgets::TimerActionButton;
 
 pub(super) mod imp {
     use super::*;
@@ -23,9 +24,9 @@ pub(super) mod imp {
         #[template_child]
         pub timer_label: gtk::TemplateChild<gtk::Label>,
         #[template_child]
-        pub start_button: gtk::TemplateChild<gtk::Button>,
+        pub start_button: gtk::TemplateChild<TimerActionButton>,
         #[template_child]
-        pub stop_button: gtk::TemplateChild<gtk::Button>,
+        pub stop_button: gtk::TemplateChild<TimerActionButton>,
         #[template_child]
         pub stopped_panel: gtk::TemplateChild<gtk::Box>,
         #[template_child]
@@ -91,6 +92,7 @@ pub(super) mod imp {
         type ParentType = adw::ApplicationWindow;
 
         fn class_init(class: &mut Self::Class) {
+            TimerActionButton::ensure_type();
             class.bind_template();
         }
 

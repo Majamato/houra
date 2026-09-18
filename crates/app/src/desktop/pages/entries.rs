@@ -1,19 +1,10 @@
 use chrono::{Datelike, Local, NaiveDate, TimeZone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use houra_core::{Project, TimeEntry, TrackerState};
+use houra_core::TrackerState;
 
+use crate::desktop::widgets::{EntryRow, WeekDayCell, format_duration};
 use crate::desktop::window::MainWindow;
-
-pub(super) fn format_duration(seconds: u64) -> String {
-    let hours = seconds / 3600;
-    let minutes = (seconds / 60) % 60;
-    if hours == 0 {
-        format!("{minutes}m")
-    } else {
-        format!("{hours}h {minutes:02}m")
-    }
-}
 
 fn day_bounds(date: NaiveDate) -> Option<(chrono::DateTime<Local>, chrono::DateTime<Local>)> {
     let start = Local
@@ -102,12 +93,26 @@ impl MainWindow {
                         .entries_box
                         .append(&gtk::Separator::new(gtk::Orientation::Horizontal));
                 }
-                self.imp().entries_box.append(&self.entry_row(
-                    entry,
-                    &projects,
-                    &activities,
-                    running,
+                let project = projects
+                    .iter()
+                    .find(|project| project.id == entry.project_id);
+                let activity = entry
+                    .activity_id
+                    .and_then(|id| activities.iter().find(|activity| activity.id == id));
+                let row = EntryRow::new(entry, project, activity, running);
+                let entry_to_edit = entry.clone();
+                row.connect_edit_requested(glib::clone!(
+                    #[weak(rename_to = window)]
+                    self,
+                    move |_| window.show_edit_entry(entry_to_edit.clone())
                 ));
+                let entry_to_resume = entry.clone();
+                row.connect_continue_requested(glib::clone!(
+                    #[weak(rename_to = window)]
+                    self,
+                    move |_| window.continue_entry(&entry_to_resume)
+                ));
+                self.imp().entries_box.append(&row);
             }
         }
         let stored_seconds = entries
@@ -185,32 +190,9 @@ impl MainWindow {
                     .unwrap_or(0),
                 );
             }
-            let button = gtk::Button::new();
-            button.add_css_class("week-day");
-            if date == selected {
-                button.add_css_class("selected");
-            }
-            let column = gtk::Box::builder()
-                .orientation(gtk::Orientation::Vertical)
-                .spacing(4)
-                .build();
-            let weekday = gtk::Label::new(Some(&date.format("%a").to_string()));
-            weekday.add_css_class("week-weekday");
-            let number = gtk::Label::new(Some(&date.day().to_string()));
-            number.add_css_class("week-number");
-            let total_text = if total == 0 {
-                "—".to_owned()
-            } else {
-                format_duration(total)
-            };
-            let total_label = gtk::Label::new(Some(&total_text));
-            total_label.add_css_class("week-total");
+            let button = WeekDayCell::new(date, total, date == selected);
 
             // Each day is clickable and reloads the entries for that date.
-            column.append(&weekday);
-            column.append(&number);
-            column.append(&total_label);
-            button.set_child(Some(&column));
             let weak = self.downgrade();
             button.connect_clicked(move |_| {
                 if let Some(window) = weak.upgrade() {
@@ -224,134 +206,5 @@ impl MainWindow {
             });
             self.imp().week_box.append(&button);
         }
-    }
-
-    fn entry_row(
-        &self,
-        entry: &TimeEntry,
-        projects: &[Project],
-        activities: &[houra_core::Activity],
-        running: bool,
-    ) -> gtk::Box {
-        let project = projects
-            .iter()
-            .find(|project| project.id == entry.project_id);
-        let project_name = project.map_or("Missing project", |project| project.name.as_str());
-        let activity_name = entry
-            .activity_id
-            .and_then(|id| activities.iter().find(|activity| activity.id == id))
-            .map(|activity| activity.name.as_str());
-
-        let start = Local.timestamp_millis_opt(entry.start_ms).single();
-        let end = Local.timestamp_millis_opt(entry.end_ms).single();
-        let times = match (start, end) {
-            (Some(start), Some(end)) => {
-                format!("{}–{}", start.format("%H:%M"), end.format("%H:%M"))
-            }
-            _ => String::new(),
-        };
-        let meta = activity_name.map_or_else(
-            || format!("{project_name} · {times}"),
-            |activity| format!("{project_name} · {activity} · {times}"),
-        );
-
-        let row = gtk::Box::builder()
-            .spacing(10)
-            .margin_top(13)
-            .margin_bottom(13)
-            .margin_start(14)
-            .margin_end(14)
-            .build();
-
-        // The colored dot identifies the project for this entry.
-        let dot = gtk::DrawingArea::builder()
-            .width_request(10)
-            .height_request(10)
-            .valign(gtk::Align::Center)
-            .build();
-        let color = project
-            .and_then(|project| gtk::gdk::RGBA::parse(&project.color).ok())
-            .unwrap_or_else(|| gtk::gdk::RGBA::new(0.5, 0.7, 0.95, 1.0));
-        dot.set_draw_func(move |_, context, width, height| {
-            context.set_source_rgba(
-                f64::from(color.red()),
-                f64::from(color.green()),
-                f64::from(color.blue()),
-                1.0,
-            );
-            context.arc(
-                f64::from(width) / 2.0,
-                f64::from(height) / 2.0,
-                4.5,
-                0.0,
-                std::f64::consts::TAU,
-            );
-            let _ignored = context.fill();
-        });
-        row.append(&dot);
-
-        // The note and metadata button opens the entry editor.
-        let edit = gtk::Button::new();
-        edit.set_has_frame(false);
-        edit.set_hexpand(true);
-        edit.add_css_class("entry-details");
-        let labels = gtk::Box::builder()
-            .orientation(gtk::Orientation::Vertical)
-            .spacing(2)
-            .build();
-        let title = gtk::Label::new(Some(if entry.note.is_empty() {
-            "Tracked work"
-        } else {
-            &entry.note
-        }));
-        title.set_halign(gtk::Align::Start);
-        title.set_ellipsize(gtk::pango::EllipsizeMode::End);
-        title.add_css_class("entry-title");
-        let subtitle = gtk::Label::new(Some(&meta));
-        subtitle.set_halign(gtk::Align::Start);
-        subtitle.set_ellipsize(gtk::pango::EllipsizeMode::End);
-        subtitle.add_css_class("entry-meta");
-        labels.append(&title);
-        labels.append(&subtitle);
-        edit.set_child(Some(&labels));
-        let weak = self.downgrade();
-        let entry_to_edit = entry.clone();
-        edit.connect_clicked(move |_| {
-            if let Some(window) = weak.upgrade() {
-                window.show_edit_entry(entry_to_edit.clone());
-            }
-        });
-        row.append(&edit);
-
-        // Duration is shown beside the entry details.
-        let duration = u64::try_from(entry.duration_ms().max(0) / 1_000).unwrap_or(0);
-        let duration_label = gtk::Label::new(Some(&format_duration(duration)));
-        duration_label.add_css_class("entry-duration");
-        row.append(&duration_label);
-
-        // Continue resumes this entry in the tracker.
-        let resume = gtk::Button::with_label(if running { "▶" } else { "Continue" });
-        resume.add_css_class("flat");
-        resume.add_css_class("continue-button");
-        resume.set_tooltip_text(Some("Continue this work"));
-        let weak = self.downgrade();
-        let entry_to_resume = entry.clone();
-        resume.connect_clicked(move |_| {
-            if let Some(window) = weak.upgrade() {
-                window.continue_entry(&entry_to_resume);
-            }
-        });
-        row.append(&resume);
-        row
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::format_duration;
-    #[test]
-    fn formats_compact_durations() {
-        assert_eq!(format_duration(45 * 60), "45m");
-        assert_eq!(format_duration(6_300), "1h 45m");
     }
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="HouraWeekDayCell" parent="GtkButton">
+    <style><class name="week-day"/></style>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">4</property>
+        <child><object class="GtkLabel" id="weekday"><style><class name="week-weekday"/></style></object></child>
+        <child><object class="GtkLabel" id="number"><style><class name="week-number"/></style></object></child>
+        <child><object class="GtkLabel" id="total"><style><class name="week-total"/></style></object></child>
+      </object>
+    </property>
+  </template>
+</interface>

@@ -63,7 +63,7 @@ pub fn run(database_path: PathBuf) -> Result<(), AppError> {
     service.shutdown()
 }
 
-fn register_resources() -> Result<(), AppError> {
+pub(super) fn register_resources() -> Result<(), AppError> {
     let bytes =
         glib::Bytes::from_static(include_bytes!(concat!(env!("OUT_DIR"), "/houra.gresource")));
     let resource = gio::Resource::from_data(&bytes).map_err(|error| {

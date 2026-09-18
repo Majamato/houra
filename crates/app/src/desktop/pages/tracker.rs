@@ -240,7 +240,7 @@ impl MainWindow {
         let stored = self.imp().stored_day_seconds.get();
         self.imp()
             .total_value
-            .set_label(&super::entries::format_duration(
+            .set_label(&crate::desktop::widgets::format_duration(
                 stored.saturating_add(elapsed),
             ));
     }

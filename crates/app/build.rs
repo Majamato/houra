@@ -5,6 +5,9 @@ use std::process::Command;
 fn main() {
     println!("cargo:rerun-if-changed=../../data/io.github.majamato.Houra.gresource.xml");
     println!("cargo:rerun-if-changed=../../data/ui/window.ui");
+    println!("cargo:rerun-if-changed=../../data/ui/week-day-cell.ui");
+    println!("cargo:rerun-if-changed=../../data/ui/entry-row.ui");
+    println!("cargo:rerun-if-changed=../../data/ui/management-row.ui");
     if env::var_os("CARGO_FEATURE_NATIVE_UI").is_none() {
         return;
     }

@@ -1,0 +1,166 @@
+use std::sync::LazyLock;
+
+use chrono::{Local, TimeZone};
+use glib::subclass::{InitializingObject, Signal};
+use gtk::prelude::*;
+use gtk::subclass::prelude::*;
+use houra_core::{Activity, Project, TimeEntry};
+
+use super::format_duration;
+
+mod imp {
+    use super::*;
+
+    #[derive(Default, gtk::CompositeTemplate)]
+    #[template(resource = "/io/github/majamato/Houra/ui/entry-row.ui")]
+    pub struct EntryRow {
+        #[template_child]
+        pub dot: gtk::TemplateChild<gtk::DrawingArea>,
+        #[template_child]
+        pub edit_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub title: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
+        pub subtitle: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
+        pub duration: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
+        pub continue_button: gtk::TemplateChild<gtk::Button>,
+    }
+
+    #[glib::object_subclass]
+    impl ObjectSubclass for EntryRow {
+        const NAME: &'static str = "HouraEntryRow";
+        type Type = super::EntryRow;
+        type ParentType = gtk::Box;
+
+        fn class_init(class: &mut Self::Class) {
+            class.bind_template();
+        }
+
+        fn instance_init(object: &InitializingObject<Self>) {
+            object.init_template();
+        }
+    }
+
+    impl ObjectImpl for EntryRow {
+        fn constructed(&self) {
+            self.parent_constructed();
+            let object = self.obj();
+            self.edit_button.connect_clicked(glib::clone!(
+                #[weak]
+                object,
+                move |_| object.emit_by_name::<()>("edit-requested", &[])
+            ));
+            self.continue_button.connect_clicked(glib::clone!(
+                #[weak]
+                object,
+                move |_| object.emit_by_name::<()>("continue-requested", &[])
+            ));
+        }
+
+        fn dispose(&self) {
+            self.dispose_template();
+        }
+
+        fn signals() -> &'static [Signal] {
+            static SIGNALS: LazyLock<Vec<Signal>> = LazyLock::new(|| {
+                vec![
+                    Signal::builder("edit-requested").build(),
+                    Signal::builder("continue-requested").build(),
+                ]
+            });
+            SIGNALS.as_ref()
+        }
+    }
+    impl WidgetImpl for EntryRow {}
+    impl BoxImpl for EntryRow {}
+}
+
+glib::wrapper! {
+    pub struct EntryRow(ObjectSubclass<imp::EntryRow>)
+        @extends gtk::Widget, gtk::Box,
+        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
+}
+
+impl EntryRow {
+    pub(in crate::desktop) fn new(
+        entry: &TimeEntry,
+        project: Option<&Project>,
+        activity: Option<&Activity>,
+        running: bool,
+    ) -> Self {
+        let row: Self = glib::Object::builder().build();
+        let project_name = project.map_or("Missing project", |item| item.name.as_str());
+        let times = match (
+            Local.timestamp_millis_opt(entry.start_ms).single(),
+            Local.timestamp_millis_opt(entry.end_ms).single(),
+        ) {
+            (Some(start), Some(end)) => {
+                format!("{}–{}", start.format("%H:%M"), end.format("%H:%M"))
+            }
+            _ => String::new(),
+        };
+        let metadata = activity.map_or_else(
+            || format!("{project_name} · {times}"),
+            |item| format!("{project_name} · {} · {times}", item.name),
+        );
+
+        row.imp().title.set_label(if entry.note.is_empty() {
+            "Tracked work"
+        } else {
+            &entry.note
+        });
+        row.imp().subtitle.set_label(&metadata);
+        let duration = u64::try_from(entry.duration_ms().max(0) / 1_000).unwrap_or(0);
+        row.imp().duration.set_label(&format_duration(duration));
+        row.imp()
+            .continue_button
+            .set_label(if running { "▶" } else { "Continue" });
+
+        let color = project
+            .and_then(|item| gtk::gdk::RGBA::parse(&item.color).ok())
+            .unwrap_or_else(|| gtk::gdk::RGBA::new(0.5, 0.7, 0.95, 1.0));
+        row.imp()
+            .dot
+            .set_draw_func(move |_, context, width, height| {
+                context.set_source_rgba(
+                    f64::from(color.red()),
+                    f64::from(color.green()),
+                    f64::from(color.blue()),
+                    1.0,
+                );
+                context.arc(
+                    f64::from(width) / 2.0,
+                    f64::from(height) / 2.0,
+                    4.5,
+                    0.0,
+                    std::f64::consts::TAU,
+                );
+                let _ignored = context.fill();
+            });
+        row
+    }
+
+    pub(in crate::desktop) fn connect_edit_requested<F: Fn(&Self) + 'static>(
+        &self,
+        callback: F,
+    ) -> glib::SignalHandlerId {
+        self.connect_closure(
+            "edit-requested",
+            false,
+            glib::closure_local!(move |row: Self| callback(&row)),
+        )
+    }
+
+    pub(in crate::desktop) fn connect_continue_requested<F: Fn(&Self) + 'static>(
+        &self,
+        callback: F,
+    ) -> glib::SignalHandlerId {
+        self.connect_closure(
+            "continue-requested",
+            false,
+            glib::closure_local!(move |row: Self| callback(&row)),
+        )
+    }
+}

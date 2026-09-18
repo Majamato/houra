@@ -2,7 +2,9 @@
 <gresources>
   <gresource prefix="/io/github/majamato/Houra">
     <file preprocess="xml-stripblanks">ui/window.ui</file>
+    <file preprocess="xml-stripblanks">ui/week-day-cell.ui</file>
+    <file preprocess="xml-stripblanks">ui/entry-row.ui</file>
+    <file preprocess="xml-stripblanks">ui/management-row.ui</file>
     <file>style.css</file>
   </gresource>
 </gresources>
-
