@@ -1,4 +1,50 @@
-/* Equal-width digits stop the timer label from shifting each second. */
-.timer {
-  font-variant-numeric: tabular-nums;
+window {
+  background: @window_bg_color;
 }
+
+.houra-header {
+  min-height: 44px;
+  border-bottom: 1px solid alpha(@window_fg_color, .12);
+}
+
+.houra-brand { font-weight: 600; }
+.houra-switcher button { min-width: 72px; }
+.tracker-page { color: @window_fg_color; }
+.day-title { font-size: 24px; font-weight: 700; }
+.day-date { padding: 0; color: alpha(@window_fg_color, .68); font-size: 12px; }
+.add-time { padding: 10px 13px; font-weight: 600; }
+
+.week-strip { margin: 1px 14px 2px; }
+.week-day { min-height: 68px; padding: 7px 4px; border-radius: 10px; background: transparent; box-shadow: none; }
+.week-day:hover { background: alpha(@window_fg_color, .06); }
+.week-day.selected { background: alpha(@accent_bg_color, .26); color: @accent_color; }
+.week-weekday, .week-total { font-size: 12px; color: alpha(currentColor, .72); }
+.week-number { font-size: 17px; }
+
+.tracker-card {
+  padding: 20px;
+  border: 1px solid alpha(@window_fg_color, .15);
+  border-radius: 10px;
+  background: alpha(@window_fg_color, .055);
+}
+.accent-card { border-left: 3px solid @accent_color; }
+.eyebrow { color: @accent_color; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+.timer-action { min-height: 38px; padding-left: 15px; padding-right: 15px; font-weight: 600; }
+.running-card { padding: 14px 18px; }
+.running-card > .active-details-button { padding: 0; }
+.active-note { font-size: 16px; font-weight: 600; }
+.timer { font-size: 25px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.section-title { font-weight: 600; }
+
+.entries-card {
+  border: 1px solid alpha(@window_fg_color, .15);
+  border-radius: 10px;
+  background: alpha(@window_fg_color, .055);
+}
+.entries-card separator { background: alpha(@window_fg_color, .12); }
+.entry-details { padding: 0; }
+.entry-title { font-size: 14px; }
+.entry-meta { color: alpha(@window_fg_color, .62); font-size: 12px; }
+.entry-duration { min-width: 62px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.continue-button { min-width: 62px; font-weight: 600; }
+.total-value { font-variant-numeric: tabular-nums; }

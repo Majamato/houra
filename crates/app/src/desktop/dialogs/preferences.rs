@@ -7,6 +7,7 @@ use crate::desktop::window::MainWindow;
 
 impl MainWindow {
     pub fn show_preferences(&self) {
+        // The preferences dialog groups the app's behavior settings in one page.
         let dialog = adw::PreferencesDialog::new();
         let page = adw::PreferencesPage::new();
         let group = adw::PreferencesGroup::builder()
@@ -20,6 +21,8 @@ impl MainWindow {
             .as_ref()
             .map_or(5, |settings| settings.uint("idle-threshold-minutes"));
         threshold.set_value(f64::from(current_threshold));
+
+        // Store the idle timeout whenever the spin row changes.
         threshold.connect_value_notify({
             let settings = settings.clone();
             move |row| {
@@ -30,6 +33,8 @@ impl MainWindow {
             }
         });
         group.add(&threshold);
+
+        // Toggle starting the app automatically when the user logs in.
         let launch = adw::SwitchRow::builder()
             .title("Launch at login")
             .active(
@@ -57,6 +62,8 @@ impl MainWindow {
             }
         });
         group.add(&launch);
+
+        // Toggle desktop notifications for tracker events.
         let notifications = adw::SwitchRow::builder()
             .title("Notifications")
             .active(
@@ -74,6 +81,8 @@ impl MainWindow {
             }
         });
         group.add(&notifications);
+
+        // The week-start setting affects both the report and entries pages.
         let week_start = adw::SwitchRow::builder()
             .title("Weeks start on Monday")
             .active(
@@ -91,6 +100,7 @@ impl MainWindow {
                 }
                 if let Some(window) = weak.upgrade() {
                     window.refresh_report();
+                    window.refresh_entries();
                 }
             }
         });

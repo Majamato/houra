@@ -12,6 +12,8 @@ impl MainWindow {
         let Some(handle) = self.handle() else { return };
         let projects = self.imp().projects.borrow().clone();
         let activities = handle.activities(false).unwrap_or_default();
+
+        // Build the form used to add a manually recorded entry.
         let dialog = adw::Dialog::builder()
             .title("Manual Entry")
             .content_width(480)
@@ -36,7 +38,21 @@ impl MainWindow {
         let note = gtk::Entry::builder()
             .placeholder_text("Optional note")
             .build();
-        let end_local = Local::now();
+        let now = Local::now();
+        let selected_date = now
+            .date_naive()
+            .checked_add_signed(chrono::Duration::days(i64::from(
+                self.imp().selected_day_offset.get(),
+            )))
+            .unwrap_or_else(|| now.date_naive());
+        let end_local = if self.imp().selected_day_offset.get() == 0 {
+            now
+        } else {
+            selected_date
+                .and_hms_opt(17, 0, 0)
+                .and_then(|value| Local.from_local_datetime(&value).earliest())
+                .unwrap_or(now)
+        };
         let start_local = end_local - chrono::Duration::hours(1);
         let start = gtk::Entry::builder()
             .text(start_local.format("%Y-%m-%d %H:%M:%S").to_string())
@@ -44,6 +60,8 @@ impl MainWindow {
         let end = gtk::Entry::builder()
             .text(end_local.format("%Y-%m-%d %H:%M:%S").to_string())
             .build();
+
+        // Stack each field label above its input widget.
         for (label_text, widget) in [
             ("Project", project.clone().upcast::<gtk::Widget>()),
             ("Activity", activity.clone().upcast()),
@@ -64,6 +82,8 @@ impl MainWindow {
         dialog.set_child(Some(&content));
         let weak = self.downgrade();
         let dialog_for_save = dialog.clone();
+
+        // Validate the local times, save the entry, and refresh the window.
         save.connect_clicked(move |_| {
             let parse_local = |text: &str| {
                 NaiveDateTime::parse_from_str(text, "%Y-%m-%d %H:%M:%S")
@@ -134,6 +154,8 @@ impl MainWindow {
             .into_iter()
             .filter(|activity| !activity.archived || Some(activity.id) == existing.activity_id)
             .collect::<Vec<_>>();
+
+        // Build the same entry form with the existing values selected.
         let dialog = adw::Dialog::builder()
             .title("Edit Entry")
             .content_width(480)
@@ -195,6 +217,8 @@ impl MainWindow {
         let end = gtk::Entry::builder()
             .text(format_time(existing.end_ms))
             .build();
+
+        // Stack each field label above its input widget.
         for (label_text, widget) in [
             ("Project", project.clone().upcast::<gtk::Widget>()),
             ("Activity", activity.clone().upcast()),
@@ -216,6 +240,8 @@ impl MainWindow {
         dialog.set_child(Some(&content));
         let dialog_for_save = dialog.clone();
         let weak = self.downgrade();
+
+        // Validate the edited values, update the entry, and refresh the related views.
         save.connect_clicked(move |_| {
             let parse = |entry: &gtk::Entry| {
                 NaiveDateTime::parse_from_str(&entry.text(), "%Y-%m-%d %H:%M:%S")

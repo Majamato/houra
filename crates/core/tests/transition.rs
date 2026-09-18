@@ -38,6 +38,35 @@ fn start_stop_records_exact_interval() {
 }
 
 #[test]
+fn switch_records_current_interval_and_starts_selected_work() {
+    let clock = ManualClock::at(1_000);
+    let mut engine = TrackerEngine::new(clock.clone());
+    start(&mut engine);
+    clock.advance(Duration::from_secs(42));
+    let transition = engine
+        .apply(TrackerCommand::Switch {
+            project_id: ProjectId(2),
+            activity_id: None,
+            note: "review".into(),
+        })
+        .unwrap_or_else(|error| panic!("unexpected error: {error}"));
+
+    assert_eq!(transition.completed_entries.len(), 1);
+    assert_eq!(transition.completed_entries[0].start_ms, 1_000);
+    assert_eq!(transition.completed_entries[0].end_ms, 43_000);
+    let TrackerState::Running(active) = transition.snapshot.state else {
+        panic!("switch did not leave the timer running");
+    };
+    assert_eq!(active.project_id, ProjectId(2));
+    assert_eq!(active.note, "review");
+    assert_eq!(active.start_ms, 43_000);
+    assert_eq!(
+        transition.notifications,
+        vec![Notification::TimerStopped, Notification::TimerStarted]
+    );
+}
+
+#[test]
 fn wall_clock_reversal_does_not_create_negative_entry() {
     let clock = ManualClock::at(20_000);
     let mut engine = TrackerEngine::new(clock.clone());

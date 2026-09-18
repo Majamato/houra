@@ -44,6 +44,11 @@ pub enum TrackerCommand {
         activity_id: Option<ActivityId>,
         note: String,
     },
+    Switch {
+        project_id: ProjectId,
+        activity_id: Option<ActivityId>,
+        note: String,
+    },
     EditActive {
         project_id: ProjectId,
         activity_id: Option<ActivityId>,

@@ -102,6 +102,33 @@ impl<C: Clock> TrackerEngine<C> {
                 notifications.push(Notification::TimerStopped);
                 TrackerState::Stopped
             }
+            // Finish the current timer and immediately start another one.
+            (
+                TrackerState::Running(active),
+                TrackerCommand::Switch {
+                    project_id,
+                    activity_id,
+                    note,
+                },
+            ) => {
+                push_entry(
+                    &mut completed_entries,
+                    &active,
+                    active.start_ms,
+                    now,
+                    EntrySource::Timer,
+                );
+                notifications.push(Notification::TimerStopped);
+                notifications.push(Notification::TimerStarted);
+                TrackerState::Running(ActiveTimer {
+                    project_id,
+                    activity_id,
+                    note,
+                    start_ms: now,
+                    started_monotonic_ms: monotonic_ms,
+                    last_heartbeat_ms: now,
+                })
+            }
             // Update the details attached to the timer without interrupting it.
             (
                 TrackerState::Running(mut active),

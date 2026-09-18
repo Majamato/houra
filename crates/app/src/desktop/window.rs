@@ -1,5 +1,6 @@
 use std::cell::{Cell, RefCell};
 
+use chrono::Datelike;
 use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -24,6 +25,18 @@ pub(super) mod imp {
         #[template_child]
         pub start_button: gtk::TemplateChild<gtk::Button>,
         #[template_child]
+        pub stop_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub stopped_panel: gtk::TemplateChild<gtk::Box>,
+        #[template_child]
+        pub running_panel: gtk::TemplateChild<gtk::Box>,
+        #[template_child]
+        pub active_details_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub active_note_label: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
+        pub active_meta_label: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
         pub project_dropdown: gtk::TemplateChild<gtk::DropDown>,
         #[template_child]
         pub activity_dropdown: gtk::TemplateChild<gtk::DropDown>,
@@ -32,11 +45,17 @@ pub(super) mod imp {
         #[template_child]
         pub entries_box: gtk::TemplateChild<gtk::Box>,
         #[template_child]
-        pub day_label: gtk::TemplateChild<gtk::Label>,
+        pub day_button: gtk::TemplateChild<gtk::Button>,
         #[template_child]
-        pub day_previous_button: gtk::TemplateChild<gtk::Button>,
+        pub week_box: gtk::TemplateChild<gtk::Box>,
         #[template_child]
-        pub day_next_button: gtk::TemplateChild<gtk::Button>,
+        pub entries_heading: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
+        pub entries_count: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
+        pub total_title: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
+        pub total_value: gtk::TemplateChild<gtk::Label>,
         #[template_child]
         pub add_project_button: gtk::TemplateChild<gtk::Button>,
         #[template_child]
@@ -60,6 +79,8 @@ pub(super) mod imp {
         pub activities: RefCell<Vec<Activity>>,
         pub report_week_offset: Cell<i32>,
         pub selected_day_offset: Cell<i32>,
+        pub stored_day_seconds: Cell<u64>,
+        pub displayed_today_ordinal: Cell<i32>,
         pub updating_activity_dropdown: Cell<bool>,
     }
 
@@ -115,6 +136,23 @@ impl MainWindow {
             #[weak(rename_to = window)]
             self,
             move |_| window.toggle_timer()
+        ));
+        self.imp().stop_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| window.toggle_timer()
+        ));
+        self.imp()
+            .active_details_button
+            .connect_clicked(glib::clone!(
+                #[weak(rename_to = window)]
+                self,
+                move |_| window.show_active_editor()
+            ));
+        self.imp().day_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| window.show_date_chooser()
         ));
         self.imp()
             .project_dropdown
@@ -180,33 +218,17 @@ impl MainWindow {
             self,
             move |_| window.export_report_csv()
         ));
-        self.imp().day_previous_button.connect_clicked(glib::clone!(
-            #[weak(rename_to = window)]
-            self,
-            move |_| {
-                window
-                    .imp()
-                    .selected_day_offset
-                    .set(window.imp().selected_day_offset.get().saturating_sub(1));
-                window.refresh_entries();
-            }
-        ));
-        self.imp().day_next_button.connect_clicked(glib::clone!(
-            #[weak(rename_to = window)]
-            self,
-            move |_| {
-                window
-                    .imp()
-                    .selected_day_offset
-                    .set(window.imp().selected_day_offset.get().saturating_add(1));
-                window.refresh_entries();
-            }
-        ));
         let weak = self.downgrade();
         glib::timeout_add_seconds_local(1, move || {
             let Some(window) = weak.upgrade() else {
                 return glib::ControlFlow::Break;
             };
+            let today = chrono::Local::now().date_naive().num_days_from_ce();
+            if window.imp().selected_day_offset.get() == 0
+                && window.imp().displayed_today_ordinal.get() != today
+            {
+                window.refresh_entries();
+            }
             window.refresh_timer_only();
             glib::ControlFlow::Continue
         });
