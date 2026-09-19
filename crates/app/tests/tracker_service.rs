@@ -113,13 +113,17 @@ fn service_data_survives_restart_and_restore_refreshes_snapshot()
         project_id: project,
         activity_id: Some(activity),
         note: "note".into(),
-        start_ms: 100,
-        end_ms: 200,
-        source: EntrySource::Manual,
+        intervals: vec![TrackedInterval {
+            id: None,
+            start_ms: 100,
+            end_ms: 200,
+            source: EntrySource::Manual,
+        }],
         created_at_ms: 200,
         updated_at_ms: 200,
     };
     entry.id = Some(handle.add_entry(entry.clone())?);
+    entry.intervals[0].id = Some(IntervalId(1));
     entry.note = "updated".into();
     entry.updated_at_ms = 300;
     handle.update_entry(entry.clone())?;
@@ -214,9 +218,12 @@ fn interrupted_timer_recovers_only_persisted_interval() -> Result<(), Box<dyn st
             project_id: ProjectId(1),
             activity_id: None,
             note: "interrupted".into(),
-            start_ms: 100,
-            end_ms: 200,
-            source: EntrySource::Recovery,
+            intervals: vec![TrackedInterval {
+                id: Some(IntervalId(1)),
+                start_ms: 100,
+                end_ms: 200,
+                source: EntrySource::Recovery
+            }],
             created_at_ms: 200,
             updated_at_ms: 200
         }]
@@ -226,5 +233,47 @@ fn interrupted_timer_recovers_only_persisted_interval() -> Result<(), Box<dyn st
     assert!(store.previous_shutdown_clean());
     assert_eq!(store.load_snapshot()?.state, TrackerState::Stopped);
     assert_eq!(store.list_all_entries()?, entries);
+    Ok(())
+}
+
+#[test]
+fn continue_resolves_identity_and_active_edits_update_shared_details()
+-> Result<(), Box<dyn std::error::Error>> {
+    use houra_core::*;
+    let directory = TempDir::new()?;
+    let service = TrackerService::start(directory.path().join("continue.sqlite3"))?;
+    let entry_id = service.handle.add_entry(TimeEntry {
+        id: None,
+        project_id: ProjectId(1),
+        activity_id: None,
+        note: "original".into(),
+        intervals: vec![TrackedInterval {
+            id: None,
+            start_ms: 100,
+            end_ms: 200,
+            source: EntrySource::Manual,
+        }],
+        created_at_ms: 200,
+        updated_at_ms: 200,
+    })?;
+    let continued = service.handle.continue_entry(entry_id)?;
+    assert_eq!(
+        continued
+            .snapshot
+            .state
+            .active()
+            .and_then(|active| active.entry_id),
+        Some(entry_id)
+    );
+    let duplicate = service.handle.continue_entry(entry_id)?;
+    assert_eq!(duplicate.snapshot.revision, continued.snapshot.revision);
+    service.handle.apply(TrackerCommand::EditActive {
+        project_id: ProjectId(1),
+        activity_id: None,
+        note: "edited while active".into(),
+    })?;
+    assert_eq!(service.handle.entry(entry_id)?.note, "edited while active");
+    service.handle.apply(TrackerCommand::Stop)?;
+    service.shutdown()?;
     Ok(())
 }

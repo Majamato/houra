@@ -54,7 +54,11 @@ impl MainWindow {
         };
         let projects = handle.projects(true).unwrap_or_default();
         let activities = handle.activities(true).unwrap_or_default();
-        let rows = houra_core::group_entries(&entries);
+        let rows = houra_core::group_entries_in_range(
+            &entries,
+            start.timestamp_millis(),
+            end.timestamp_millis(),
+        );
         if rows.is_empty() {
             self.imp()
                 .report_box
@@ -108,8 +112,14 @@ impl MainWindow {
                     let path = file.path().ok_or_else(|| {
                         crate::AppError::InvalidBackup("CSV export requires a local file".into())
                     })?;
-                    let entries =
+                    let mut entries =
                         handle.entries(start.timestamp_millis(), end.timestamp_millis())?;
+                    for entry in &mut entries {
+                        entry.intervals.retain(|interval| {
+                            interval.start_ms < end.timestamp_millis()
+                                && interval.end_ms > start.timestamp_millis()
+                        });
+                    }
                     let projects = handle.projects(true)?;
                     let activities = handle.activities(true)?;
                     crate::export::write_csv_path(&path, &entries, &projects, &activities)

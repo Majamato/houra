@@ -112,25 +112,23 @@ impl MainWindow {
                 return;
             }
         };
+        let clears_note = matches!(command, TrackerCommand::Stop);
         match handle.apply(command) {
-            Ok(_) => self.refresh(),
+            Ok(_) => {
+                if clears_note {
+                    self.imp().note_entry.set_text("");
+                }
+                self.refresh();
+            }
             Err(error) => self.show_database_error(&error.to_string()),
         }
     }
 
     pub(in crate::desktop) fn continue_entry(&self, entry: &TimeEntry) {
         let Some(handle) = self.handle() else { return };
-        let command = match handle.snapshot().map(|snapshot| snapshot.state) {
-            Ok(TrackerState::Stopped) => TrackerCommand::Start {
-                project_id: entry.project_id,
-                activity_id: entry.activity_id,
-                note: entry.note.clone(),
-            },
-            Ok(TrackerState::Running(_)) => TrackerCommand::Switch {
-                project_id: entry.project_id,
-                activity_id: entry.activity_id,
-                note: entry.note.clone(),
-            },
+        let Some(entry_id) = entry.id else { return };
+        match handle.snapshot().map(|snapshot| snapshot.state) {
+            Ok(TrackerState::Stopped | TrackerState::Running(_)) => {}
             Ok(TrackerState::IdlePending(_)) => {
                 self.show_idle_dialog();
                 return;
@@ -143,8 +141,8 @@ impl MainWindow {
                 self.show_database_error(&error.to_string());
                 return;
             }
-        };
-        match handle.apply(command) {
+        }
+        match handle.continue_entry(entry_id) {
             Ok(_) => self.refresh(),
             Err(error) => self.show_database_error(&error.to_string()),
         }

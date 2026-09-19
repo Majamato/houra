@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    ActiveTimer, ActivityId, IdleDecision, Notification, PendingIdle, PendingRecovery, ProjectId,
-    TimeEntry,
+    ActiveTimer, ActivityId, EntryId, IdleDecision, Notification, PendingIdle, PendingRecovery,
+    ProjectId, TimeEntry,
 };
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Eq, Serialize)]
@@ -49,6 +49,12 @@ pub enum TrackerCommand {
         activity_id: Option<ActivityId>,
         note: String,
     },
+    Continue {
+        entry_id: EntryId,
+        project_id: ProjectId,
+        activity_id: Option<ActivityId>,
+        note: String,
+    },
     EditActive {
         project_id: ProjectId,
         activity_id: Option<ActivityId>,
@@ -83,6 +89,7 @@ mod tests {
     #[test]
     fn active_access_covers_every_state() {
         let active = ActiveTimer {
+            entry_id: None,
             project_id: ProjectId(1),
             activity_id: None,
             note: String::new(),

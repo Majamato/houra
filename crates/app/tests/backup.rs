@@ -5,7 +5,14 @@ use houra_core::TrackerSnapshot;
 #[test]
 fn backup_round_trip_preserves_data() {
     let (_first_dir, mut first) = temporary_store();
-    assert!(first.add_entry(&manual(None, 1, 100, 200)).is_ok());
+    let mut entry = manual(None, 1, 100, 200);
+    entry.intervals.push(houra_core::TrackedInterval {
+        id: None,
+        start_ms: 300,
+        end_ms: 400,
+        source: houra_core::EntrySource::Timer,
+    });
+    assert!(first.add_entry(&entry).is_ok());
     let backup = first
         .backup(1_000)
         .unwrap_or_else(|error| panic!("backup failed: {error}"));
@@ -31,7 +38,7 @@ fn backup_file_round_trip_is_versioned_and_validated() {
         &std::fs::read(&path).unwrap_or_else(|error| panic!("read failed: {error}")),
     )
     .unwrap_or_else(|error| panic!("JSON failed: {error}"));
-    assert_eq!(value["version"], 2);
+    assert_eq!(value["version"], 3);
     assert!(value["activities"].as_array().is_some_and(|activities| {
         activities
             .iter()
@@ -59,7 +66,7 @@ fn version_one_backup_is_rejected_without_modifying_the_file()
         BackupDocument::read_from_path(&path),
         Err(houra::AppError::UnsupportedBackupVersion {
             found: 1,
-            expected: 2
+            expected: 3
         })
     ));
     assert_eq!(std::fs::read(path)?, bytes);
@@ -72,7 +79,7 @@ fn overlapping_restore_is_rejected_before_writes() {
     assert!(store.add_entry(&manual(None, 1, 100, 200)).is_ok());
     let invalid = BackupDocument {
         format: "houra-backup".into(),
-        version: 2,
+        version: 3,
         exported_at_ms: 1,
         projects: store
             .list_projects(true)
@@ -110,7 +117,7 @@ fn full_round_trip_preserves_archives_sources_and_snapshot() -> Result<(), houra
         let start = index as i64 * 100;
         let mut entry = manual(None, project.0, start, start + 100);
         entry.activity_id = Some(activity);
-        entry.source = source;
+        entry.intervals[0].source = source;
         store.add_entry(&entry)?;
     }
     store.set_activity_archived(activity, true, 500)?;
@@ -178,7 +185,7 @@ fn invalid_documents_and_files_report_specific_errors() -> Result<(), Box<dyn st
         bad.validate(),
         Err(AppError::UnsupportedBackupVersion {
             found: 1,
-            expected: 2
+            expected: 3
         })
     ));
     bad = original.clone();

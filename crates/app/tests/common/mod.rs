@@ -1,9 +1,9 @@
-use houra::storage::Store;
-use houra_core::{EntryId, EntrySource, ProjectId, TimeEntry};
+use houra::storage::{DATABASE_FILENAME, Store};
+use houra_core::{EntryId, EntrySource, ProjectId, TimeEntry, TrackedInterval};
 use tempfile::TempDir;
 pub fn temporary_store() -> (TempDir, Store) {
     let directory = TempDir::new().unwrap_or_else(|error| panic!("tempdir failed: {error}"));
-    let store = Store::open(&directory.path().join("tracker.sqlite3"))
+    let store = Store::open(&directory.path().join(DATABASE_FILENAME))
         .unwrap_or_else(|error| panic!("store failed: {error}"));
     (directory, store)
 }
@@ -14,9 +14,12 @@ pub fn manual(id: Option<i64>, project_id: i64, start_ms: i64, end_ms: i64) -> T
         project_id: ProjectId(project_id),
         activity_id: None,
         note: "manual".into(),
-        start_ms,
-        end_ms,
-        source: EntrySource::Manual,
+        intervals: vec![TrackedInterval {
+            id: id.map(houra_core::IntervalId),
+            start_ms,
+            end_ms,
+            source: EntrySource::Manual,
+        }],
         created_at_ms: end_ms,
         updated_at_ms: end_ms,
     }

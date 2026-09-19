@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use directories::BaseDirs;
+use houra::storage::DATABASE_FILENAME;
 use houra::{APP_NAME, AppError};
 use tracing_subscriber::EnvFilter;
 
@@ -16,11 +17,10 @@ fn main() {
     }
 }
 
-/// `$XDG_DATA_HOME/houra/tracker.sqlite3`, usually
-/// `~/.local/share/houra/tracker.sqlite3`.
+/// Returns the default database path in the application's local data directory.
 fn data_path() -> Result<PathBuf, AppError> {
     let base = BaseDirs::new().ok_or(AppError::DataDirectoryUnavailable)?;
-    Ok(base.data_local_dir().join("houra").join("tracker.sqlite3"))
+    Ok(base.data_local_dir().join("houra").join(DATABASE_FILENAME))
 }
 
 #[cfg(feature = "native-ui")]

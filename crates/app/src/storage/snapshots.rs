@@ -1,8 +1,10 @@
 //! Tracker snapshots and atomic transition persistence.
 
-use super::entries::{insert_entry, validate_entry_references};
+use super::entries::{
+    append_to_entry, insert_new_entry, update_entry_details, validate_entry_references,
+};
 use crate::AppError;
-use houra_core::{EntryId, EntrySource, TimeEntry, TrackerSnapshot, TrackerState, Transition};
+use houra_core::{EntryId, TimeEntry, TrackerSnapshot, TrackerState, Transition};
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
 
 use super::Store;
@@ -33,11 +35,38 @@ impl Store {
         let transaction = self.connection.transaction()?;
         validate_active_references(&transaction, &transition.snapshot.state, previous_activity)?;
         for entry in &transition.completed_entries {
-            insert_entry(
+            let allow_archived =
+                entry.activity_id.is_some() && entry.activity_id == previous_activity;
+            if entry.id.is_some() {
+                append_to_entry(&transaction, entry, allow_archived)?;
+            } else {
+                insert_new_entry(&transaction, entry, allow_archived)?;
+            }
+        }
+        // Editing an active resumed timer changes the parent entry immediately.
+        if transition.completed_entries.is_empty()
+            && let Some(active) = transition.snapshot.state.active()
+            && let Some(entry_id) = active.entry_id
+        {
+            let entry = TimeEntry {
+                id: Some(entry_id),
+                project_id: active.project_id,
+                activity_id: active.activity_id,
+                note: active.note.clone(),
+                intervals: Vec::new(),
+                created_at_ms: active.start_ms,
+                updated_at_ms: active.last_heartbeat_ms,
+            };
+            validate_entry_references(
                 &transaction,
-                entry,
-                entry.activity_id.is_some() && entry.activity_id == previous_activity,
+                &entry,
+                active.activity_id == previous_activity,
             )?;
+            if update_entry_details(&transaction, &entry)? == 0 {
+                return Err(AppError::InvalidBackup(format!(
+                    "entry {entry_id:?} was not found"
+                )));
+            }
         }
         write_snapshot(&transaction, &transition.snapshot)?;
         transaction.commit()?;
@@ -56,9 +85,7 @@ fn validate_active_references(
             project_id: active.project_id,
             activity_id: active.activity_id,
             note: active.note.clone(),
-            start_ms: active.start_ms,
-            end_ms: active.start_ms.saturating_add(1),
-            source: EntrySource::Timer,
+            intervals: Vec::new(),
             created_at_ms: active.start_ms,
             updated_at_ms: active.start_ms,
         };
@@ -67,8 +94,9 @@ fn validate_active_references(
             &entry,
             active.activity_id.is_some() && active.activity_id == previous_activity,
         )?;
-        let mut statement = connection
-            .prepare("SELECT id FROM entries WHERE end_ms > ?1 ORDER BY start_ms LIMIT 20")?;
+        let mut statement = connection.prepare(
+            "SELECT DISTINCT entry_id FROM entry_intervals WHERE end_ms > ?1 ORDER BY start_ms LIMIT 20"
+        )?;
         let conflicts = statement
             .query_map([active.start_ms], |row| row.get::<_, i64>(0).map(EntryId))?
             .collect::<Result<Vec<_>, _>>()?;

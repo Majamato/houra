@@ -7,7 +7,7 @@ use houra_core::{Activity, Project, TimeEntry};
 
 use crate::AppError;
 
-/// Writes one CSV row per entry to any writer; times are local.
+/// Writes one CSV row per tracked interval to any writer; times are local.
 pub fn write_csv<W: Write>(
     writer: W,
     entries: &[TimeEntry],
@@ -17,6 +17,7 @@ pub fn write_csv<W: Write>(
     let mut csv = csv::Writer::from_writer(writer);
     csv.write_record([
         "date",
+        "entry_id",
         "start_local",
         "end_local",
         "duration_seconds",
@@ -26,8 +27,6 @@ pub fn write_csv<W: Write>(
         "source",
     ])?;
     for entry in entries {
-        let start = Local.timestamp_millis_opt(entry.start_ms).single();
-        let end = Local.timestamp_millis_opt(entry.end_ms).single();
         let project = projects
             .iter()
             .find(|project| project.id == entry.project_id)
@@ -36,19 +35,24 @@ pub fn write_csv<W: Write>(
             .activity_id
             .and_then(|id| activities.iter().find(|activity| activity.id == id))
             .map_or("", |activity| activity.name.as_str());
-        let date = start.map_or_else(String::new, |value| value.format("%x").to_string());
-        let start_local = start.map_or_else(String::new, |value| value.to_rfc3339());
-        let end_local = end.map_or_else(String::new, |value| value.to_rfc3339());
-        csv.write_record([
-            date,
-            start_local,
-            end_local,
-            (entry.duration_ms() / 1_000).to_string(),
-            project.to_owned(),
-            activity.to_owned(),
-            entry.note.clone(),
-            format!("{:?}", entry.source),
-        ])?;
+        for interval in &entry.intervals {
+            let start = Local.timestamp_millis_opt(interval.start_ms).single();
+            let end = Local.timestamp_millis_opt(interval.end_ms).single();
+            let date = start.map_or_else(String::new, |value| value.format("%x").to_string());
+            let start_local = start.map_or_else(String::new, |value| value.to_rfc3339());
+            let end_local = end.map_or_else(String::new, |value| value.to_rfc3339());
+            csv.write_record([
+                date,
+                entry.id.map_or_else(String::new, |id| id.0.to_string()),
+                start_local,
+                end_local,
+                (interval.duration_ms() / 1_000).to_string(),
+                project.to_owned(),
+                activity.to_owned(),
+                entry.note.clone(),
+                format!("{:?}", interval.source),
+            ])?;
+        }
     }
     csv.flush().map_err(csv::Error::from)?;
     Ok(())

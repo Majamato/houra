@@ -12,6 +12,8 @@ use crate::AppError;
 use rusqlite::{Connection, OptionalExtension, params};
 use std::path::Path;
 
+pub const DATABASE_FILENAME: &str = "houra.sqlite3";
+
 /// Owns the SQLite connection used by the tracker service's worker thread.
 pub struct Store {
     connection: Connection,

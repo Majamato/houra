@@ -1,6 +1,7 @@
 use crate::desktop::log_background_error;
 use chrono::{Local, NaiveDateTime, TimeZone};
 use gtk::prelude::*;
+use gtk::subclass::prelude::*;
 use houra_core::{TrackerCommand, TrackerState};
 use libadwaita as adw;
 use libadwaita::prelude::*;
@@ -55,10 +56,14 @@ impl MainWindow {
                     resume: response == "resume",
                 })
             };
+            let succeeded = result.is_ok();
             if let Err(error) = result {
                 log_background_error("recovering timer", error);
             }
             if let Some(window) = weak.upgrade() {
+                if succeeded && response == "stop" {
+                    window.imp().note_entry.set_text("");
+                }
                 window.refresh();
             }
         });

@@ -2,7 +2,8 @@ mod common;
 use std::time::Duration;
 
 use houra_core::{
-    IdleDecision, ManualClock, Notification, ProjectId, TrackerCommand, TrackerEngine, TrackerState,
+    IdleDecision, ManualClock, Notification, ProjectId, TrackedInterval, TrackerCommand,
+    TrackerEngine, TrackerState,
 };
 
 fn start(engine: &mut TrackerEngine<ManualClock>) {
@@ -24,7 +25,7 @@ fn start_stop_records_exact_interval() {
     assert!(result.is_ok());
     let transition = result.unwrap_or_else(|error| panic!("unexpected error: {error}"));
     let mut expected = common::entry(None, 1_000, 43_000);
-    expected.source = houra_core::EntrySource::Timer;
+    expected.intervals[0].source = houra_core::EntrySource::Timer;
     expected.note = "design".into();
     assert_eq!(transition.completed_entries, vec![expected]);
     assert_eq!(
@@ -52,8 +53,8 @@ fn switch_records_current_interval_and_starts_selected_work() {
         .unwrap_or_else(|error| panic!("unexpected error: {error}"));
 
     assert_eq!(transition.completed_entries.len(), 1);
-    assert_eq!(transition.completed_entries[0].start_ms, 1_000);
-    assert_eq!(transition.completed_entries[0].end_ms, 43_000);
+    assert_eq!(transition.completed_entries[0].intervals[0].start_ms, 1_000);
+    assert_eq!(transition.completed_entries[0].intervals[0].end_ms, 43_000);
     let TrackerState::Running(active) = transition.snapshot.state else {
         panic!("switch did not leave the timer running");
     };
@@ -64,6 +65,74 @@ fn switch_records_current_interval_and_starts_selected_work() {
         transition.notifications,
         vec![Notification::TimerStopped, Notification::TimerStarted]
     );
+}
+
+#[test]
+fn continue_cycles_keep_one_identity_exclude_breaks_and_ignore_duplicates() {
+    use houra_core::EntryId;
+    let clock = ManualClock::at(0);
+    let mut engine = TrackerEngine::new(clock.clone());
+    let continue_work = || TrackerCommand::Continue {
+        entry_id: EntryId(7),
+        project_id: ProjectId(1),
+        activity_id: None,
+        note: "design".into(),
+    };
+
+    engine
+        .apply(continue_work())
+        .unwrap_or_else(|error| panic!("{error}"));
+    let before_duplicate = engine.snapshot().clone();
+    let duplicate = engine
+        .apply(continue_work())
+        .unwrap_or_else(|error| panic!("{error}"));
+    assert_eq!(duplicate.snapshot, before_duplicate);
+    assert!(duplicate.completed_entries.is_empty());
+
+    clock.advance(Duration::from_secs(16 * 60));
+    let first = engine
+        .apply(TrackerCommand::Stop)
+        .unwrap_or_else(|error| panic!("{error}"));
+    clock.advance(Duration::from_secs(5 * 60));
+    engine
+        .apply(continue_work())
+        .unwrap_or_else(|error| panic!("{error}"));
+    clock.advance(Duration::from_secs(60));
+    let second = engine
+        .apply(TrackerCommand::Stop)
+        .unwrap_or_else(|error| panic!("{error}"));
+
+    let completed = [
+        first.completed_entries[0].clone(),
+        second.completed_entries[0].clone(),
+    ];
+    assert!(completed.iter().all(|entry| entry.id == Some(EntryId(7))));
+    assert_eq!(
+        completed
+            .iter()
+            .map(|entry| entry.duration_ms())
+            .sum::<i64>(),
+        17 * 60 * 1_000
+    );
+}
+
+#[test]
+fn zero_duration_continue_stop_adds_no_interval() {
+    let clock = ManualClock::at(100);
+    let mut engine = TrackerEngine::new(clock);
+    engine
+        .apply(TrackerCommand::Continue {
+            entry_id: houra_core::EntryId(4),
+            project_id: ProjectId(1),
+            activity_id: None,
+            note: String::new(),
+        })
+        .unwrap_or_else(|error| panic!("{error}"));
+    let stopped = engine
+        .apply(TrackerCommand::Stop)
+        .unwrap_or_else(|error| panic!("{error}"));
+    assert!(stopped.completed_entries.is_empty());
+    assert_eq!(stopped.snapshot.state, TrackerState::Stopped);
 }
 
 #[test]
@@ -98,8 +167,11 @@ fn discard_idle_resumes_at_recorded_return_not_dialog_time() {
     let result = engine.apply(TrackerCommand::ResolveIdle(IdleDecision::DiscardAndResume));
     assert!(result.is_ok());
     let transition = result.unwrap_or_else(|error| panic!("unexpected error: {error}"));
-    assert_eq!(transition.completed_entries[0].start_ms, 10_000);
-    assert_eq!(transition.completed_entries[0].end_ms, 310_000);
+    assert_eq!(
+        transition.completed_entries[0].intervals[0].start_ms,
+        10_000
+    );
+    assert_eq!(transition.completed_entries[0].intervals[0].end_ms, 310_000);
     match transition.snapshot.state {
         TrackerState::Running(active) => assert_eq!(active.start_ms, 610_000),
         state => panic!("expected running, got {state:?}"),
@@ -166,6 +238,7 @@ fn recovery_never_includes_time_after_heartbeat() {
         result
             .unwrap_or_else(|error| panic!("unexpected error: {error}"))
             .completed_entries[0]
+            .intervals[0]
             .end_ms,
         35_000
     );
@@ -175,6 +248,7 @@ fn recovery_never_includes_time_after_heartbeat() {
 fn every_command_state_combination_accepts_or_preserves_snapshot() {
     use houra_core::*;
     let active = ActiveTimer {
+        entry_id: None,
         project_id: ProjectId(1),
         activity_id: None,
         note: "design".into(),
@@ -217,8 +291,14 @@ fn every_command_state_combination_accepts_or_preserves_snapshot() {
             resume: false,
         },
         TrackerCommand::DiscardRecovery,
+        TrackerCommand::Continue {
+            entry_id: EntryId(9),
+            project_id: ProjectId(2),
+            activity_id: None,
+            note: "continued".into(),
+        },
     ];
-    let accepted: [&[usize]; 4] = [&[0], &[1, 2, 3, 4], &[3, 5, 6], &[7, 8]];
+    let accepted: [&[usize]; 4] = [&[0, 9], &[1, 2, 3, 4, 9], &[3, 5, 6], &[7, 8]];
     for (i, state) in states.into_iter().enumerate() {
         for (j, command) in commands.iter().enumerate() {
             let before = TrackerSnapshot {
@@ -233,13 +313,15 @@ fn every_command_state_combination_accepts_or_preserves_snapshot() {
                 assert_eq!(transition.snapshot.revision, 11);
                 assert_eq!(
                     transition.completed_entries.len(),
-                    usize::from(j == 1 || j == 7)
+                    usize::from(j == 1 || j == 7 || (i == 1 && j == 9))
                 );
                 let notifications = match j {
                     0 => vec![Notification::TimerStarted],
                     1 => vec![Notification::TimerStopped],
                     5 => vec![Notification::IdleNeedsResolution],
                     7 | 8 => vec![Notification::RecoveryResolved],
+                    9 if i == 0 => vec![Notification::TimerStarted],
+                    9 => vec![Notification::TimerStopped, Notification::TimerStarted],
                     _ => vec![],
                 };
                 assert_eq!(transition.notifications, notifications);
@@ -348,9 +430,12 @@ fn idle_decisions_produce_exact_records() {
                 project_id: ProjectId(1),
                 activity_id: None,
                 note: "design".into(),
-                start_ms: 100,
-                end_ms: 150,
-                source: EntrySource::Timer,
+                intervals: vec![TrackedInterval {
+                    id: None,
+                    start_ms: 100,
+                    end_ms: 150,
+                    source: EntrySource::Timer,
+                }],
                 created_at_ms: 150,
                 updated_at_ms: 150,
             });
@@ -361,9 +446,12 @@ fn idle_decisions_produce_exact_records() {
                 project_id: ProjectId(2),
                 activity_id: None,
                 note: "away".into(),
-                start_ms: 150,
-                end_ms: 200,
-                source: EntrySource::IdleReassignment,
+                intervals: vec![TrackedInterval {
+                    id: None,
+                    start_ms: 150,
+                    end_ms: 200,
+                    source: EntrySource::IdleReassignment,
+                }],
                 created_at_ms: 200,
                 updated_at_ms: 200,
             });
@@ -467,9 +555,12 @@ fn restore_recovery_boundaries_resume_discard_and_revision_saturation() {
             project_id: ProjectId(1),
             activity_id: None,
             note: "design".into(),
-            start_ms: 100,
-            end_ms: 200,
-            source: EntrySource::Recovery,
+            intervals: vec![TrackedInterval {
+                id: None,
+                start_ms: 100,
+                end_ms: 200,
+                source: EntrySource::Recovery
+            }],
             created_at_ms: 200,
             updated_at_ms: 200
         }]

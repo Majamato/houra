@@ -3,7 +3,7 @@ mod management_row;
 mod timer_action_button;
 mod week_day_cell;
 
-pub(super) use entry_row::EntryRow;
+pub(super) use entry_row::{EntryRow, EntryTrackingState};
 pub(super) use management_row::ManagementRow;
 pub(super) use timer_action_button::TimerActionButton;
 pub(super) use week_day_cell::WeekDayCell;
@@ -61,15 +61,26 @@ mod tests {
             project_id: project.id,
             activity_id: Some(activity.id),
             note: "Tracked work".into(),
-            start_ms: 0,
-            end_ms: 60_000,
-            source: houra_core::EntrySource::Timer,
+            intervals: vec![houra_core::TrackedInterval {
+                id: None,
+                start_ms: 0,
+                end_ms: 60_000,
+                source: houra_core::EntrySource::Timer,
+            }],
             created_at_ms: 0,
             updated_at_ms: 0,
         };
 
         let _week_day = super::WeekDayCell::new(date, 60, true);
-        let _entry = super::EntryRow::new(&entry, Some(&project), Some(&activity), false);
+        let _entry = super::EntryRow::new(
+            &entry,
+            Some(&project),
+            Some(&activity),
+            0,
+            86_400_000,
+            0,
+            super::EntryTrackingState::Inactive,
+        );
         let _management = super::ManagementRow::new("General", "#3584e4", false, true);
         let _timer: super::TimerActionButton = glib::Object::builder().build();
     }

@@ -2,7 +2,7 @@
 
 use crate::AppError;
 
-const SCHEMA_VERSION: i64 = 2;
+const SCHEMA_VERSION: i64 = 3;
 
 use super::Store;
 
@@ -45,23 +45,28 @@ impl Store {
                     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
                     activity_id INTEGER REFERENCES activities(id) ON DELETE RESTRICT,
                     note TEXT NOT NULL DEFAULT '',
-                    start_ms INTEGER NOT NULL,
-                    end_ms INTEGER NOT NULL CHECK(end_ms > start_ms),
-                    source TEXT NOT NULL,
                     created_at_ms INTEGER NOT NULL,
                     updated_at_ms INTEGER NOT NULL
                 );
-                CREATE INDEX entries_interval ON entries(start_ms, end_ms);
-                CREATE TRIGGER entries_no_overlap_insert BEFORE INSERT ON entries
+                CREATE TABLE entry_intervals (
+                    id INTEGER PRIMARY KEY,
+                    entry_id INTEGER NOT NULL REFERENCES entries(id) ON DELETE CASCADE,
+                    start_ms INTEGER NOT NULL,
+                    end_ms INTEGER NOT NULL CHECK(end_ms > start_ms),
+                    source TEXT NOT NULL
+                );
+                CREATE INDEX entry_intervals_range ON entry_intervals(start_ms, end_ms);
+                CREATE INDEX entry_intervals_entry ON entry_intervals(entry_id, start_ms);
+                CREATE TRIGGER intervals_no_overlap_insert BEFORE INSERT ON entry_intervals
                 -- Half-open intervals overlap iff new.start < old.end and
                 -- new.end > old.start; adjacent boundaries are therefore legal.
                 WHEN EXISTS (
-                    SELECT 1 FROM entries
+                    SELECT 1 FROM entry_intervals
                     WHERE NEW.start_ms < end_ms AND NEW.end_ms > start_ms
                 ) BEGIN SELECT RAISE(ABORT, 'time entry overlaps existing entry'); END;
-                CREATE TRIGGER entries_no_overlap_update BEFORE UPDATE OF start_ms, end_ms ON entries
+                CREATE TRIGGER intervals_no_overlap_update BEFORE UPDATE OF start_ms, end_ms ON entry_intervals
                 WHEN EXISTS (
-                    SELECT 1 FROM entries
+                    SELECT 1 FROM entry_intervals
                     WHERE id != NEW.id AND NEW.start_ms < end_ms AND NEW.end_ms > start_ms
                 ) BEGIN SELECT RAISE(ABORT, 'time entry overlaps existing entry'); END;
                 CREATE TABLE tracker_state (
@@ -80,7 +85,7 @@ impl Store {
                     ('Documentation', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000),
                     ('Meetings', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000),
                     ('Research', 0, unixepoch('subsec') * 1000, unixepoch('subsec') * 1000);
-                PRAGMA user_version = 2;
+                PRAGMA user_version = 3;
                 ",
             )?;
             transaction.commit()?;

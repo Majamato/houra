@@ -7,24 +7,32 @@ use crate::{ActivityId, DomainError, ProjectId, TimeEntry};
 
 /// Rejects entries whose half-open intervals overlap; adjacent ones are fine.
 pub fn validate_no_overlaps(entries: &[TimeEntry]) -> Result<(), DomainError> {
-    let mut ordered: Vec<&TimeEntry> = entries.iter().collect();
-    ordered.sort_by_key(|entry| (entry.start_ms, entry.end_ms));
+    let mut ordered = entries
+        .iter()
+        .flat_map(|entry| {
+            entry
+                .intervals
+                .iter()
+                .map(move |interval| (entry.id, interval))
+        })
+        .collect::<Vec<_>>();
+    ordered.sort_by_key(|(_, interval)| (interval.start_ms, interval.end_ms));
     let mut conflicts = Vec::new();
     let mut found_overlap = false;
     // An earlier long interval can overlap entries beyond its immediate neighbor.
     let mut furthest_end = i64::MIN;
-    for (index, entry) in ordered.iter().enumerate() {
-        let overlaps_previous = entry.start_ms < furthest_end;
+    for (index, (entry_id, interval)) in ordered.iter().enumerate() {
+        let overlaps_previous = interval.start_ms < furthest_end;
         let overlaps_next = ordered
             .get(index + 1)
-            .is_some_and(|next| next.start_ms < entry.end_ms);
+            .is_some_and(|(_, next)| next.start_ms < interval.end_ms);
         if overlaps_previous || overlaps_next {
             found_overlap = true;
-            if let Some(id) = entry.id {
-                conflicts.push(id);
+            if let Some(id) = entry_id {
+                conflicts.push(*id);
             }
         }
-        furthest_end = furthest_end.max(entry.end_ms);
+        furthest_end = furthest_end.max(interval.end_ms);
     }
     conflicts.sort_unstable();
     conflicts.dedup();
@@ -56,32 +64,41 @@ pub struct ReportRow {
 /// Entries crossing midnight are split at the local boundary, including DST
 /// days whose actual length is not 24 hours.
 pub fn group_entries(entries: &[TimeEntry]) -> Vec<ReportRow> {
-    let mut totals: BTreeMap<ReportBucket, (i64, usize)> = BTreeMap::new();
-    for entry in entries {
-        let mut cursor = entry.start_ms;
-        while cursor < entry.end_ms {
-            let Some(local) = Local.timestamp_millis_opt(cursor).single() else {
-                break;
-            };
-            let next_midnight = next_local_midnight(local).min(entry.end_ms);
-            let bucket = ReportBucket {
-                local_year: local.year(),
-                local_ordinal: local.ordinal(),
-                project_id: entry.project_id,
-                activity_id: entry.activity_id,
-            };
-            let total = totals.entry(bucket).or_default();
-            total.0 = total.0.saturating_add(next_midnight.saturating_sub(cursor));
-            total.1 = total.1.saturating_add(1);
-            cursor = next_midnight;
+    group_entries_in_range(entries, i64::MIN, i64::MAX)
+}
+
+/// Groups only the portion of each interval inside `[start_ms, end_ms)`.
+pub fn group_entries_in_range(entries: &[TimeEntry], start_ms: i64, end_ms: i64) -> Vec<ReportRow> {
+    let mut totals: BTreeMap<ReportBucket, (i64, std::collections::BTreeSet<usize>)> =
+        BTreeMap::new();
+    for (entry_index, entry) in entries.iter().enumerate() {
+        for interval in &entry.intervals {
+            let mut cursor = interval.start_ms.max(start_ms);
+            let interval_end = interval.end_ms.min(end_ms);
+            while cursor < interval_end {
+                let Some(local) = Local.timestamp_millis_opt(cursor).single() else {
+                    break;
+                };
+                let next_midnight = next_local_midnight(local).min(interval_end);
+                let bucket = ReportBucket {
+                    local_year: local.year(),
+                    local_ordinal: local.ordinal(),
+                    project_id: entry.project_id,
+                    activity_id: entry.activity_id,
+                };
+                let total = totals.entry(bucket).or_default();
+                total.0 = total.0.saturating_add(next_midnight.saturating_sub(cursor));
+                total.1.insert(entry_index);
+                cursor = next_midnight;
+            }
         }
     }
     totals
         .into_iter()
-        .map(|(bucket, (duration_ms, entry_count))| ReportRow {
+        .map(|(bucket, (duration_ms, entries))| ReportRow {
             bucket,
             duration_ms,
-            entry_count,
+            entry_count: entries.len(),
         })
         .collect()
 }
@@ -105,9 +122,12 @@ mod tests {
             project_id: ProjectId(1),
             activity_id: None,
             note: String::new(),
-            start_ms,
-            end_ms,
-            source: EntrySource::Manual,
+            intervals: vec![crate::TrackedInterval {
+                id: None,
+                start_ms,
+                end_ms,
+                source: EntrySource::Manual,
+            }],
             created_at_ms: end_ms,
             updated_at_ms: end_ms,
         }
@@ -137,6 +157,20 @@ mod tests {
             .map(|row| row.duration_ms)
             .sum();
         assert_eq!(total, entries[0].duration_ms());
+    }
+    #[test]
+    fn multiple_intervals_count_parent_once_per_bucket_and_range_is_clipped() {
+        let mut entry = entry(Some(1), 100, 200);
+        entry.intervals.push(crate::TrackedInterval {
+            id: None,
+            start_ms: 300,
+            end_ms: 500,
+            source: EntrySource::Timer,
+        });
+        let rows = group_entries_in_range(&[entry], 150, 400);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].duration_ms, 150);
+        assert_eq!(rows[0].entry_count, 1);
     }
     #[test]
     fn anonymous_overlaps_are_rejected() {
@@ -176,14 +210,17 @@ mod tests {
                     project_id: ProjectId(1),
                     activity_id: None,
                     note: String::new(),
-                    start_ms: start.timestamp_millis(),
-                    end_ms: end.timestamp_millis() + 1000,
-                    source: EntrySource::Manual,
+                    intervals: vec![crate::TrackedInterval {
+                        id: None,
+                        start_ms: start.timestamp_millis(),
+                        end_ms: end.timestamp_millis() + 1000,
+                        source: EntrySource::Manual,
+                    }],
                     created_at_ms: 0,
                     updated_at_ms: 0,
                 };
                 let mut other = entry.clone();
-                other.end_ms = other.start_ms + 1000;
+                other.intervals[0].end_ms = other.intervals[0].start_ms + 1000;
                 other.activity_id = Some(ActivityId(2));
                 let mut project = other.clone();
                 project.project_id = ProjectId(2);

@@ -8,6 +8,13 @@ use houra_core::{Activity, Project, TimeEntry};
 
 use super::format_duration;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(in crate::desktop) enum EntryTrackingState {
+    Inactive,
+    Tracking,
+    ReviewRequired,
+}
+
 mod imp {
     use super::*;
 
@@ -24,6 +31,8 @@ mod imp {
         pub subtitle: gtk::TemplateChild<gtk::Label>,
         #[template_child]
         pub duration: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
+        pub tracking_status: gtk::TemplateChild<gtk::Label>,
         #[template_child]
         pub continue_button: gtk::TemplateChild<gtk::Button>,
     }
@@ -88,18 +97,39 @@ impl EntryRow {
         entry: &TimeEntry,
         project: Option<&Project>,
         activity: Option<&Activity>,
-        running: bool,
+        day_start_ms: i64,
+        day_end_ms: i64,
+        live_ms: i64,
+        tracking: EntryTrackingState,
     ) -> Self {
         let row: Self = glib::Object::builder().build();
         let project_name = project.map_or("Missing project", |item| item.name.as_str());
-        let times = match (
-            Local.timestamp_millis_opt(entry.start_ms).single(),
-            Local.timestamp_millis_opt(entry.end_ms).single(),
-        ) {
-            (Some(start), Some(end)) => {
-                format!("{}–{}", start.format("%H:%M"), end.format("%H:%M"))
+        let visible = entry
+            .intervals
+            .iter()
+            .filter(|interval| interval.start_ms < day_end_ms && interval.end_ms > day_start_ms)
+            .collect::<Vec<_>>();
+        let interval_count = visible.len() + usize::from(live_ms > 0);
+        let times = if interval_count > 1 {
+            format!("{interval_count} intervals")
+        } else {
+            match visible.as_slice() {
+                [interval] => match (
+                    Local
+                        .timestamp_millis_opt(interval.start_ms.max(day_start_ms))
+                        .single(),
+                    Local
+                        .timestamp_millis_opt(interval.end_ms.min(day_end_ms))
+                        .single(),
+                ) {
+                    (Some(start), Some(end)) => {
+                        format!("{}–{}", start.format("%H:%M"), end.format("%H:%M"))
+                    }
+                    _ => String::new(),
+                },
+                _ if live_ms > 0 => "Current session".into(),
+                _ => String::new(),
             }
-            _ => String::new(),
         };
         let metadata = activity.map_or_else(
             || format!("{project_name} · {times}"),
@@ -112,11 +142,30 @@ impl EntryRow {
             &entry.note
         });
         row.imp().subtitle.set_label(&metadata);
-        let duration = u64::try_from(entry.duration_ms().max(0) / 1_000).unwrap_or(0);
+        let stored_ms = visible.iter().fold(0_i64, |total, interval| {
+            total.saturating_add(
+                interval
+                    .end_ms
+                    .min(day_end_ms)
+                    .saturating_sub(interval.start_ms.max(day_start_ms))
+                    .max(0),
+            )
+        });
+        let duration = u64::try_from(stored_ms.saturating_add(live_ms).max(0) / 1_000).unwrap_or(0);
         row.imp().duration.set_label(&format_duration(duration));
-        row.imp()
-            .continue_button
-            .set_label(if running { "▶" } else { "Continue" });
+        match tracking {
+            EntryTrackingState::Inactive => row.imp().continue_button.set_label("Continue"),
+            EntryTrackingState::Tracking => {
+                row.imp().continue_button.set_visible(false);
+                row.imp().tracking_status.set_label("Currently tracking");
+                row.imp().tracking_status.set_visible(true);
+            }
+            EntryTrackingState::ReviewRequired => {
+                row.imp().continue_button.set_visible(false);
+                row.imp().tracking_status.set_label("Review required");
+                row.imp().tracking_status.set_visible(true);
+            }
+        }
 
         let color = project
             .and_then(|item| gtk::gdk::RGBA::parse(&item.color).ok())

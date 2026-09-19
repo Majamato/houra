@@ -37,3 +37,4 @@ macro_rules! id_type {
 id_type!(ProjectId);
 id_type!(ActivityId);
 id_type!(EntryId);
+id_type!(IntervalId);

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::AppError;
 
-pub const BACKUP_VERSION: u32 = 2;
+pub const BACKUP_VERSION: u32 = 3;
 
 /// A complete copy of the database as one JSON document.
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -82,6 +82,12 @@ impl BackupDocument {
         }
         for entry in &self.entries {
             entry.validate()?;
+            if entry.intervals.is_empty() {
+                return Err(AppError::InvalidBackup(format!(
+                    "entry {:?} has no tracked intervals",
+                    entry.id
+                )));
+            }
             if !self
                 .projects
                 .iter()

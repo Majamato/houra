@@ -1,6 +1,9 @@
 mod common;
 use common::*;
-use houra::{AppError, storage::Store};
+use houra::{
+    AppError,
+    storage::{DATABASE_FILENAME, Store},
+};
 use houra_core::{DomainError, EntryId, ProjectId};
 use tempfile::TempDir;
 #[test]
@@ -71,8 +74,8 @@ fn activity_can_be_used_under_multiple_projects() {
     entry.activity_id = Some(activity);
     assert!(store.add_entry(&entry).is_ok());
     entry.project_id = second;
-    entry.start_ms = 200;
-    entry.end_ms = 300;
+    entry.intervals[0].start_ms = 200;
+    entry.intervals[0].end_ms = 300;
     assert!(store.add_entry(&entry).is_ok());
 }
 
@@ -127,6 +130,7 @@ fn archived_activity_can_remain_on_an_edited_entry() -> Result<(), AppError> {
     let mut entry = manual(None, 1, 100, 200);
     entry.activity_id = Some(activity);
     entry.id = Some(store.add_entry(&entry)?);
+    entry.intervals[0].id = Some(houra_core::IntervalId(1));
     store.set_activity_archived(activity, true, 3)?;
 
     entry.project_id = second;
@@ -136,8 +140,9 @@ fn archived_activity_can_remain_on_an_edited_entry() -> Result<(), AppError> {
 
     let mut new_entry = entry;
     new_entry.id = None;
-    new_entry.start_ms = 200;
-    new_entry.end_ms = 300;
+    new_entry.intervals[0].start_ms = 200;
+    new_entry.intervals[0].end_ms = 300;
+    new_entry.intervals[0].id = None;
     assert!(matches!(
         store.add_entry(&new_entry),
         Err(AppError::InvalidActivity(id)) if id == activity
@@ -156,7 +161,7 @@ fn archived_default_activity_is_not_reseeded_on_reopen() -> Result<(), AppError>
     store.set_activity_archived(activity.id, true, 1)?;
     drop(store);
 
-    let reopened = Store::open(&directory.path().join("tracker.sqlite3"))?;
+    let reopened = Store::open(&directory.path().join(DATABASE_FILENAME))?;
     assert_eq!(reopened.list_activities(false)?.len(), 7);
     let all = reopened.list_activities(true)?;
     assert_eq!(all.len(), 8);
@@ -184,12 +189,12 @@ fn reopening_preserves_records_snapshot_and_shutdown_marker() -> Result<(), AppE
     store.persist_transition(&transition)?;
     let before = store.backup(1)?;
     drop(store);
-    let store = Store::open(&directory.path().join("tracker.sqlite3"))?;
+    let store = Store::open(&directory.path().join(DATABASE_FILENAME))?;
     assert!(!store.previous_shutdown_clean());
     assert_document_eq(&before, &store.backup(1)?);
     store.mark_clean_shutdown()?;
     drop(store);
-    let store = Store::open(&directory.path().join("tracker.sqlite3"))?;
+    let store = Store::open(&directory.path().join(DATABASE_FILENAME))?;
     assert!(store.previous_shutdown_clean());
     assert_document_eq(&before, &store.backup(1)?);
     Ok(())
@@ -208,7 +213,7 @@ fn unsupported_schemas_are_rejected_without_modification() -> Result<(), Box<dyn
         Store::open(&path),
         Err(AppError::UnsupportedDatabaseSchema {
             found: 1,
-            expected: 2
+            expected: 3
         })
     ));
     assert_eq!(std::fs::read(&path)?, before);
@@ -257,8 +262,8 @@ fn global_activity_uniqueness_archiving_and_deletion() -> Result<(), AppError> {
             updated_at_ms: 20
         }
     );
-    entry.start_ms = 200;
-    entry.end_ms = 300;
+    entry.intervals[0].start_ms = 200;
+    entry.intervals[0].end_ms = 300;
     assert!(
         matches!(store.add_entry(&entry), Err(AppError::InvalidActivity(id)) if id == activity)
     );
@@ -285,8 +290,10 @@ fn entry_updates_ranges_and_invalid_references() -> Result<(), AppError> {
     let mut store = Store::open_in_memory()?;
     let mut first = manual(None, 1, 100, 200);
     first.id = Some(store.add_entry(&first)?);
+    first.intervals[0].id = Some(houra_core::IntervalId(1));
     let mut second = manual(None, 1, 200, 300);
     second.id = Some(store.add_entry(&second)?);
+    second.intervals[0].id = Some(houra_core::IntervalId(2));
     assert_eq!(store.list_entries(200, 300)?, vec![second.clone()]);
     assert_eq!(store.list_entries(0, 100)?, vec![]);
     assert_eq!(store.list_entries(300, 400)?, vec![]);
@@ -299,7 +306,7 @@ fn entry_updates_ranges_and_invalid_references() -> Result<(), AppError> {
     );
     let before = store.backup(1)?;
     let mut invalid = first.clone();
-    invalid.end_ms = 201;
+    invalid.intervals[0].end_ms = 201;
     assert!(
         matches!(store.update_entry(&invalid), Err(AppError::Domain(DomainError::Overlap { conflicts })) if conflicts == vec![EntryId(2)])
     );
@@ -309,8 +316,8 @@ fn entry_updates_ranges_and_invalid_references() -> Result<(), AppError> {
         matches!(store.update_entry(&invalid), Err(AppError::InvalidBackup(message)) if message == "entry ID is required for update")
     );
     invalid.id = Some(EntryId(99));
-    invalid.start_ms = 400;
-    invalid.end_ms = 500;
+    invalid.intervals[0].start_ms = 400;
+    invalid.intervals[0].end_ms = 500;
     assert!(
         matches!(store.update_entry(&invalid), Err(AppError::InvalidBackup(message)) if message == "entry EntryId(99) was not found")
     );
@@ -326,7 +333,7 @@ fn entry_updates_ranges_and_invalid_references() -> Result<(), AppError> {
         Err(AppError::InvalidActivity(houra_core::ActivityId(99)))
     ));
     invalid.activity_id = None;
-    invalid.end_ms = invalid.start_ms;
+    invalid.intervals[0].end_ms = invalid.intervals[0].start_ms;
     assert!(matches!(
         store.add_entry(&invalid),
         Err(AppError::Domain(DomainError::InvalidInterval {
@@ -365,9 +372,10 @@ fn later_transition_failure_rolls_back_entries_and_snapshot() -> Result<(), AppE
                 Err(AppError::InvalidProject(ProjectId(99)))
             ));
         } else {
-            assert!(
-                matches!(result, Err(AppError::Database(rusqlite::Error::SqliteFailure(error, _))) if error.code == rusqlite::ErrorCode::ConstraintViolation)
-            );
+            assert!(matches!(
+                result,
+                Err(AppError::Domain(DomainError::Overlap { conflicts })) if conflicts == vec![EntryId(2)]
+            ));
         }
         assert_document_eq(&before, &store.backup(1)?);
     }
@@ -400,5 +408,32 @@ fn active_timer_conflicts_and_snapshot_persistence() -> Result<(), AppError> {
         matches!(store.persist_transition(&invalid), Err(AppError::Domain(DomainError::Overlap { conflicts })) if conflicts == vec![EntryId(1)])
     );
     assert_document_eq(&before, &store.backup(1)?);
+    Ok(())
+}
+
+#[test]
+fn continued_intervals_append_to_one_entry_and_exclude_the_break() -> Result<(), AppError> {
+    use houra_core::{ManualClock, TrackerCommand, TrackerEngine};
+    let mut store = Store::open_in_memory()?;
+    let mut original = manual(None, 1, 0, 16 * 60 * 1_000);
+    original.intervals[0].source = houra_core::EntrySource::Timer;
+    let entry_id = store.add_entry(&original)?;
+    let clock = ManualClock::at(21 * 60 * 1_000);
+    let mut engine = TrackerEngine::new(clock.clone());
+    let continued = engine.apply(TrackerCommand::Continue {
+        entry_id,
+        project_id: ProjectId(1),
+        activity_id: None,
+        note: "manual".into(),
+    })?;
+    store.persist_transition(&continued)?;
+    clock.advance(std::time::Duration::from_secs(60));
+    store.persist_transition(&engine.apply(TrackerCommand::Stop)?)?;
+
+    let entries = store.list_all_entries()?;
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].id, Some(entry_id));
+    assert_eq!(entries[0].intervals.len(), 2);
+    assert_eq!(entries[0].duration_ms(), 17 * 60 * 1_000);
     Ok(())
 }

@@ -2,7 +2,9 @@ use houra::{
     AppError,
     export::{write_csv, write_csv_path},
 };
-use houra_core::{Activity, ActivityId, EntrySource, Project, ProjectId, TimeEntry};
+use houra_core::{
+    Activity, ActivityId, EntrySource, Project, ProjectId, TimeEntry, TrackedInterval,
+};
 
 #[test]
 fn csv_headers_escaping_names_sources_and_fallbacks() -> Result<(), Box<dyn std::error::Error>> {
@@ -33,9 +35,12 @@ fn csv_headers_escaping_names_sources_and_fallbacks() -> Result<(), Box<dyn std:
             project_id: project.id,
             activity_id: Some(activity.id),
             note: "comma, quote\" newline\n".into(),
-            start_ms: 0,
-            end_ms: 1999,
-            source,
+            intervals: vec![TrackedInterval {
+                id: None,
+                start_ms: 0,
+                end_ms: 1999,
+                source,
+            }],
             created_at_ms: 0,
             updated_at_ms: 0,
         });
@@ -56,6 +61,7 @@ fn csv_headers_escaping_names_sources_and_fallbacks() -> Result<(), Box<dyn std:
         reader.headers()?,
         &csv::StringRecord::from(vec![
             "date",
+            "entry_id",
             "start_local",
             "end_local",
             "duration_seconds",
@@ -71,23 +77,23 @@ fn csv_headers_escaping_names_sources_and_fallbacks() -> Result<(), Box<dyn std:
         .iter()
         .enumerate()
     {
-        assert_eq!(&rows[index][3], "1");
-        assert_eq!(&rows[index][4], project.name);
-        assert_eq!(&rows[index][5], activity.name);
-        assert_eq!(&rows[index][6], entries[index].note);
-        assert_eq!(&rows[index][7], *source);
+        assert_eq!(&rows[index][4], "1");
+        assert_eq!(&rows[index][5], project.name);
+        assert_eq!(&rows[index][6], activity.name);
+        assert_eq!(&rows[index][7], entries[index].note);
+        assert_eq!(&rows[index][8], *source);
         assert_eq!(
-            chrono::DateTime::parse_from_rfc3339(&rows[index][1])?.timestamp_millis(),
+            chrono::DateTime::parse_from_rfc3339(&rows[index][2])?.timestamp_millis(),
             0
         );
         // RFC3339 retains the entry's subsecond precision.
         assert_eq!(
-            chrono::DateTime::parse_from_rfc3339(&rows[index][2])?.timestamp_millis(),
+            chrono::DateTime::parse_from_rfc3339(&rows[index][3])?.timestamp_millis(),
             1999
         );
     }
-    assert_eq!(&rows[4][4], "(missing)");
-    assert_eq!(&rows[4][5], "");
+    assert_eq!(&rows[4][5], "(missing)");
+    assert_eq!(&rows[4][6], "");
     Ok(())
 }
 
@@ -108,6 +114,47 @@ fn writer_errors_are_propagated() {
 }
 
 #[test]
+fn csv_emits_each_interval_with_its_parent_entry_id() -> Result<(), AppError> {
+    let entry = TimeEntry {
+        id: Some(houra_core::EntryId(42)),
+        project_id: ProjectId(1),
+        activity_id: None,
+        note: String::new(),
+        intervals: vec![
+            TrackedInterval {
+                id: None,
+                start_ms: 0,
+                end_ms: 1_000,
+                source: EntrySource::Timer,
+            },
+            TrackedInterval {
+                id: None,
+                start_ms: 2_000,
+                end_ms: 3_000,
+                source: EntrySource::Timer,
+            },
+        ],
+        created_at_ms: 0,
+        updated_at_ms: 3_000,
+    };
+    let project = Project {
+        id: ProjectId(1),
+        name: "General".into(),
+        color: "#3584e4".into(),
+        archived: false,
+        created_at_ms: 0,
+        updated_at_ms: 0,
+    };
+    let mut output = Vec::new();
+    write_csv(&mut output, &[entry], &[project], &[])?;
+    let mut reader = csv::Reader::from_reader(output.as_slice());
+    let rows = reader.records().collect::<Result<Vec<_>, _>>()?;
+    assert_eq!(rows.len(), 2);
+    assert!(rows.iter().all(|row| &row[1] == "42"));
+    Ok(())
+}
+
+#[test]
 fn file_export_replaces_existing_file_and_reports_path_errors()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = tempfile::tempdir()?;
@@ -116,7 +163,7 @@ fn file_export_replaces_existing_file_and_reports_path_errors()
     let expected = std::fs::read(&path)?;
     assert_eq!(
         expected,
-        b"date,start_local,end_local,duration_seconds,project,activity,note,source\n"
+        b"date,entry_id,start_local,end_local,duration_seconds,project,activity,note,source\n"
     );
     std::fs::write(&path, b"old")?;
     write_csv_path(&path, &[], &[], &[])?;

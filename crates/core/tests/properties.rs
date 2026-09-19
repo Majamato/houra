@@ -92,7 +92,9 @@ proptest! {
         let mut overlap = false;
         for (i, a) in entries.iter().enumerate() {
             for b in &entries[i + 1..] {
-                if a.start_ms < b.end_ms && b.start_ms < a.end_ms {
+                if a.intervals[0].start_ms < b.intervals[0].end_ms
+                    && b.intervals[0].start_ms < a.intervals[0].end_ms
+                {
                     overlap = true;
                     conflicts.extend(a.id);
                     conflicts.extend(b.id);

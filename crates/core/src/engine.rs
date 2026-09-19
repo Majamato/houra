@@ -2,7 +2,8 @@ use std::time::Duration;
 
 use crate::{
     ActiveTimer, Clock, DomainError, EntrySource, IdleDecision, Notification, PendingIdle,
-    PendingRecovery, TimeEntry, TrackerCommand, TrackerSnapshot, TrackerState, Transition,
+    PendingRecovery, TimeEntry, TrackedInterval, TrackerCommand, TrackerSnapshot, TrackerState,
+    Transition,
 };
 
 /// The timer state machine. `C` is the time source.
@@ -82,6 +83,27 @@ impl<C: Clock> TrackerEngine<C> {
             ) => {
                 notifications.push(Notification::TimerStarted);
                 TrackerState::Running(ActiveTimer {
+                    entry_id: None,
+                    project_id,
+                    activity_id,
+                    note,
+                    start_ms: now,
+                    started_monotonic_ms: monotonic_ms,
+                    last_heartbeat_ms: now,
+                })
+            }
+            (
+                TrackerState::Stopped,
+                TrackerCommand::Continue {
+                    entry_id,
+                    project_id,
+                    activity_id,
+                    note,
+                },
+            ) => {
+                notifications.push(Notification::TimerStarted);
+                TrackerState::Running(ActiveTimer {
+                    entry_id: Some(entry_id),
                     project_id,
                     activity_id,
                     note,
@@ -121,6 +143,42 @@ impl<C: Clock> TrackerEngine<C> {
                 notifications.push(Notification::TimerStopped);
                 notifications.push(Notification::TimerStarted);
                 TrackerState::Running(ActiveTimer {
+                    entry_id: None,
+                    project_id,
+                    activity_id,
+                    note,
+                    start_ms: now,
+                    started_monotonic_ms: monotonic_ms,
+                    last_heartbeat_ms: now,
+                })
+            }
+            (
+                TrackerState::Running(active),
+                TrackerCommand::Continue {
+                    entry_id,
+                    project_id,
+                    activity_id,
+                    note,
+                },
+            ) => {
+                if active.entry_id == Some(entry_id) {
+                    return Ok(Transition {
+                        snapshot: self.snapshot.clone(),
+                        completed_entries,
+                        notifications,
+                    });
+                }
+                push_entry(
+                    &mut completed_entries,
+                    &active,
+                    active.start_ms,
+                    now,
+                    EntrySource::Timer,
+                );
+                notifications.push(Notification::TimerStopped);
+                notifications.push(Notification::TimerStarted);
+                TrackerState::Running(ActiveTimer {
+                    entry_id: Some(entry_id),
                     project_id,
                     activity_id,
                     note,
@@ -259,13 +317,16 @@ fn push_entry(
         return;
     }
     completed.push(TimeEntry {
-        id: None,
+        id: active.entry_id,
         project_id: active.project_id,
         activity_id: active.activity_id,
         note: active.note.clone(),
-        start_ms,
-        end_ms,
-        source,
+        intervals: vec![TrackedInterval {
+            id: None,
+            start_ms,
+            end_ms,
+            source,
+        }],
         created_at_ms: end_ms,
         updated_at_ms: end_ms,
     });
@@ -305,6 +366,7 @@ fn resolve_idle(
                 EntrySource::Timer,
             );
             let reassigned = ActiveTimer {
+                entry_id: None,
                 project_id,
                 activity_id,
                 note,

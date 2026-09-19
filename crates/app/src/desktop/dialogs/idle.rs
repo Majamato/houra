@@ -34,12 +34,17 @@ impl MainWindow {
                 "stop" => houra_core::IdleDecision::Stop,
                 _ => houra_core::IdleDecision::DiscardAndResume,
             };
-            if let Some(handle) = &handle
-                && let Err(error) = handle.apply(TrackerCommand::ResolveIdle(decision))
-            {
+            let stopped = matches!(decision, houra_core::IdleDecision::Stop);
+            let result = handle
+                .as_ref()
+                .map(|handle| handle.apply(TrackerCommand::ResolveIdle(decision)));
+            if let Some(Err(error)) = &result {
                 log_background_error("resolving idle time", error);
             }
             if let Some(window) = weak.upgrade() {
+                if stopped && result.is_some_and(|result| result.is_ok()) {
+                    window.imp().note_entry.set_text("");
+                }
                 window.refresh();
             }
         });

@@ -1,7 +1,7 @@
 use chrono::{Local, NaiveDateTime, TimeZone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use houra_core::{EntrySource, ProjectId, TimeEntry};
+use houra_core::{EntrySource, ProjectId, TimeEntry, TrackedInterval};
 use libadwaita as adw;
 use libadwaita::prelude::*;
 
@@ -122,9 +122,12 @@ impl MainWindow {
                 project_id,
                 activity_id,
                 note: note.text().to_string(),
-                start_ms,
-                end_ms,
-                source: EntrySource::Manual,
+                intervals: vec![TrackedInterval {
+                    id: None,
+                    start_ms,
+                    end_ms,
+                    source: EntrySource::Manual,
+                }],
                 created_at_ms: now,
                 updated_at_ms: now,
             };
@@ -211,20 +214,11 @@ impl MainWindow {
                     value.format("%Y-%m-%d %H:%M:%S").to_string()
                 })
         };
-        let start = gtk::Entry::builder()
-            .text(format_time(existing.start_ms))
-            .build();
-        let end = gtk::Entry::builder()
-            .text(format_time(existing.end_ms))
-            .build();
-
-        // Stack each field label above its input widget.
+        // Shared details update the whole entry. Each interval keeps separate timestamps.
         for (label_text, widget) in [
             ("Project", project.clone().upcast::<gtk::Widget>()),
             ("Activity", activity.clone().upcast()),
             ("Note", note.clone().upcast()),
-            ("Start (local)", start.clone().upcast()),
-            ("End (local)", end.clone().upcast()),
         ] {
             content.append(
                 &gtk::Label::builder()
@@ -233,6 +227,40 @@ impl MainWindow {
                     .build(),
             );
             content.append(&widget);
+        }
+        let mut interval_fields = Vec::new();
+        for (index, interval) in existing.intervals.iter().enumerate() {
+            let heading = if existing.intervals.len() == 1 {
+                "Interval".to_owned()
+            } else {
+                format!("Interval {}", index + 1)
+            };
+            content.append(
+                &gtk::Label::builder()
+                    .label(heading)
+                    .halign(gtk::Align::Start)
+                    .css_classes(["heading"])
+                    .build(),
+            );
+            let start = gtk::Entry::builder()
+                .text(format_time(interval.start_ms))
+                .build();
+            let end = gtk::Entry::builder()
+                .text(format_time(interval.end_ms))
+                .build();
+            for (label_text, widget) in [
+                ("Start (local)", start.clone().upcast::<gtk::Widget>()),
+                ("End (local)", end.clone().upcast()),
+            ] {
+                content.append(
+                    &gtk::Label::builder()
+                        .label(label_text)
+                        .halign(gtk::Align::Start)
+                        .build(),
+                );
+                content.append(&widget);
+            }
+            interval_fields.push((start, end, interval.clone()));
         }
         let save = gtk::Button::with_label("Save Changes");
         save.add_css_class("suggested-action");
@@ -249,7 +277,17 @@ impl MainWindow {
                     .and_then(|value| Local.from_local_datetime(&value).single())
                     .map(|value| value.timestamp_millis())
             };
-            let (Some(start_ms), Some(end_ms)) = (parse(&start), parse(&end)) else {
+            let intervals = interval_fields
+                .iter()
+                .map(|(start, end, original)| {
+                    Some(TrackedInterval {
+                        start_ms: parse(start)?,
+                        end_ms: parse(end)?,
+                        ..original.clone()
+                    })
+                })
+                .collect::<Option<Vec<_>>>();
+            let Some(intervals) = intervals else {
                 if let Some(window) = weak.upgrade() {
                     window.show_database_error(
                         "Times must use YYYY-MM-DD HH:MM:SS and identify one local time.",
@@ -270,8 +308,7 @@ impl MainWindow {
                 project_id,
                 activity_id,
                 note: note.text().to_string(),
-                start_ms,
-                end_ms,
+                intervals,
                 updated_at_ms: chrono::Utc::now().timestamp_millis(),
                 ..existing.clone()
             };

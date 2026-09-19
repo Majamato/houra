@@ -1,7 +1,7 @@
 use crate::DomainError;
 use serde::{Deserialize, Serialize};
 
-use crate::id::{ActivityId, EntryId, ProjectId};
+use crate::id::{ActivityId, EntryId, IntervalId, ProjectId};
 
 /// How a time entry came into existence.
 #[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Eq, Serialize)]
@@ -14,21 +14,16 @@ pub enum EntrySource {
     Recovery,
 }
 
-/// A completed, half-open interval `[start_ms, end_ms)` of tracked time.
+/// One completed, half-open interval `[start_ms, end_ms)` belonging to an entry.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
-pub struct TimeEntry {
-    pub id: Option<EntryId>,
-    pub project_id: ProjectId,
-    pub activity_id: Option<ActivityId>,
-    pub note: String,
+pub struct TrackedInterval {
+    pub id: Option<IntervalId>,
     pub start_ms: i64,
     pub end_ms: i64,
     pub source: EntrySource,
-    pub created_at_ms: i64,
-    pub updated_at_ms: i64,
 }
 
-impl TimeEntry {
+impl TrackedInterval {
     pub fn duration_ms(&self) -> i64 {
         self.end_ms.saturating_sub(self.start_ms).max(0)
     }
@@ -44,9 +39,42 @@ impl TimeEntry {
     }
 }
 
+/// Shared work details and all of the intervals recorded for that work.
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+pub struct TimeEntry {
+    pub id: Option<EntryId>,
+    pub project_id: ProjectId,
+    pub activity_id: Option<ActivityId>,
+    pub note: String,
+    pub intervals: Vec<TrackedInterval>,
+    pub created_at_ms: i64,
+    pub updated_at_ms: i64,
+}
+
+impl TimeEntry {
+    pub fn duration_ms(&self) -> i64 {
+        self.intervals.iter().fold(0, |total, interval| {
+            total.saturating_add(interval.duration_ms())
+        })
+    }
+
+    pub fn validate(&self) -> Result<(), DomainError> {
+        for interval in &self.intervals {
+            interval.validate()?;
+        }
+        Ok(())
+    }
+
+    pub fn latest_end_ms(&self) -> Option<i64> {
+        self.intervals.iter().map(|interval| interval.end_ms).max()
+    }
+}
+
 /// The interval currently being tracked.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub struct ActiveTimer {
+    /// The entry being continued. `None` means Stop will create a new entry.
+    pub entry_id: Option<EntryId>,
     pub project_id: ProjectId,
     pub activity_id: Option<ActivityId>,
     pub note: String,
@@ -91,9 +119,12 @@ mod tests {
                 project_id: ProjectId(1),
                 activity_id: None,
                 note: String::new(),
-                start_ms,
-                end_ms,
-                source: EntrySource::Manual,
+                intervals: vec![TrackedInterval {
+                    id: None,
+                    start_ms,
+                    end_ms,
+                    source: EntrySource::Manual,
+                }],
                 created_at_ms: 0,
                 updated_at_ms: 0,
             };

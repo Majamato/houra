@@ -17,9 +17,11 @@ type Reply<T> = Sender<Result<T, AppError>>;
 /// Everything the worker can be asked. Each variant carries its reply channel.
 enum Request {
     Apply(TrackerCommand, Reply<Transition>),
+    Continue(houra_core::EntryId, Reply<Transition>),
     Snapshot(Reply<TrackerSnapshot>),
     LiveElapsed(Reply<std::time::Duration>),
     Entries(i64, i64, Reply<Vec<TimeEntry>>),
+    Entry(houra_core::EntryId, Reply<TimeEntry>),
     AddEntry(TimeEntry, Reply<houra_core::EntryId>),
     UpdateEntry(TimeEntry, Reply<()>),
     Projects(bool, Reply<Vec<Project>>),
@@ -44,6 +46,11 @@ impl TrackerHandle {
         self.request(|reply| Request::Apply(command, reply))
     }
 
+    /// Resolves and continues a stored entry by identity on the storage worker.
+    pub fn continue_entry(&self, entry_id: houra_core::EntryId) -> Result<Transition, AppError> {
+        self.request(|reply| Request::Continue(entry_id, reply))
+    }
+
     pub fn snapshot(&self) -> Result<TrackerSnapshot, AppError> {
         self.request(Request::Snapshot)
     }
@@ -54,6 +61,10 @@ impl TrackerHandle {
 
     pub fn entries(&self, start_ms: i64, end_ms: i64) -> Result<Vec<TimeEntry>, AppError> {
         self.request(|reply| Request::Entries(start_ms, end_ms, reply))
+    }
+
+    pub fn entry(&self, id: houra_core::EntryId) -> Result<TimeEntry, AppError> {
+        self.request(|reply| Request::Entry(id, reply))
     }
 
     pub fn add_entry(&self, entry: TimeEntry) -> Result<houra_core::EntryId, AppError> {
@@ -172,10 +183,29 @@ fn worker_loop(
                         .apply(command)
                         .map_err(AppError::from)
                         .and_then(|transition| {
-                            store.persist_transition(&transition)?;
+                            if transition.snapshot.revision != engine.snapshot().revision {
+                                store.persist_transition(&transition)?;
+                            }
                             engine = candidate;
                             Ok(transition)
                         });
+                let _ignored = reply.send(result);
+            }
+            Request::Continue(entry_id, reply) => {
+                let result = store.entry(entry_id).and_then(|entry| {
+                    let mut candidate = engine.clone();
+                    let transition = candidate.apply(TrackerCommand::Continue {
+                        entry_id,
+                        project_id: entry.project_id,
+                        activity_id: entry.activity_id,
+                        note: entry.note,
+                    })?;
+                    if transition.snapshot.revision != engine.snapshot().revision {
+                        store.persist_transition(&transition)?;
+                        engine = candidate;
+                    }
+                    Ok(transition)
+                });
                 let _ignored = reply.send(result);
             }
             Request::Snapshot(reply) => {
@@ -186,6 +216,9 @@ fn worker_loop(
             }
             Request::Entries(start, end, reply) => {
                 let _ignored = reply.send(store.list_entries(start, end));
+            }
+            Request::Entry(id, reply) => {
+                let _ignored = reply.send(store.entry(id));
             }
             Request::AddEntry(entry, reply) => {
                 let _ignored = reply.send(store.add_entry(&entry));

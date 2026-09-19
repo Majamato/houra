@@ -30,6 +30,7 @@ impl Store {
         }
         let transaction = self.connection.transaction()?;
         transaction.execute("DELETE FROM tracker_state", [])?;
+        transaction.execute("DELETE FROM entry_intervals", [])?;
         transaction.execute("DELETE FROM entries", [])?;
         transaction.execute("DELETE FROM activities", [])?;
         transaction.execute("DELETE FROM projects", [])?;
@@ -47,11 +48,27 @@ impl Store {
         }
         for entry in &document.entries {
             transaction.execute(
-                "INSERT INTO entries(id,project_id,activity_id,note,start_ms,end_ms,source,created_at_ms,updated_at_ms)
-                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
-                params![entry.id.map(|id| id.0), entry.project_id.0, entry.activity_id.map(|id| id.0), entry.note,
-                    entry.start_ms, entry.end_ms, source_name(entry.source), entry.created_at_ms, entry.updated_at_ms],
+                "INSERT INTO entries(id,project_id,activity_id,note,created_at_ms,updated_at_ms)
+                 VALUES(?1,?2,?3,?4,?5,?6)",
+                params![
+                    entry.id.map(|id| id.0),
+                    entry.project_id.0,
+                    entry.activity_id.map(|id| id.0),
+                    entry.note,
+                    entry.created_at_ms,
+                    entry.updated_at_ms
+                ],
             )?;
+            let entry_id = entry
+                .id
+                .ok_or_else(|| AppError::InvalidBackup("stored entry ID is required".into()))?;
+            for interval in &entry.intervals {
+                interval.validate()?;
+                transaction.execute(
+                    "INSERT INTO entry_intervals(id,entry_id,start_ms,end_ms,source) VALUES(?1,?2,?3,?4,?5)",
+                    params![interval.id.map(|id| id.0), entry_id.0, interval.start_ms, interval.end_ms, source_name(interval.source)],
+                )?;
+            }
         }
         write_snapshot(&transaction, &document.tracker)?;
         transaction.execute(

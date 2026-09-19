@@ -1,17 +1,22 @@
-# Domain glossary
+# Houra
 
-## Project
+Houra records work against projects and activities while keeping separate work sessions under one reusable entry.
 
-What the work is for. Projects can be archived when they should no longer receive new time.
+## Language
 
-## Activity
+**Project**:
+What the work is for. A project can be archived when it should no longer receive new time.
 
-The kind of work being done, independent of any project. An activity can be used with any project. Activities can be archived when they should no longer receive new time.
+**Activity**:
+The kind of work being done, independent of any project. An activity can be used with any project and can be archived.
 
-## Time entry
+**Time entry**:
+Shared project, activity, and note details for related tracked work. A time entry contains one or more tracked intervals and keeps its identity when continued.
+_Avoid_: Session, record
 
-A completed interval of work. Each time entry belongs to one project and may have one activity, associating the two independent dimensions for that interval.
+**Tracked interval**:
+One completed span of tracked time within a time entry. Breaks and untracked gaps are not part of an interval.
+_Avoid_: Time entry, session
 
-## Active timer
-
-Work currently being measured. It belongs to one project and may have one activity. Stopping it creates a time entry.
+**Active timer**:
+Work currently being measured. It either starts a new time entry or continues an existing time entry.

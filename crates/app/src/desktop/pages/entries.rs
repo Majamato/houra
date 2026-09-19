@@ -3,7 +3,7 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use houra_core::TrackerState;
 
-use crate::desktop::widgets::{EntryRow, WeekDayCell, format_duration};
+use crate::desktop::widgets::{EntryRow, EntryTrackingState, WeekDayCell, format_duration};
 use crate::desktop::window::MainWindow;
 
 fn day_bounds(date: NaiveDate) -> Option<(chrono::DateTime<Local>, chrono::DateTime<Local>)> {
@@ -39,7 +39,9 @@ impl MainWindow {
         let Some((start, end)) = day_bounds(date) else {
             return;
         };
-        let entries = match handle.entries(start.timestamp_millis(), end.timestamp_millis()) {
+        let day_start_ms = start.timestamp_millis();
+        let day_end_ms = end.timestamp_millis();
+        let mut entries = match handle.entries(day_start_ms, day_end_ms) {
             Ok(entries) => entries,
             Err(error) => {
                 self.show_database_error(&error.to_string());
@@ -48,11 +50,49 @@ impl MainWindow {
         };
         let projects = handle.projects(true).unwrap_or_default();
         let activities = handle.activities(true).unwrap_or_default();
-        let running = handle.snapshot().is_ok_and(|snapshot| {
+        let snapshot = handle.snapshot().ok();
+        let active = snapshot
+            .as_ref()
+            .and_then(|snapshot| snapshot.state.active())
+            .cloned();
+        let now_ms = Local::now().timestamp_millis();
+        let live_end_ms = snapshot
+            .as_ref()
+            .and_then(|snapshot| match &snapshot.state {
+                TrackerState::Running(_) => Some(now_ms),
+                TrackerState::IdlePending(pending) => Some(pending.return_ms.unwrap_or(now_ms)),
+                TrackerState::RecoveryPending(pending) => Some(pending.proposed_end_ms),
+                TrackerState::Stopped => None,
+            });
+        let running = active.is_some();
+        let review_required = snapshot.as_ref().is_some_and(|snapshot| {
             matches!(
                 snapshot.state,
-                TrackerState::Running(_) | TrackerState::IdlePending(_)
+                TrackerState::IdlePending(_) | TrackerState::RecoveryPending(_)
             )
+        });
+        let active_entry_id = active.as_ref().and_then(|active| active.entry_id);
+        if date == today
+            && let Some(id) = active_entry_id
+            && !entries.iter().any(|entry| entry.id == Some(id))
+            && let Ok(entry) = handle.entry(id)
+        {
+            entries.push(entry);
+        }
+        entries.sort_by_key(|entry| {
+            if entry.id == active_entry_id && date == today {
+                i64::MAX
+            } else {
+                entry
+                    .intervals
+                    .iter()
+                    .filter(|interval| {
+                        interval.start_ms < day_end_ms && interval.end_ms > day_start_ms
+                    })
+                    .map(|interval| interval.end_ms.min(day_end_ms))
+                    .max()
+                    .unwrap_or(i64::MIN)
+            }
         });
         self.imp()
             .entries_heading
@@ -99,12 +139,47 @@ impl MainWindow {
                 let activity = entry
                     .activity_id
                     .and_then(|id| activities.iter().find(|activity| activity.id == id));
-                let row = EntryRow::new(entry, project, activity, running);
+                let is_active = entry.id == active_entry_id;
+                let live_ms = if is_active && date == today {
+                    active
+                        .as_ref()
+                        .zip(live_end_ms)
+                        .map_or(0, |(active, live_end)| {
+                            live_end
+                                .min(day_end_ms)
+                                .saturating_sub(active.start_ms.max(day_start_ms))
+                                .max(0)
+                        })
+                } else {
+                    0
+                };
+                let tracking = if is_active && review_required {
+                    EntryTrackingState::ReviewRequired
+                } else if is_active {
+                    EntryTrackingState::Tracking
+                } else {
+                    EntryTrackingState::Inactive
+                };
+                let row = EntryRow::new(
+                    entry,
+                    project,
+                    activity,
+                    day_start_ms,
+                    day_end_ms,
+                    live_ms,
+                    tracking,
+                );
                 let entry_to_edit = entry.clone();
                 row.connect_edit_requested(glib::clone!(
                     #[weak(rename_to = window)]
                     self,
-                    move |_| window.show_edit_entry(entry_to_edit.clone())
+                    move |_| {
+                        if entry_to_edit.id == active_entry_id {
+                            window.show_active_editor();
+                        } else {
+                            window.show_edit_entry(entry_to_edit.clone());
+                        }
+                    }
                 ));
                 let entry_to_resume = entry.clone();
                 row.connect_continue_requested(glib::clone!(
@@ -117,7 +192,18 @@ impl MainWindow {
         }
         let stored_seconds = entries
             .iter()
-            .map(|entry| u64::try_from(entry.duration_ms().max(0) / 1_000).unwrap_or(0))
+            .flat_map(|entry| &entry.intervals)
+            .map(|interval| {
+                u64::try_from(
+                    interval
+                        .end_ms
+                        .min(day_end_ms)
+                        .saturating_sub(interval.start_ms.max(day_start_ms))
+                        .max(0)
+                        / 1_000,
+                )
+                .unwrap_or(0)
+            })
             .sum::<u64>();
         self.imp().stored_day_seconds.set(stored_seconds);
 
@@ -162,27 +248,45 @@ impl MainWindow {
             else {
                 continue;
             };
-            let mut total = day_bounds(date)
-                .and_then(|(start, end)| {
-                    handle
-                        .entries(start.timestamp_millis(), end.timestamp_millis())
-                        .ok()
-                })
-                .map_or(0, |entries| {
-                    entries
-                        .iter()
-                        .map(|entry| u64::try_from(entry.duration_ms().max(0) / 1_000).unwrap_or(0))
-                        .sum()
-                });
+            let mut total = day_bounds(date).map_or(0, |(start, end)| {
+                handle
+                    .entries(start.timestamp_millis(), end.timestamp_millis())
+                    .map_or(0, |entries| {
+                        entries
+                            .iter()
+                            .flat_map(|entry| &entry.intervals)
+                            .map(|interval| {
+                                u64::try_from(
+                                    interval
+                                        .end_ms
+                                        .min(end.timestamp_millis())
+                                        .saturating_sub(
+                                            interval.start_ms.max(start.timestamp_millis()),
+                                        )
+                                        .max(0)
+                                        / 1_000,
+                                )
+                                .unwrap_or(0)
+                            })
+                            .sum()
+                    })
+            });
             if date == today
                 && let Ok(snapshot) = handle.snapshot()
                 && let Some(active) = snapshot.state.active()
                 && let Some((start, _)) = day_bounds(date)
             {
+                let live_end = match &snapshot.state {
+                    TrackerState::Running(_) => Local::now().timestamp_millis(),
+                    TrackerState::IdlePending(pending) => pending
+                        .return_ms
+                        .unwrap_or_else(|| Local::now().timestamp_millis()),
+                    TrackerState::RecoveryPending(pending) => pending.proposed_end_ms,
+                    TrackerState::Stopped => active.start_ms,
+                };
                 total = total.saturating_add(
                     u64::try_from(
-                        Local::now()
-                            .timestamp_millis()
+                        live_end
                             .saturating_sub(active.start_ms.max(start.timestamp_millis()))
                             .max(0)
                             / 1_000,

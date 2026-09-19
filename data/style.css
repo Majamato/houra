@@ -47,4 +47,5 @@ window {
 .entry-meta { color: alpha(@window_fg_color, .62); font-size: 12px; }
 .entry-duration { min-width: 62px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .continue-button { min-width: 62px; font-weight: 600; }
+.tracking-status { color: @accent_color; font-weight: 600; }
 .total-value { font-variant-numeric: tabular-nums; }
