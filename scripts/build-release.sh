@@ -61,6 +61,7 @@ fi
 
 printf 'Building the release application...\n'
 meson compile -C "$build_dir" "$@"
+glib-compile-schemas --strict --targetdir="$build_dir" "$project_root/data"
 printf '\nRelease binary:\n  %s/houra\n' "$build_dir"
 printf 'Stage a complete install with:\n  DESTDIR=%q meson install -C %q\n' \
     "$project_root/stage" "$build_dir"
