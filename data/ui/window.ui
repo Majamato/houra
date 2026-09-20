@@ -5,6 +5,7 @@
   <template class="HouraWindow" parent="AdwApplicationWindow">
     <property name="title" translatable="yes">Houra</property>
     <property name="default-width">762</property><property name="default-height">820</property><property name="width-request">360</property>
+    <property name="maximized">true</property>
     <child><object class="AdwToolbarView">
       <child type="top"><object class="AdwHeaderBar"><style><class name="houra-header"/></style>
         <property name="title-widget"><object class="AdwViewSwitcher"><property name="stack">view_stack</property><property name="policy">wide</property><style><class name="houra-switcher"/></style></object></property>
@@ -14,7 +15,7 @@
         <child><object class="AdwBanner" id="integration_banner"><property name="revealed">false</property><property name="title" translatable="yes">Automatic idle detection is unavailable</property></object></child>
         <child><object class="AdwViewStack" id="view_stack"><property name="vexpand">true</property>
           <child><object class="AdwViewStackPage"><property name="name">tracker</property><property name="title" translatable="yes">Tracker</property><property name="icon-name">alarm-symbolic</property>
-            <property name="child"><object class="GtkScrolledWindow"><property name="hscrollbar-policy">never</property><property name="child"><object class="AdwClamp"><property name="maximum-size">710</property><property name="margin-top">28</property><property name="margin-bottom">28</property><property name="margin-start">28</property><property name="margin-end">28</property>
+            <property name="child"><object class="GtkScrolledWindow"><property name="hscrollbar-policy">never</property><property name="child"><object class="AdwClamp"><property name="maximum-size">710</property><property name="valign">center</property><property name="margin-top">28</property><property name="margin-bottom">28</property><property name="margin-start">28</property><property name="margin-end">28</property>
               <property name="child"><object class="GtkBox"><property name="orientation">vertical</property><property name="spacing">22</property><style><class name="tracker-page"/></style>
                 <child><object class="GtkBox"><property name="spacing">12</property>
                   <child><object class="GtkBox"><property name="orientation">vertical</property><property name="hexpand">true</property>
@@ -24,7 +25,7 @@
                   <child><object class="GtkButton" id="add_time_button"><property name="label" translatable="yes">+ Add time</property><property name="valign">start</property><property name="action-name">app.add-entry</property><style><class name="flat"/><class name="add-time"/></style></object></child>
                 </object></child>
                 <child><object class="GtkBox" id="week_box"><property name="homogeneous">true</property><property name="spacing">4</property><style><class name="week-strip"/></style></object></child>
-                <child><object class="GtkBox" id="stopped_panel"><property name="orientation">vertical</property><property name="spacing">12</property><style><class name="tracker-card"/><class name="accent-card"/></style>
+                <child><object class="GtkBox" id="stopped_panel"><property name="orientation">vertical</property><property name="spacing">12</property><property name="height-request">260</property><style><class name="tracker-card"/><class name="accent-card"/></style>
                   <child><object class="GtkLabel"><property name="label" translatable="yes">START A SESSION</property><property name="halign">start</property><style><class name="eyebrow"/></style></object></child>
                   <child><object class="GtkGrid"><property name="column-spacing">14</property><property name="row-spacing">6</property><property name="column-homogeneous">true</property>
                     <child><object class="GtkLabel"><property name="label" translatable="yes">Project</property><property name="halign">start</property><layout><property name="column">0</property><property name="row">0</property></layout></object></child>
@@ -36,14 +37,16 @@
                   <child><object class="GtkEntry" id="note_entry"><property name="placeholder-text" translatable="yes">What are you working on?</property></object></child>
                   <child><object class="GtkBox"><property name="margin-top">4</property><child><object class="GtkLabel"><property name="label" translatable="yes">Ready when you are.</property><property name="hexpand">true</property><property name="halign">start</property><style><class name="dim-label"/></style></object></child><child><object class="HouraTimerActionButton" id="start_button"><property name="label" translatable="yes">Start timer</property></object></child></object></child>
                 </object></child>
-                <child><object class="GtkBox" id="running_panel"><property name="spacing">14</property><style><class name="tracker-card"/><class name="accent-card"/><class name="running-card"/></style>
-                  <child><object class="GtkButton" id="active_details_button"><property name="has-frame">false</property><property name="hexpand">true</property><property name="tooltip-text" translatable="yes">Edit current session</property><style><class name="active-details-button"/></style><property name="child"><object class="GtkBox"><property name="orientation">vertical</property><property name="spacing">5</property>
-                    <child><object class="GtkLabel"><property name="label" translatable="yes">TRACKING NOW</property><property name="halign">start</property><style><class name="eyebrow"/></style></object></child>
-                    <child><object class="GtkLabel" id="active_note_label"><property name="halign">start</property><property name="ellipsize">end</property><style><class name="active-note"/></style></object></child>
-                    <child><object class="GtkLabel" id="active_meta_label"><property name="halign">start</property><property name="ellipsize">end</property><style><class name="dim-label"/></style></object></child>
-                  </object></property></object></child>
-                  <child><object class="GtkLabel" id="timer_label"><property name="valign">center</property><style><class name="timer"/></style></object></child>
-                  <child><object class="HouraTimerActionButton" id="stop_button"><property name="label" translatable="yes">■ Stop</property><property name="valign">center</property></object></child>
+                <child><object class="GtkBox" id="running_panel"><property name="orientation">vertical</property><property name="height-request">260</property><style><class name="tracker-card"/><class name="accent-card"/><class name="running-card"/></style>
+                  <child><object class="GtkBox"><property name="orientation">vertical</property><property name="spacing">12</property><property name="halign">center</property><property name="valign">center</property><property name="vexpand">true</property>
+                    <child><object class="GtkButton" id="active_details_button"><property name="has-frame">false</property><property name="halign">center</property><property name="tooltip-text" translatable="yes">Edit current session</property><style><class name="active-details-button"/></style><property name="child"><object class="GtkBox"><property name="orientation">vertical</property><property name="spacing">4</property>
+                      <child><object class="GtkLabel"><property name="label" translatable="yes">TRACKING NOW</property><property name="halign">center</property><style><class name="eyebrow"/></style></object></child>
+                      <child><object class="GtkLabel" id="active_note_label"><property name="halign">center</property><property name="ellipsize">end</property><property name="max-width-chars">42</property><style><class name="active-note"/></style></object></child>
+                      <child><object class="GtkLabel" id="active_meta_label"><property name="halign">center</property><property name="ellipsize">end</property><property name="max-width-chars">42</property><style><class name="dim-label"/></style></object></child>
+                    </object></property></object></child>
+                    <child><object class="GtkLabel" id="timer_label"><property name="halign">center</property><property name="margin-top">4</property><style><class name="timer"/></style></object></child>
+                    <child><object class="HouraTimerActionButton" id="stop_button"><property name="label" translatable="yes">Stop timer</property><property name="halign">center</property></object></child>
+                  </object></child>
                 </object></child>
                 <child><object class="GtkBox"><property name="margin-top">8</property><child><object class="GtkLabel" id="entries_heading"><property name="hexpand">true</property><property name="halign">start</property><style><class name="section-title"/></style></object></child><child><object class="GtkLabel" id="entries_count"><property name="halign">end</property><style><class name="dim-label"/></style></object></child></object></child>
                 <child><object class="GtkBox" id="entries_box"><property name="orientation">vertical</property><style><class name="entries-card"/></style></object></child>

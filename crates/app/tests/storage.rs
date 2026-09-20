@@ -62,6 +62,29 @@ fn overlapping_manual_entries_report_conflicting_id() {
 }
 
 #[test]
+fn growing_final_interval_of_multi_interval_entry_reports_overlap() -> Result<(), AppError> {
+    let mut store = Store::open_in_memory()?;
+    let mut first = manual(None, 1, 0, 60_000);
+    first.intervals.push(houra_core::TrackedInterval {
+        id: None,
+        start_ms: 120_000,
+        end_ms: 180_000,
+        source: houra_core::EntrySource::Timer,
+    });
+    let first_id = store.add_entry(&first)?;
+    let second_id = store.add_entry(&manual(None, 1, 240_000, 300_000))?;
+    let before = store.entry(first_id)?;
+    let mut edited = before.clone();
+    edited.intervals[1].end_ms = 241_000;
+
+    assert!(
+        matches!(store.update_entry(&edited), Err(AppError::Domain(DomainError::Overlap { conflicts })) if conflicts == vec![second_id])
+    );
+    assert_eq!(store.entry(first_id)?, before);
+    Ok(())
+}
+
+#[test]
 fn activity_can_be_used_under_multiple_projects() {
     let (_directory, mut store) = temporary_store();
     let second = store
