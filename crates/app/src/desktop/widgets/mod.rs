@@ -31,7 +31,7 @@ mod tests {
 
     #[test]
     fn templates_construct_when_a_display_is_available() {
-        if gtk::init().is_err() {
+        if libadwaita::init().is_err() {
             return;
         }
         if let Err(error) = crate::desktop::application::register_resources() {
@@ -83,5 +83,6 @@ mod tests {
         );
         let _management = super::ManagementRow::new("General", "#3584e4", false, true);
         let _timer: super::TimerActionButton = glib::Object::builder().build();
+        let _window: crate::desktop::window::MainWindow = glib::Object::builder().build();
     }
 }

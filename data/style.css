@@ -14,7 +14,10 @@ window {
 .day-date { padding: 0; color: alpha(@window_fg_color, .68); font-size: 12px; }
 .add-time { padding: 10px 13px; font-weight: 600; }
 
-.week-strip { margin: 1px 14px 2px; }
+.week-navigation { margin: 1px 0 2px; }
+.week-strip { margin: 0 4px; }
+.week-arrow { min-width: 28px; min-height: 28px; padding: 2px; }
+.today-button { min-height: 24px; padding: 2px 8px; font-size: 12px; }
 .week-day { min-height: 68px; padding: 7px 4px; border-radius: 10px; background: transparent; box-shadow: none; }
 .week-day:hover { background: alpha(@window_fg_color, .06); }
 .week-day.selected { background: alpha(@accent_bg_color, .26); color: @accent_color; }

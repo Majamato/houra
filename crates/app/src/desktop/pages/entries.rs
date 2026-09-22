@@ -34,8 +34,8 @@ impl MainWindow {
             .day_button
             .set_label(&date.format("%A, %B %-d").to_string());
 
-        // Rebuild the seven-day navigation strip for the selected date.
-        self.refresh_week(date);
+        // Rebuild the independently browsable seven-day navigation strip.
+        self.refresh_week(date, today);
         let Some((start, end)) = day_bounds(date) else {
             return;
         };
@@ -223,7 +223,7 @@ impl MainWindow {
         self.refresh_timer_only();
     }
 
-    fn refresh_week(&self, selected: NaiveDate) {
+    fn refresh_week(&self, selected: NaiveDate, today: NaiveDate) {
         let Some(handle) = self.handle() else { return };
 
         // The week strip shows each day's date and recorded duration.
@@ -232,17 +232,17 @@ impl MainWindow {
         }
         let starts_monday = crate::desktop::load_settings()
             .is_none_or(|settings| settings.boolean("week-starts-monday"));
-        let from_start = if starts_monday {
-            selected.weekday().num_days_from_monday()
-        } else {
-            selected.weekday().num_days_from_sunday()
-        };
+        let visible_offset = self.imp().visible_week_offset.get().min(0);
+        self.imp().visible_week_offset.set(visible_offset);
         let Some(week_start) =
-            selected.checked_sub_signed(chrono::Duration::days(i64::from(from_start)))
+            crate::date_navigation::visible_week_start(today, visible_offset, starts_monday)
         else {
             return;
         };
-        let today = Local::now().date_naive();
+        self.imp().next_week_button.set_visible(visible_offset < 0);
+        self.imp()
+            .today_row
+            .set_visible(visible_offset != 0 || selected != today);
         for day_index in 0..7 {
             let Some(date) = week_start.checked_add_signed(chrono::Duration::days(day_index))
             else {
@@ -295,6 +295,7 @@ impl MainWindow {
                 );
             }
             let button = WeekDayCell::new(date, total, date == selected);
+            button.set_sensitive(crate::date_navigation::date_can_be_selected(date, today));
 
             // Each day is clickable and reloads the entries for that date.
             let weak = self.downgrade();
@@ -310,5 +311,39 @@ impl MainWindow {
             });
             self.imp().week_box.append(&button);
         }
+    }
+
+    pub(in crate::desktop) fn show_previous_week(&self) {
+        self.imp()
+            .visible_week_offset
+            .set(crate::date_navigation::previous_week_offset(
+                self.imp().visible_week_offset.get(),
+            ));
+        self.refresh_visible_week();
+    }
+
+    pub(in crate::desktop) fn show_next_week(&self) {
+        self.imp()
+            .visible_week_offset
+            .set(crate::date_navigation::next_week_offset(
+                self.imp().visible_week_offset.get(),
+            ));
+        self.refresh_visible_week();
+    }
+
+    pub(in crate::desktop) fn show_today(&self) {
+        self.imp().visible_week_offset.set(0);
+        self.imp().selected_day_offset.set(0);
+        self.refresh_entries();
+    }
+
+    fn refresh_visible_week(&self) {
+        let today = Local::now().date_naive();
+        let selected = today
+            .checked_add_signed(chrono::Duration::days(i64::from(
+                self.imp().selected_day_offset.get(),
+            )))
+            .unwrap_or(today);
+        self.refresh_week(selected, today);
     }
 }

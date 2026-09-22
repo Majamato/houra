@@ -370,6 +370,23 @@ impl MainWindow {
         content.append(&calendar);
         let choose = gtk::Button::with_label("Choose date");
         choose.add_css_class("suggested-action");
+        let selection_is_allowed = |calendar: &gtk::Calendar| {
+            let selected = calendar.date();
+            chrono::NaiveDate::from_ymd_opt(
+                selected.year(),
+                u32::try_from(selected.month()).unwrap_or(1),
+                u32::try_from(selected.day_of_month()).unwrap_or(1),
+            )
+            .is_some_and(|date| {
+                crate::date_navigation::date_can_be_selected(date, Local::now().date_naive())
+            })
+        };
+        choose.set_sensitive(selection_is_allowed(&calendar));
+        calendar.connect_day_selected(glib::clone!(
+            #[weak]
+            choose,
+            move |calendar| choose.set_sensitive(selection_is_allowed(calendar))
+        ));
         content.append(&choose);
         dialog.set_child(Some(&content));
         let weak = self.downgrade();
@@ -384,13 +401,22 @@ impl MainWindow {
                 )
                 .ok_or(())
                 {
-                    let offset = date
-                        .signed_duration_since(Local::now().date_naive())
-                        .num_days();
+                    let today = Local::now().date_naive();
+                    if !crate::date_navigation::date_can_be_selected(date, today) {
+                        return;
+                    }
+                    let offset = date.signed_duration_since(today).num_days();
                     window
                         .imp()
                         .selected_day_offset
                         .set(i32::try_from(offset).unwrap_or(0));
+                    let starts_monday = crate::desktop::load_settings()
+                        .is_none_or(|settings| settings.boolean("week-starts-monday"));
+                    if let Some(week_offset) =
+                        crate::date_navigation::week_offset_for_date(date, today, starts_monday)
+                    {
+                        window.imp().visible_week_offset.set(week_offset);
+                    }
                     window.refresh_entries();
                 }
                 dialog_to_close.close();

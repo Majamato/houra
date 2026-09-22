@@ -6,6 +6,7 @@
 
 pub mod autostart;
 pub mod backup;
+mod date_navigation;
 pub mod error;
 pub mod export;
 pub mod settings;

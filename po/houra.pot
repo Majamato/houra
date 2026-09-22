@@ -105,6 +105,10 @@ msgstr ""
 msgid "Next week"
 msgstr ""
 
+#: data/ui/window.ui
+msgid "Today"
+msgstr ""
+
 #: data/ui/window.ui:136
 msgid "Export CSV"
 msgstr ""

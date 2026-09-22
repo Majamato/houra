@@ -24,7 +24,16 @@
                   </object></child>
                   <child><object class="GtkButton" id="add_time_button"><property name="label" translatable="yes">+ Add time</property><property name="valign">start</property><property name="action-name">app.add-entry</property><style><class name="flat"/><class name="add-time"/></style></object></child>
                 </object></child>
-                <child><object class="GtkBox" id="week_box"><property name="homogeneous">true</property><property name="spacing">4</property><style><class name="week-strip"/></style></object></child>
+                <child><object class="GtkBox"><property name="orientation">vertical</property><property name="spacing">4</property>
+                  <child><object class="GtkBox" id="today_row"><property name="halign">end</property>
+                    <child><object class="GtkButton" id="today_button"><property name="label" translatable="yes">Today</property><property name="tooltip-text" translatable="yes">Today</property><style><class name="flat"/><class name="today-button"/></style></object></child>
+                  </object></child>
+                  <child><object class="GtkBox"><property name="spacing">4</property><style><class name="week-navigation"/></style>
+                    <child><object class="GtkButton" id="previous_week_button"><property name="icon-name">go-previous-symbolic</property><property name="tooltip-text" translatable="yes">Previous week</property><property name="valign">center</property><style><class name="flat"/><class name="circular"/><class name="week-arrow"/></style></object></child>
+                    <child><object class="GtkBox" id="week_box"><property name="homogeneous">true</property><property name="hexpand">true</property><property name="spacing">4</property><style><class name="week-strip"/></style></object></child>
+                    <child><object class="GtkButton" id="next_week_button"><property name="icon-name">go-next-symbolic</property><property name="tooltip-text" translatable="yes">Next week</property><property name="valign">center</property><style><class name="flat"/><class name="circular"/><class name="week-arrow"/></style></object></child>
+                  </object></child>
+                </object></child>
                 <child><object class="GtkBox" id="stopped_panel"><property name="orientation">vertical</property><property name="spacing">12</property><property name="height-request">260</property><style><class name="tracker-card"/><class name="accent-card"/></style>
                   <child><object class="GtkLabel"><property name="label" translatable="yes">START A SESSION</property><property name="halign">start</property><style><class name="eyebrow"/></style></object></child>
                   <child><object class="GtkGrid"><property name="column-spacing">14</property><property name="row-spacing">6</property><property name="column-homogeneous">true</property>

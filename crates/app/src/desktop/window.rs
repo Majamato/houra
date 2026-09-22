@@ -50,6 +50,14 @@ pub(super) mod imp {
         #[template_child]
         pub week_box: gtk::TemplateChild<gtk::Box>,
         #[template_child]
+        pub previous_week_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub next_week_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub today_row: gtk::TemplateChild<gtk::Box>,
+        #[template_child]
+        pub today_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
         pub entries_heading: gtk::TemplateChild<gtk::Label>,
         #[template_child]
         pub entries_count: gtk::TemplateChild<gtk::Label>,
@@ -80,6 +88,7 @@ pub(super) mod imp {
         pub activities: RefCell<Vec<Activity>>,
         pub report_week_offset: Cell<i32>,
         pub selected_day_offset: Cell<i32>,
+        pub visible_week_offset: Cell<i32>,
         pub stored_day_seconds: Cell<u64>,
         pub displayed_today_ordinal: Cell<i32>,
         pub updating_activity_dropdown: Cell<bool>,
@@ -155,6 +164,23 @@ impl MainWindow {
             #[weak(rename_to = window)]
             self,
             move |_| window.show_date_chooser()
+        ));
+        self.imp()
+            .previous_week_button
+            .connect_clicked(glib::clone!(
+                #[weak(rename_to = window)]
+                self,
+                move |_| window.show_previous_week()
+            ));
+        self.imp().next_week_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| window.show_next_week()
+        ));
+        self.imp().today_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| window.show_today()
         ));
         self.imp()
             .project_dropdown
