@@ -6,6 +6,7 @@
 
 pub mod autostart;
 pub mod backup;
+#[cfg(any(feature = "native-ui", test))]
 mod date_navigation;
 pub mod error;
 pub mod export;

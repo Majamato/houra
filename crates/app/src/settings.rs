@@ -7,7 +7,6 @@ pub struct Preferences {
     pub idle_threshold_minutes: u32,
     pub launch_at_login: bool,
     pub notifications: bool,
-    pub week_starts_monday: bool,
 }
 
 impl Default for Preferences {
@@ -16,7 +15,6 @@ impl Default for Preferences {
             idle_threshold_minutes: 5,
             launch_at_login: true,
             notifications: true,
-            week_starts_monday: true,
         }
     }
 }
@@ -39,7 +37,6 @@ mod tests {
                 idle_threshold_minutes: 5,
                 launch_at_login: true,
                 notifications: true,
-                week_starts_monday: true
             }
         );
         for (input, expected) in [

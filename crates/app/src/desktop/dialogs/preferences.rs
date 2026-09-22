@@ -82,29 +82,6 @@ impl MainWindow {
         });
         group.add(&notifications);
 
-        // The week-start setting affects both the report and entries pages.
-        let week_start = adw::SwitchRow::builder()
-            .title("Weeks start on Monday")
-            .active(
-                settings
-                    .as_ref()
-                    .is_none_or(|settings| settings.boolean("week-starts-monday")),
-            )
-            .build();
-        week_start.connect_active_notify({
-            let settings = settings.clone();
-            let weak = self.downgrade();
-            move |row| {
-                if let Some(settings) = &settings {
-                    let _ignored = settings.set_boolean("week-starts-monday", row.is_active());
-                }
-                if let Some(window) = weak.upgrade() {
-                    window.refresh_report();
-                    window.refresh_entries();
-                }
-            }
-        });
-        group.add(&week_start);
         page.add(&group);
         dialog.add(&page);
         dialog.present(Some(self));

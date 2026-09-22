@@ -230,12 +230,9 @@ impl MainWindow {
         while let Some(child) = self.imp().week_box.first_child() {
             self.imp().week_box.remove(&child);
         }
-        let starts_monday = crate::desktop::load_settings()
-            .is_none_or(|settings| settings.boolean("week-starts-monday"));
         let visible_offset = self.imp().visible_week_offset.get().min(0);
         self.imp().visible_week_offset.set(visible_offset);
-        let Some(week_start) =
-            crate::date_navigation::visible_week_start(today, visible_offset, starts_monday)
+        let Some(week_start) = crate::date_navigation::visible_week_start(today, visible_offset)
         else {
             return;
         };

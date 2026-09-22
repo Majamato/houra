@@ -42,10 +42,6 @@ msgid "Show reconciliation notifications"
 msgstr "Show reconciliation notifications"
 
 #: data/io.github.majamato.Houra.gschema.xml:19
-msgid "Use Monday as the first day of reports"
-msgstr "Use Monday as the first day of reports"
-
-#: data/io.github.majamato.Houra.gschema.xml:23
 msgid "Whether first-run setup has completed"
 msgstr "Whether first-run setup has completed"
 

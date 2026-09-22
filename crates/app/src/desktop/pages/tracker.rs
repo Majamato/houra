@@ -410,10 +410,8 @@ impl MainWindow {
                         .imp()
                         .selected_day_offset
                         .set(i32::try_from(offset).unwrap_or(0));
-                    let starts_monday = crate::desktop::load_settings()
-                        .is_none_or(|settings| settings.boolean("week-starts-monday"));
                     if let Some(week_offset) =
-                        crate::date_navigation::week_offset_for_date(date, today, starts_monday)
+                        crate::date_navigation::week_offset_for_date(date, today)
                     {
                         window.imp().visible_week_offset.set(week_offset);
                     }

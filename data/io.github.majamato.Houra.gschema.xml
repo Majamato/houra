@@ -14,10 +14,6 @@
       <default>true</default>
       <summary>Show reconciliation notifications</summary>
     </key>
-    <key name="week-starts-monday" type="b">
-      <default>true</default>
-      <summary>Use Monday as the first day of reports</summary>
-    </key>
     <key name="onboarding-complete" type="b">
       <default>false</default>
       <summary>Whether first-run setup has completed</summary>

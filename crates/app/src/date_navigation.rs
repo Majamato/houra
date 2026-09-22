@@ -1,30 +1,17 @@
 use chrono::{Datelike, Duration, NaiveDate};
 
-pub(crate) fn week_start(date: NaiveDate, starts_monday: bool) -> Option<NaiveDate> {
-    let days_from_start = if starts_monday {
-        date.weekday().num_days_from_monday()
-    } else {
-        date.weekday().num_days_from_sunday()
-    };
+pub(crate) fn week_start(date: NaiveDate) -> Option<NaiveDate> {
+    let days_from_start = date.weekday().num_days_from_monday();
     date.checked_sub_signed(Duration::days(i64::from(days_from_start)))
 }
 
-pub(crate) fn visible_week_start(
-    today: NaiveDate,
-    week_offset: i32,
-    starts_monday: bool,
-) -> Option<NaiveDate> {
-    week_start(today, starts_monday)?
-        .checked_add_signed(Duration::weeks(i64::from(week_offset.min(0))))
+pub(crate) fn visible_week_start(today: NaiveDate, week_offset: i32) -> Option<NaiveDate> {
+    week_start(today)?.checked_add_signed(Duration::weeks(i64::from(week_offset.min(0))))
 }
 
-pub(crate) fn week_offset_for_date(
-    date: NaiveDate,
-    today: NaiveDate,
-    starts_monday: bool,
-) -> Option<i32> {
-    let current_start = week_start(today, starts_monday)?;
-    let selected_start = week_start(date, starts_monday)?;
+pub(crate) fn week_offset_for_date(date: NaiveDate, today: NaiveDate) -> Option<i32> {
+    let current_start = week_start(today)?;
+    let selected_start = week_start(date)?;
     i32::try_from(
         selected_start
             .signed_duration_since(current_start)
@@ -57,29 +44,10 @@ mod tests {
     #[test]
     fn monday_weeks_cross_month_and_year_boundaries() {
         let today = date(2026, 1, 1);
-        assert_eq!(week_start(today, true), Some(date(2025, 12, 29)));
-        assert_eq!(
-            visible_week_start(today, -1, true),
-            Some(date(2025, 12, 22))
-        );
-        assert_eq!(
-            week_offset_for_date(date(2025, 12, 28), today, true),
-            Some(-1)
-        );
-    }
-
-    #[test]
-    fn sunday_weeks_cross_month_and_year_boundaries() {
-        let today = date(2026, 1, 1);
-        assert_eq!(week_start(today, false), Some(date(2025, 12, 28)));
-        assert_eq!(
-            visible_week_start(today, -1, false),
-            Some(date(2025, 12, 21))
-        );
-        assert_eq!(
-            week_offset_for_date(date(2025, 12, 27), today, false),
-            Some(-1)
-        );
+        assert_eq!(week_start(today), Some(date(2025, 12, 29)));
+        assert_eq!(visible_week_start(today, -1), Some(date(2025, 12, 22)));
+        assert_eq!(week_offset_for_date(date(2025, 12, 28), today), Some(-1));
+        assert_eq!(week_start(date(2026, 5, 1)), Some(date(2026, 4, 27)));
     }
 
     #[test]
@@ -89,7 +57,7 @@ mod tests {
         assert_eq!(next_week_offset(-1), 0);
         assert_eq!(next_week_offset(0), 0);
         assert_eq!(
-            visible_week_start(date(2026, 9, 22), 1, true),
+            visible_week_start(date(2026, 9, 22), 1),
             Some(date(2026, 9, 21))
         );
     }

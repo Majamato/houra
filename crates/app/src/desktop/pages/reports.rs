@@ -1,4 +1,4 @@
-use chrono::{Datelike, Local, NaiveDate, TimeZone};
+use chrono::{Local, NaiveDate, TimeZone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use libadwaita as adw;
@@ -8,15 +8,7 @@ use crate::desktop::window::MainWindow;
 impl MainWindow {
     fn report_bounds(&self) -> Option<(chrono::DateTime<Local>, chrono::DateTime<Local>)> {
         let today = Local::now().date_naive();
-        let starts_monday = crate::desktop::load_settings()
-            .is_none_or(|settings| settings.boolean("week-starts-monday"));
-        let days_from_start = if starts_monday {
-            today.weekday().num_days_from_monday()
-        } else {
-            today.weekday().num_days_from_sunday()
-        };
-        let week_start =
-            today.checked_sub_signed(chrono::Duration::days(i64::from(days_from_start)))?;
+        let week_start = crate::date_navigation::week_start(today)?;
         let start_date = week_start.checked_add_signed(chrono::Duration::weeks(i64::from(
             self.imp().report_week_offset.get(),
         )))?;
