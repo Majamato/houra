@@ -1,9 +1,10 @@
-use chrono::{Local, NaiveDate, TimeZone};
+use chrono::{Local, TimeZone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use libadwaita as adw;
 
 use crate::desktop::window::MainWindow;
+use crate::export::{self, ReportMode};
 
 impl MainWindow {
     fn report_bounds(&self) -> Option<(chrono::DateTime<Local>, chrono::DateTime<Local>)> {
@@ -22,22 +23,30 @@ impl MainWindow {
         Some((start, end))
     }
 
+    fn report_mode(&self) -> ReportMode {
+        if self.imp().report_full_switch.is_active() {
+            ReportMode::Full
+        } else {
+            ReportMode::Tasks
+        }
+    }
+
     pub(in crate::desktop) fn refresh_report(&self) {
         let Some(handle) = self.handle() else { return };
         let Some((start, end)) = self.report_bounds() else {
             return;
         };
-        self.imp().report_week_label.set_label(&format!(
-            "{} – {}",
-            start.format("%x"),
-            end.date_naive()
-                .pred_opt()
-                .map_or_else(String::new, |date| date.format("%x").to_string())
-        ));
+        let Some(last_day) = end.date_naive().pred_opt() else {
+            return;
+        };
+        self.imp()
+            .report_week_label
+            .set_label(&export::date_range(start.date_naive(), last_day));
         while let Some(child) = self.imp().report_box.first_child() {
             self.imp().report_box.remove(&child);
         }
-        let entries = match handle.entries(start.timestamp_millis(), end.timestamp_millis()) {
+        let week = (start.timestamp_millis(), end.timestamp_millis());
+        let entries = match handle.entries(week.0, week.1) {
             Ok(entries) => entries,
             Err(error) => {
                 self.show_database_error(&error.to_string());
@@ -46,11 +55,8 @@ impl MainWindow {
         };
         let projects = handle.projects(true).unwrap_or_default();
         let activities = handle.activities(true).unwrap_or_default();
-        let rows = houra_core::group_entries_in_range(
-            &entries,
-            start.timestamp_millis(),
-            end.timestamp_millis(),
-        );
+        let rows =
+            export::report_display_rows(&entries, &projects, &activities, week, self.report_mode());
         if rows.is_empty() {
             self.imp()
                 .report_box
@@ -58,31 +64,11 @@ impl MainWindow {
             return;
         }
         for row in rows {
-            let date = NaiveDate::from_yo_opt(row.bucket.local_year, row.bucket.local_ordinal)
-                .map_or_else(
-                    || "Unknown day".into(),
-                    |date| date.format("%A, %x").to_string(),
-                );
-            let project = projects
-                .iter()
-                .find(|project| project.id == row.bucket.project_id)
-                .map_or("Missing project", |project| project.name.as_str());
-            let activity = row
-                .bucket
-                .activity_id
-                .and_then(|id| activities.iter().find(|activity| activity.id == id))
-                .map(|activity| format!(" / {}", activity.name))
-                .unwrap_or_default();
-            let seconds = row.duration_ms / 1_000;
-            let report_row = adw::ActionRow::builder()
-                .title(format!("{project}{activity}"))
-                .subtitle(format!(
-                    "{date} · {}h {:02}m",
-                    seconds / 3600,
-                    (seconds / 60) % 60
-                ))
+            let widget = adw::ActionRow::builder()
+                .title(row.title)
+                .subtitle(row.subtitle)
                 .build();
-            self.imp().report_box.append(&report_row);
+            self.imp().report_box.append(&widget);
         }
     }
 
@@ -91,6 +77,7 @@ impl MainWindow {
         let Some((start, end)) = self.report_bounds() else {
             return;
         };
+        let mode = self.report_mode();
         let chooser = gtk::FileDialog::builder()
             .title("Export Weekly CSV")
             .initial_name(format!("houra-{}.csv", start.format("%Y-%m-%d")))
@@ -104,17 +91,11 @@ impl MainWindow {
                     let path = file.path().ok_or_else(|| {
                         crate::AppError::InvalidBackup("CSV export requires a local file".into())
                     })?;
-                    let mut entries =
-                        handle.entries(start.timestamp_millis(), end.timestamp_millis())?;
-                    for entry in &mut entries {
-                        entry.intervals.retain(|interval| {
-                            interval.start_ms < end.timestamp_millis()
-                                && interval.end_ms > start.timestamp_millis()
-                        });
-                    }
+                    let week = (start.timestamp_millis(), end.timestamp_millis());
+                    let entries = handle.entries(week.0, week.1)?;
                     let projects = handle.projects(true)?;
                     let activities = handle.activities(true)?;
-                    crate::export::write_csv_path(&path, &entries, &projects, &activities)
+                    export::write_csv_path(&path, &entries, &projects, &activities, week, mode)
                 });
             if let Err(error) = result {
                 window.show_database_error(&error.to_string());

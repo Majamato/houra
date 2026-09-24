@@ -85,6 +85,8 @@ pub(super) mod imp {
         pub report_next_button: gtk::TemplateChild<gtk::Button>,
         #[template_child]
         pub export_csv_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
+        pub report_full_switch: gtk::TemplateChild<gtk::Switch>,
         pub handle: RefCell<Option<TrackerHandle>>,
         pub projects: RefCell<Vec<Project>>,
         pub activities: RefCell<Vec<Activity>>,
@@ -251,6 +253,13 @@ impl MainWindow {
                 window.refresh_report();
             }
         ));
+        self.imp()
+            .report_full_switch
+            .connect_active_notify(glib::clone!(
+                #[weak(rename_to = window)]
+                self,
+                move |_| window.refresh_report()
+            ));
         self.imp().export_csv_button.connect_clicked(glib::clone!(
             #[weak(rename_to = window)]
             self,
