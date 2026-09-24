@@ -53,7 +53,10 @@
                       <child><object class="GtkLabel" id="active_note_label"><property name="halign">center</property><property name="ellipsize">end</property><property name="max-width-chars">42</property><style><class name="active-note"/></style></object></child>
                       <child><object class="GtkLabel" id="active_meta_label"><property name="halign">center</property><property name="ellipsize">end</property><property name="max-width-chars">42</property><style><class name="dim-label"/></style></object></child>
                     </object></property></object></child>
-                    <child><object class="GtkLabel" id="timer_label"><property name="halign">center</property><property name="margin-top">4</property><style><class name="timer"/></style></object></child>
+                    <child><object class="GtkBox"><property name="orientation">vertical</property><property name="spacing">0</property><property name="margin-top">4</property>
+                      <child><object class="GtkLabel" id="timer_label"><property name="halign">center</property><style><class name="timer"/></style></object></child>
+                      <child><object class="GtkLabel" id="active_entry_total_label"><property name="halign">center</property><property name="visible">false</property><style><class name="dim-label"/><class name="active-entry-total"/></style></object></child>
+                    </object></child>
                     <child><object class="HouraTimerActionButton" id="stop_button"><property name="label" translatable="yes">Stop timer</property><property name="halign">center</property></object></child>
                   </object></child>
                 </object></child>

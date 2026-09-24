@@ -37,6 +37,7 @@ window {
 .active-details-button { padding: 5px 18px; }
 .active-note { font-size: 16px; font-weight: 600; }
 .timer { font-size: 38px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+.active-entry-total { font-size: 12px; font-variant-numeric: tabular-nums; }
 .section-title { font-weight: 600; }
 
 .entries-card {

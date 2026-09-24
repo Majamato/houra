@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use chrono::{Datelike, Local, TimeZone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -8,6 +10,31 @@ use libadwaita::prelude::*;
 use crate::desktop::window::MainWindow;
 
 impl MainWindow {
+    pub(in crate::desktop) fn refresh_active_entry_duration(&self) {
+        let Some(handle) = self.handle() else { return };
+        let Ok(snapshot) = handle.snapshot() else {
+            return;
+        };
+        let Some(active) = snapshot.state.active() else {
+            self.clear_active_entry_duration();
+            return;
+        };
+        let saved_ms = active
+            .entry_id
+            .and_then(|entry_id| handle.entry(entry_id).ok())
+            .map_or(0, |entry| entry.duration_ms());
+        self.imp().active_entry_id.set(active.entry_id);
+        self.imp().active_entry_saved_ms.set(saved_ms);
+        self.imp().active_entry_duration_cached.set(true);
+    }
+
+    fn clear_active_entry_duration(&self) {
+        self.imp().active_entry_id.set(None);
+        self.imp().active_entry_saved_ms.set(0);
+        self.imp().active_entry_duration_cached.set(false);
+        self.imp().active_entry_total_label.set_visible(false);
+    }
+
     pub(in crate::desktop) fn reload_projects(&self) {
         let Some(handle) = self.handle() else { return };
         match handle.projects(false) {
@@ -156,8 +183,13 @@ impl MainWindow {
         match snapshot.state {
             TrackerState::Running(active)
             | TrackerState::IdlePending(houra_core::PendingIdle { active, .. }) => {
-                let elapsed = handle.live_elapsed().map_or_else(
-                    |_| {
+                if !self.imp().active_entry_duration_cached.get()
+                    || self.imp().active_entry_id.get() != active.entry_id
+                {
+                    self.refresh_active_entry_duration();
+                }
+                let elapsed = handle.live_elapsed().unwrap_or_else(|_| {
+                    Duration::from_secs(
                         u64::try_from(
                             chrono::Utc::now()
                                 .timestamp_millis()
@@ -165,16 +197,23 @@ impl MainWindow {
                                 .max(0)
                                 / 1_000,
                         )
-                        .unwrap_or(0)
-                    },
-                    |duration| duration.as_secs(),
-                );
+                        .unwrap_or(0),
+                    )
+                });
+                let elapsed_seconds = elapsed.as_secs();
                 self.imp().timer_label.set_label(&format!(
                     "{:02}:{:02}:{:02}",
-                    elapsed / 3600,
-                    (elapsed / 60) % 60,
-                    elapsed % 60
+                    elapsed_seconds / 3600,
+                    (elapsed_seconds / 60) % 60,
+                    elapsed_seconds % 60
                 ));
+                let total_seconds =
+                    active_entry_total_seconds(self.imp().active_entry_saved_ms.get(), elapsed);
+                self.imp().active_entry_total_label.set_label(&format!(
+                    "{} total on this entry",
+                    crate::desktop::widgets::format_duration(total_seconds)
+                ));
+                self.imp().active_entry_total_label.set_visible(true);
                 self.imp().stopped_panel.set_visible(false);
                 self.imp().running_panel.set_visible(true);
                 self.set_active_labels(&active);
@@ -195,10 +234,12 @@ impl MainWindow {
             }
             TrackerState::RecoveryPending(_) => {
                 self.imp().timer_label.set_label("Review");
+                self.imp().active_entry_total_label.set_visible(false);
                 self.imp().stopped_panel.set_visible(false);
                 self.imp().running_panel.set_visible(true);
             }
             TrackerState::Stopped => {
+                self.clear_active_entry_duration();
                 self.imp().stopped_panel.set_visible(true);
                 self.imp().running_panel.set_visible(false);
             }
@@ -421,5 +462,30 @@ impl MainWindow {
             }
         });
         dialog.present(Some(self));
+    }
+}
+
+fn active_entry_total_seconds(saved_duration_ms: i64, live_duration: Duration) -> u64 {
+    let live_ms = i64::try_from(live_duration.as_millis()).unwrap_or(i64::MAX);
+    u64::try_from(saved_duration_ms.saturating_add(live_ms).max(0) / 1_000).unwrap_or(u64::MAX)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    use super::active_entry_total_seconds;
+
+    #[test]
+    fn active_entry_total_combines_saved_intervals_and_live_session() {
+        assert_eq!(
+            active_entry_total_seconds(3_075_500, Duration::from_millis(44_499)),
+            51 * 60 + 59
+        );
+        assert_eq!(
+            active_entry_total_seconds(3_075_500, Duration::from_millis(44_500)),
+            52 * 60
+        );
+        assert_eq!(active_entry_total_seconds(0, Duration::from_secs(61)), 61);
     }
 }

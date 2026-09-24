@@ -4,7 +4,7 @@ use chrono::Datelike;
 use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use houra_core::{Activity, Project, TrackerCommand, TrackerState};
+use houra_core::{Activity, EntryId, Project, TrackerCommand, TrackerState};
 use libadwaita as adw;
 use libadwaita::prelude::*;
 use libadwaita::subclass::prelude::*;
@@ -23,6 +23,8 @@ pub(super) mod imp {
         pub integration_banner: gtk::TemplateChild<adw::Banner>,
         #[template_child]
         pub timer_label: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
+        pub active_entry_total_label: gtk::TemplateChild<gtk::Label>,
         #[template_child]
         pub start_button: gtk::TemplateChild<TimerActionButton>,
         #[template_child]
@@ -90,6 +92,9 @@ pub(super) mod imp {
         pub selected_day_offset: Cell<i32>,
         pub visible_week_offset: Cell<i32>,
         pub stored_day_seconds: Cell<u64>,
+        pub active_entry_id: Cell<Option<EntryId>>,
+        pub active_entry_saved_ms: Cell<i64>,
+        pub active_entry_duration_cached: Cell<bool>,
         pub displayed_today_ordinal: Cell<i32>,
         pub updating_activity_dropdown: Cell<bool>,
     }
@@ -138,6 +143,11 @@ impl MainWindow {
         self.imp()
             .timer_label
             .update_property(&[gtk::accessible::Property::Label("Elapsed tracked time")]);
+        self.imp()
+            .active_entry_total_label
+            .update_property(&[gtk::accessible::Property::Label(
+                "Total time on the active entry",
+            )]);
         self.reload_projects();
         self.reload_activities();
         self.refresh_projects_page();
@@ -275,6 +285,7 @@ impl MainWindow {
     }
 
     pub(super) fn refresh(&self) {
+        self.refresh_active_entry_duration();
         self.refresh_timer_only();
         self.refresh_entries();
         if let Some(handle) = self.handle()
