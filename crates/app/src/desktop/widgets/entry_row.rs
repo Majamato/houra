@@ -32,6 +32,8 @@ mod imp {
         #[template_child]
         pub duration: gtk::TemplateChild<gtk::Label>,
         #[template_child]
+        pub report_button: gtk::TemplateChild<gtk::Button>,
+        #[template_child]
         pub tracking_status: gtk::TemplateChild<gtk::Label>,
         #[template_child]
         pub continue_button: gtk::TemplateChild<gtk::Button>,
@@ -66,6 +68,13 @@ mod imp {
                 object,
                 move |_| object.emit_by_name::<()>("continue-requested", &[])
             ));
+            self.report_button
+                .update_property(&[gtk::accessible::Property::Label("View task report")]);
+            self.report_button.connect_clicked(glib::clone!(
+                #[weak]
+                object,
+                move |_| object.emit_by_name::<()>("report-requested", &[])
+            ));
         }
 
         fn dispose(&self) {
@@ -77,6 +86,7 @@ mod imp {
                 vec![
                     Signal::builder("edit-requested").build(),
                     Signal::builder("continue-requested").build(),
+                    Signal::builder("report-requested").build(),
                 ]
             });
             SIGNALS.as_ref()
@@ -208,6 +218,17 @@ impl EntryRow {
     ) -> glib::SignalHandlerId {
         self.connect_closure(
             "continue-requested",
+            false,
+            glib::closure_local!(move |row: Self| callback(&row)),
+        )
+    }
+
+    pub(in crate::desktop) fn connect_report_requested<F: Fn(&Self) + 'static>(
+        &self,
+        callback: F,
+    ) -> glib::SignalHandlerId {
+        self.connect_closure(
+            "report-requested",
             false,
             glib::closure_local!(move |row: Self| callback(&row)),
         )

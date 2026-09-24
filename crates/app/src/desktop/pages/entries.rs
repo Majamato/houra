@@ -187,6 +187,13 @@ impl MainWindow {
                     self,
                     move |_| window.continue_entry(&entry_to_resume)
                 ));
+                if let Some(id) = entry.id {
+                    row.connect_report_requested(glib::clone!(
+                        #[weak(rename_to = window)]
+                        self,
+                        move |_| window.show_entry_report(id)
+                    ));
+                }
                 self.imp().entries_box.append(&row);
             }
         }

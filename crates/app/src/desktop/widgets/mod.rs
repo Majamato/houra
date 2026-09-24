@@ -20,6 +20,11 @@ pub(super) fn format_duration(seconds: u64) -> String {
 
 #[cfg(test)]
 mod tests {
+    use glib::subclass::types::ObjectSubclassIsExt;
+    use gtk::prelude::ButtonExt;
+    use std::cell::Cell;
+    use std::rc::Rc;
+
     use super::format_duration;
 
     #[test]
@@ -72,7 +77,7 @@ mod tests {
         };
 
         let _week_day = super::WeekDayCell::new(date, 60, true);
-        let _entry = super::EntryRow::new(
+        let entry_row = super::EntryRow::new(
             &entry,
             Some(&project),
             Some(&activity),
@@ -81,6 +86,11 @@ mod tests {
             0,
             super::EntryTrackingState::Inactive,
         );
+        let requested = Rc::new(Cell::new(false));
+        let requested_for_signal = requested.clone();
+        entry_row.connect_report_requested(move |_| requested_for_signal.set(true));
+        entry_row.imp().report_button.emit_clicked();
+        assert!(requested.get());
         let _management = super::ManagementRow::new("General", "#3584e4", false, true);
         let _timer: super::TimerActionButton = glib::Object::builder().build();
         let _window: crate::desktop::window::MainWindow = glib::Object::builder().build();
