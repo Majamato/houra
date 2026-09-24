@@ -113,8 +113,8 @@ msgstr ""
 msgid "Projects"
 msgstr ""
 
-#: data/ui/window.ui:165
-msgid "Projects and Activities"
+#: data/ui/window.ui:69
+msgid "Projects & Activities"
 msgstr ""
 
 #: data/ui/window.ui:166

@@ -113,9 +113,9 @@ msgstr "Export CSV"
 msgid "Projects"
 msgstr "Projects"
 
-#: data/ui/window.ui:165
-msgid "Projects and Activities"
-msgstr "Projects and Activities"
+#: data/ui/window.ui:69
+msgid "Projects & Activities"
+msgstr "Projects & Activities"
 
 #: data/ui/window.ui:166
 msgid "Add Project"
