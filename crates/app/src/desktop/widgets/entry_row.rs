@@ -1,3 +1,4 @@
+use crate::locale::{tr, trf, trn};
 use std::sync::LazyLock;
 
 use chrono::{Local, TimeZone};
@@ -69,7 +70,7 @@ mod imp {
                 move |_| object.emit_by_name::<()>("continue-requested", &[])
             ));
             self.report_button
-                .update_property(&[gtk::accessible::Property::Label("View task report")]);
+                .update_property(&[gtk::accessible::Property::Label(tr("View task report"))]);
             self.report_button.connect_clicked(glib::clone!(
                 #[weak]
                 object,
@@ -113,7 +114,7 @@ impl EntryRow {
         tracking: EntryTrackingState,
     ) -> Self {
         let row: Self = glib::Object::builder().build();
-        let project_name = project.map_or("Missing project", |item| item.name.as_str());
+        let project_name = project.map_or(tr("Missing project"), |item| item.name.as_str());
         let visible = entry
             .intervals
             .iter()
@@ -121,7 +122,12 @@ impl EntryRow {
             .collect::<Vec<_>>();
         let interval_count = visible.len() + usize::from(live_ms > 0);
         let times = if interval_count > 1 {
-            format!("{interval_count} intervals")
+            trn(
+                "{count} interval",
+                "{count} intervals",
+                interval_count as u32,
+            )
+            .replace("{count}", &interval_count.to_string())
         } else {
             match visible.as_slice() {
                 [interval] => match (
@@ -137,17 +143,31 @@ impl EntryRow {
                     }
                     _ => String::new(),
                 },
-                _ if live_ms > 0 => "Current session".into(),
+                _ if live_ms > 0 => tr("Current session").into(),
                 _ => String::new(),
             }
         };
         let metadata = activity.map_or_else(
-            || format!("{project_name} · {times}"),
-            |item| format!("{project_name} · {} · {times}", item.name),
+            || {
+                trf(
+                    "{project} · {times}",
+                    &[("project", project_name), ("times", &times)],
+                )
+            },
+            |item| {
+                trf(
+                    "{project} · {activity} · {times}",
+                    &[
+                        ("project", project_name),
+                        ("activity", &item.name),
+                        ("times", &times),
+                    ],
+                )
+            },
         );
 
         row.imp().title.set_label(if entry.note.is_empty() {
-            "Tracked work"
+            tr("Tracked work")
         } else {
             &entry.note
         });
@@ -164,15 +184,17 @@ impl EntryRow {
         let duration = u64::try_from(stored_ms.saturating_add(live_ms).max(0) / 1_000).unwrap_or(0);
         row.imp().duration.set_label(&format_duration(duration));
         match tracking {
-            EntryTrackingState::Inactive => row.imp().continue_button.set_label("Continue"),
+            EntryTrackingState::Inactive => row.imp().continue_button.set_label(tr("Continue")),
             EntryTrackingState::Tracking => {
                 row.imp().continue_button.set_visible(false);
-                row.imp().tracking_status.set_label("Currently tracking");
+                row.imp()
+                    .tracking_status
+                    .set_label(tr("Currently tracking"));
                 row.imp().tracking_status.set_visible(true);
             }
             EntryTrackingState::ReviewRequired => {
                 row.imp().continue_button.set_visible(false);
-                row.imp().tracking_status.set_label("Review required");
+                row.imp().tracking_status.set_label(tr("Review required"));
                 row.imp().tracking_status.set_visible(true);
             }
         }

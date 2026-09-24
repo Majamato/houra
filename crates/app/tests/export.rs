@@ -11,7 +11,7 @@ fn at(day: u32, hour: u32, minute: u32) -> i64 {
     Local
         .with_ymd_and_hms(2026, 9, day, hour, minute, 0)
         .single()
-        .unwrap()
+        .unwrap_or_else(|| panic!("test local date should exist"))
         .timestamp_millis()
 }
 
@@ -115,11 +115,11 @@ fn task_summary_sums_clipped_intervals_and_preserves_task_identity()
     assert_eq!(tasks[0].duration_ms, 10_800_000);
     assert_eq!(
         tasks[0].first_date,
-        NaiveDate::from_ymd_opt(2026, 9, 21).unwrap()
+        NaiveDate::from_ymd_opt(2026, 9, 21).unwrap_or_else(|| panic!("test date should exist"))
     );
     assert_eq!(
         tasks[0].last_date,
-        NaiveDate::from_ymd_opt(2026, 9, 27).unwrap()
+        NaiveDate::from_ymd_opt(2026, 9, 27).unwrap_or_else(|| panic!("test date should exist"))
     );
     let (headers, rows) = rows(&entries, ReportMode::Tasks)?;
     assert_eq!(
@@ -179,7 +179,9 @@ fn full_report_lists_clipped_intervals_and_sources() -> Result<(), Box<dyn std::
     assert_eq!(&rows[2][8], "Recovery");
     assert_eq!(
         rows.iter()
-            .map(|row| row[3].parse::<i64>().unwrap())
+            .map(|row| row[3]
+                .parse::<i64>()
+                .unwrap_or_else(|error| panic!("test duration should parse: {error}")))
             .sum::<i64>(),
         10800
     );

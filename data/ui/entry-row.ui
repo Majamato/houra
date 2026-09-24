@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<interface>
+<interface domain="houra">
   <template class="HouraEntryRow" parent="GtkBox">
     <property name="spacing">10</property>
     <property name="margin-top">13</property>

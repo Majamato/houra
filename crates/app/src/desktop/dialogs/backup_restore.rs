@@ -1,4 +1,5 @@
 use crate::TrackerHandle;
+use crate::locale::tr;
 use chrono::Local;
 use gtk::prelude::*;
 use libadwaita as adw;
@@ -10,7 +11,7 @@ impl MainWindow {
     pub fn backup_data(&self) {
         let Some(handle) = self.handle() else { return };
         let chooser = gtk::FileDialog::builder()
-            .title("Back Up Houra")
+            .title(tr("Back Up Houra"))
             .initial_name(format!(
                 "houra-backup-{}.json",
                 Local::now().format("%Y-%m-%d")
@@ -23,7 +24,7 @@ impl MainWindow {
                 .map_err(|error| crate::AppError::InvalidBackup(error.to_string()))
                 .and_then(|file| {
                     let path = file.path().ok_or_else(|| {
-                        crate::AppError::InvalidBackup("backup requires a local file".into())
+                        crate::AppError::InvalidBackup(tr("backup requires a local file").into())
                     })?;
                     let document = handle.backup(chrono::Utc::now().timestamp_millis())?;
                     document.write_to_path(&path)
@@ -40,11 +41,11 @@ impl MainWindow {
             .snapshot()
             .is_ok_and(|snapshot| snapshot.state.active().is_some())
         {
-            self.show_database_error("Stop the timer before restoring a backup.");
+            self.show_database_error(tr("Stop the timer before restoring a backup."));
             return;
         }
         let chooser = gtk::FileDialog::builder()
-            .title("Choose a Houra Backup")
+            .title(tr("Choose a Houra Backup"))
             .build();
         let weak = self.downgrade();
         chooser.open(Some(self), None::<&gio::Cancellable>, move |result| {
@@ -53,7 +54,7 @@ impl MainWindow {
                 .map_err(|error| crate::AppError::InvalidBackup(error.to_string()))
                 .and_then(|file| {
                     let path = file.path().ok_or_else(|| {
-                        crate::AppError::InvalidBackup("restore requires a local file".into())
+                        crate::AppError::InvalidBackup(tr("restore requires a local file").into())
                     })?;
                     crate::backup::BackupDocument::read_from_path(&path)
                 });
@@ -66,10 +67,10 @@ impl MainWindow {
 
     fn confirm_restore(&self, handle: TrackerHandle, document: crate::backup::BackupDocument) {
         let dialog = adw::AlertDialog::builder()
-            .heading("Replace all local data?")
-            .body("The validated backup will replace projects, activities, and entries. This cannot be undone.")
+            .heading(tr("Replace all local data?"))
+            .body(tr("The validated backup will replace projects, activities, and entries. This cannot be undone."))
             .build();
-        dialog.add_responses(&[("cancel", "Cancel"), ("restore", "Replace Data")]);
+        dialog.add_responses(&[("cancel", tr("Cancel")), ("restore", tr("Replace Data"))]);
         dialog.set_response_appearance("restore", adw::ResponseAppearance::Destructive);
         let weak = self.downgrade();
         dialog.connect_response(Some("restore"), move |_, _| {

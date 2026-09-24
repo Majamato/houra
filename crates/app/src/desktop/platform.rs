@@ -1,3 +1,4 @@
+use crate::locale::tr;
 use gio::prelude::*;
 use glib::variant::ToVariant;
 use houra_core::TrackerCommand;
@@ -213,8 +214,8 @@ fn apply_return_and_notify(handle: &TrackerHandle, return_ms: i64, notifications
     let Some(application) = gio::Application::default() else {
         return;
     };
-    let notification = gio::Notification::new("Idle time needs review");
-    notification.set_body(Some("Open Houra to keep, discard, reassign, or stop."));
+    let notification = gio::Notification::new(tr("Idle time needs review"));
+    notification.set_body(Some(tr("Open Houra to keep, discard, reassign, or stop.")));
     notification.set_default_action("app.toggle-timer");
     application.send_notification(Some("idle-resolution"), &notification);
 }
@@ -224,7 +225,7 @@ fn take_sleep_inhibitor(proxy: &gio::DBusProxy) -> Option<OwnedFd> {
     let parameters = (
         "sleep",
         "Houra",
-        "Save the active timer before suspend",
+        tr("Save the active timer before suspend"),
         "delay",
     )
         .to_variant();

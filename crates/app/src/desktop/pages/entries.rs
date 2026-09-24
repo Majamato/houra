@@ -1,3 +1,4 @@
+use crate::locale::{tr, trn};
 use chrono::{Datelike, Local, NaiveDate, TimeZone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -32,7 +33,7 @@ impl MainWindow {
         };
         self.imp()
             .day_button
-            .set_label(&date.format("%A, %B %-d").to_string());
+            .set_label(&crate::locale::ui_date(date, "%A, %x"));
 
         // Rebuild the independently browsable seven-day navigation strip.
         self.refresh_week(date, today);
@@ -97,21 +98,16 @@ impl MainWindow {
         self.imp()
             .entries_heading
             .set_label(if running && date == today {
-                "Earlier today"
+                tr("Earlier today")
             } else if date == today {
-                "Recorded today"
+                tr("Recorded today")
             } else {
-                "Recorded"
+                tr("Recorded")
             });
-        self.imp().entries_count.set_label(&format!(
-            "{} {}",
-            entries.len(),
-            if entries.len() == 1 {
-                "entry"
-            } else {
-                "entries"
-            }
-        ));
+        self.imp().entries_count.set_label(
+            &trn("{count} entry", "{count} entries", entries.len() as u32)
+                .replace("{count}", &entries.len().to_string()),
+        );
         self.imp()
             .entries_count
             .set_visible(running || date != today);
@@ -121,7 +117,7 @@ impl MainWindow {
             self.imp().entries_box.remove(&child);
         }
         if entries.is_empty() {
-            let empty = gtk::Label::new(Some("No time recorded for this day"));
+            let empty = gtk::Label::new(Some(tr("No time recorded for this day")));
             empty.set_margin_top(22);
             empty.set_margin_bottom(22);
             empty.add_css_class("dim-label");
@@ -218,11 +214,11 @@ impl MainWindow {
         self.imp()
             .total_title
             .set_label(if running && date == today {
-                "Today, including current session"
+                tr("Today, including current session")
             } else if date == today {
-                "Total today"
+                tr("Total today")
             } else {
-                "Total"
+                tr("Total")
             });
         self.imp()
             .total_value

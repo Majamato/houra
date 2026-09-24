@@ -1,747 +1,754 @@
-# SOME DESCRIPTIVE TITLE.
+# ko translations for Houra.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the houra package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Initial machine translation draft; review in the application before release.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: houra\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-24 10:45-0500\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2026-09-24 00:00-0500\n"
+"Last-Translator: Houra contributors\n"
+"Language-Team: Houra contributors\n"
+"Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: data/io.github.majamato.Houra.desktop.in:2
 #: data/io.github.majamato.Houra.metainfo.xml.in:6 data/ui/window.ui:6
 #: data/ui/window.ui:12
 msgid "Houra"
-msgstr ""
+msgstr "Houra"
 
 #: data/io.github.majamato.Houra.desktop.in:3
 msgid "Track focused work locally"
-msgstr ""
+msgstr "작업 시간을 기기에 기록"
 
 #: data/io.github.majamato.Houra.desktop.in:9
 msgid "time;work;project;activity;report;"
-msgstr ""
+msgstr "시간;작업;프로젝트;활동;보고서;"
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:7
 msgid "majamato"
-msgstr ""
+msgstr "majamato"
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:8
 msgid "Private, local-first tracking for focused work"
-msgstr ""
+msgstr "집중한 작업 시간을 기기에 안전하게 기록"
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:10
 msgid ""
 "Track projects and activities, reconcile idle time, review weekly totals, "
 "and keep portable backups without creating an online account."
-msgstr ""
+msgstr "프로젝트와 활동의 시간을 기록하고 유휴 시간을 정리하며 주간 합계를 확인하세요. 온라인 계정 없이 백업을 보관할 수 있습니다."
+"프로젝트와 활동의 시간을 기록하고 유휴 시간을 정리하며 주간 합계를 확인하세"
+"요. 온라인 계정 없이 백업을 보관할 수 있습니다."
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:19
 msgid "Initial Fedora and GNOME release."
-msgstr ""
+msgstr "Fedora 및 GNOME 첫 출시."
 
 #: data/io.github.majamato.Houra.gschema.xml:7
 msgid "Temporary language override for translation review"
-msgstr ""
+msgstr "번역 검토를 위한 임시 언어 설정"
 
 #: data/io.github.majamato.Houra.gschema.xml:12
 msgid "Idle threshold in minutes"
-msgstr ""
+msgstr "유휴 상태 감지 시간(분)"
 
 #: data/io.github.majamato.Houra.gschema.xml:16
 msgid "Launch in the background when signing in"
-msgstr ""
+msgstr "로그인할 때 백그라운드에서 시작"
 
 #: data/io.github.majamato.Houra.gschema.xml:20
 msgid "Show reconciliation notifications"
-msgstr ""
+msgstr "유휴 시간 정리 알림 표시"
 
 #: data/io.github.majamato.Houra.gschema.xml:24
 msgid "Whether first-run setup has completed"
-msgstr ""
+msgstr "첫 실행 설정 완료 여부"
 
 #: data/ui/window.ui:12
 msgid "Main menu"
-msgstr ""
+msgstr "기본 메뉴"
 
 #: data/ui/window.ui:15
 msgid "Automatic idle detection is unavailable"
-msgstr ""
+msgstr "자동 유휴 상태 감지를 사용할 수 없습니다"
 
 #: data/ui/window.ui:17
 msgid "Tracker"
-msgstr ""
+msgstr "시간 기록"
 
 #: data/ui/window.ui:22
 msgid "Your day"
-msgstr ""
+msgstr "오늘의 기록"
 
 #: data/ui/window.ui:23 crates/app/src/desktop/pages/tracker.rs:391
 #: crates/app/src/desktop/pages/tracker.rs:421
 msgid "Choose date"
-msgstr ""
+msgstr "날짜 선택"
 
 #: data/ui/window.ui:25
 msgid "+ Add time"
-msgstr ""
+msgstr "+ 시간 추가"
 
 #: data/ui/window.ui:29
 msgid "Today"
-msgstr ""
+msgstr "오늘"
 
 #: data/ui/window.ui:32
 msgid "Previous week"
-msgstr ""
+msgstr "이전 주"
 
 #: data/ui/window.ui:34
 msgid "Next week"
-msgstr ""
+msgstr "다음 주"
 
 #: data/ui/window.ui:38
 msgid "START A SESSION"
-msgstr ""
+msgstr "작업 시작"
 
 #: data/ui/window.ui:40 crates/app/src/desktop/dialogs/entry_editor.rs:195
 #: crates/app/src/desktop/dialogs/entry_editor.rs:352
 #: crates/app/src/desktop/pages/tracker.rs:345
 msgid "Project"
-msgstr ""
+msgstr "프로젝트"
 
 #: data/ui/window.ui:41 crates/app/src/desktop/dialogs/entry_editor.rs:196
 #: crates/app/src/desktop/dialogs/entry_editor.rs:353
 #: crates/app/src/desktop/pages/tracker.rs:346
 msgid "Activity"
-msgstr ""
+msgstr "활동"
 
 #: data/ui/window.ui:45
 msgid "Note · Optional"
-msgstr ""
+msgstr "메모 · 선택 사항"
 
 #: data/ui/window.ui:46 crates/app/src/desktop/pages/tracker.rs:342
 msgid "What are you working on?"
-msgstr ""
+msgstr "무슨 작업을 하고 있나요?"
 
 #: data/ui/window.ui:47
 msgid "Ready when you are."
-msgstr ""
+msgstr "시작할 준비가 되었습니다."
 
 #: data/ui/window.ui:47
 msgid "Start timer"
-msgstr ""
+msgstr "타이머 시작"
 
 #: data/ui/window.ui:51 crates/app/src/desktop/pages/tracker.rs:307
 msgid "Edit current session"
-msgstr ""
+msgstr "현재 세션 편집"
 
 #: data/ui/window.ui:52
 msgid "TRACKING NOW"
-msgstr ""
+msgstr "기록 중"
 
 #: data/ui/window.ui:60
 msgid "Stop timer"
-msgstr ""
+msgstr "타이머 중지"
 
 #: data/ui/window.ui:69
 msgid "Projects & Activities"
-msgstr ""
+msgstr "프로젝트와 활동"
 
 #: data/ui/window.ui:70
 msgid "Projects"
-msgstr ""
+msgstr "프로젝트"
 
 #: data/ui/window.ui:70
 msgid "Add Project"
-msgstr ""
+msgstr "프로젝트 추가"
 
 #: data/ui/window.ui:70
 msgid "Activities"
-msgstr ""
+msgstr "활동"
 
 #: data/ui/window.ui:70
 msgid "Add Activity"
-msgstr ""
+msgstr "활동 추가"
 
 #: data/ui/window.ui:72
 msgid "Reports"
-msgstr ""
+msgstr "보고서"
 
 #: data/ui/window.ui:73
 msgid "Weekly Report"
-msgstr ""
+msgstr "주간 보고서"
 
 #: data/ui/window.ui:73
 msgid "Full report"
-msgstr ""
+msgstr "전체 보고서"
 
 #: data/ui/window.ui:73
 msgid "Export CSV"
-msgstr ""
+msgstr "CSV 내보내기"
 
 #: data/ui/window.ui:79
 msgid "Add Manual Entry"
-msgstr ""
+msgstr "수동 기록 추가"
 
 #: data/ui/window.ui:79
 msgid "Preferences"
-msgstr ""
+msgstr "환경설정"
 
 #: data/ui/window.ui:79
 msgid "Back Up Data"
-msgstr ""
+msgstr "데이터 백업"
 
 #: data/ui/window.ui:79
 msgid "Restore Data"
-msgstr ""
+msgstr "데이터 복원"
 
 #: data/ui/window.ui:79
 msgid "Quit"
-msgstr ""
+msgstr "종료"
 
 #: data/ui/entry-row.ui:15 crates/app/src/desktop/widgets/entry_row.rs:73
 msgid "View task report"
-msgstr ""
+msgstr "작업 보고서 보기"
 
 #: data/ui/entry-row.ui:17
 msgid "Continue this work"
-msgstr ""
+msgstr "이 작업 계속하기"
 
 #: crates/app/src/desktop/application.rs:30
 msgid "Start the tracker without presenting its window"
-msgstr ""
+msgstr "창을 표시하지 않고 시간 기록 시작"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:14
 msgid "Back Up Houra"
-msgstr ""
+msgstr "Houra 백업"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:27
 msgid "backup requires a local file"
-msgstr ""
+msgstr "백업하려면 로컬 파일이 필요합니다"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:44
 msgid "Stop the timer before restoring a backup."
-msgstr ""
+msgstr "백업을 복원하기 전에 타이머를 중지하세요."
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:48
 msgid "Choose a Houra Backup"
-msgstr ""
+msgstr "Houra 백업 선택"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:57
 msgid "restore requires a local file"
-msgstr ""
+msgstr "복원하려면 로컬 파일이 필요합니다"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:70
 msgid "Replace all local data?"
-msgstr ""
+msgstr "모든 로컬 데이터를 바꿀까요?"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:71
 msgid ""
 "The validated backup will replace projects, activities, and entries. This "
 "cannot be undone."
-msgstr ""
+msgstr "확인된 백업으로 프로젝트, 활동 및 기록을 교체합니다. 이 작업은 되돌릴 수 없습니다."
+"확인된 백업으로 프로젝트, 활동 및 기록을 교체합니다. 이 작업은 되돌릴 수 없습"
+"니다."
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:73
 #: crates/app/src/desktop/dialogs/idle.rs:70
 #: crates/app/src/desktop/dialogs/name_prompt.rs:35
 msgid "Cancel"
-msgstr ""
+msgstr "취소"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:73
 msgid "Replace Data"
-msgstr ""
+msgstr "데이터 바꾸기"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:102
 msgid "Hours"
-msgstr ""
+msgstr "시간"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:102
 msgid "Minutes"
-msgstr ""
+msgstr "분"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:127
 #: crates/app/src/desktop/dialogs/entry_editor.rs:129
 #: crates/app/src/desktop/window.rs:324
 msgid "Close"
-msgstr ""
+msgstr "닫기"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:150
 msgid "Manual Entry"
-msgstr ""
+msgstr "수동 입력"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:167
 #: crates/app/src/desktop/dialogs/entry_editor.rs:320
 #: crates/app/src/desktop/pages/tracker.rs:89
 #: crates/app/src/desktop/pages/tracker.rs:330
 msgid "No activity"
-msgstr ""
+msgstr "활동 없음"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:171
 msgid "Optional note"
-msgstr ""
+msgstr "메모(선택 사항)"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:197
 #: crates/app/src/desktop/dialogs/entry_editor.rs:354
 #: crates/app/src/desktop/pages/tracker.rs:347
 msgid "Note"
-msgstr ""
+msgstr "메모"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:198
 #: crates/app/src/desktop/dialogs/entry_editor.rs:379
 msgid "Start (local)"
-msgstr ""
+msgstr "시작 시간(현지)"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:211
 #: crates/app/src/desktop/dialogs/entry_editor.rs:386
 #: crates/app/src/desktop/dialogs/entry_editor.rs:398
 msgid "Time spent"
-msgstr ""
+msgstr "소요 시간"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:216
 msgid "Save Entry"
-msgstr ""
+msgstr "기록 저장"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:228
 msgid "Start must use YYYY-MM-DD HH:MM:SS and identify one local time."
-msgstr ""
+msgstr "시작 시간은 YYYY-MM-DD HH:MM:SS 형식의 유효한 현지 시간이어야 합니다."
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:239
 msgid "Duration must be at least one minute."
-msgstr ""
+msgstr "시간은 1분 이상이어야 합니다."
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:296
 msgid "Edit Entry"
-msgstr ""
+msgstr "기록 편집"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:323
 #, rust-format
 msgid "{activity} (Archived)"
-msgstr ""
+msgstr "{activity} (보관됨)"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:369
 msgid "Interval"
-msgstr ""
+msgstr "구간"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:408
 msgid "Save Changes"
-msgstr ""
+msgstr "변경 사항 저장"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:445
 msgid ""
 "Total time must leave the final interval longer than zero and fit within the "
 "supported time range."
-msgstr ""
+msgstr "총 시간을 변경해도 마지막 구간은 0보다 길어야 하며 지원되는 시간 범위 안에 있어야 합니다."
+"총 시간을 변경해도 마지막 구간은 0보다 길어야 하며 지원되는 시간 범위 안에 있"
+"어야 합니다."
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:447
 msgid ""
 "Start must use YYYY-MM-DD HH:MM:SS, and duration must be at least one minute."
-msgstr ""
+msgstr "시작 시간은 YYYY-MM-DD HH:MM:SS 형식이어야 하며 시간은 1분 이상이어야 합니다."
+"시작 시간은 YYYY-MM-DD HH:MM:SS 형식이어야 하며 시간은 1분 이상이어야 합니다."
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:106
 #, rust-format
 msgid "{hours}h {minutes}m {seconds}s"
-msgstr ""
+msgstr "{hours}시간 {minutes}분 {seconds}초"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:117
 #, rust-format
 msgid "{duration} {milliseconds}ms"
-msgstr ""
+msgstr "{duration} {milliseconds}밀리초"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:130
 #: crates/app/src/desktop/dialogs/entry_report.rs:138
 msgid "Unknown time"
-msgstr ""
+msgstr "알 수 없는 시간"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:168
 #: crates/app/src/desktop/pages/tracker.rs:257
 #: crates/app/src/desktop/widgets/entry_row.rs:170
 msgid "Tracked work"
-msgstr ""
+msgstr "기록된 작업"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:177
 #, rust-format
 msgid "Project: {project}"
-msgstr ""
+msgstr "프로젝트: {project}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:178
 #, rust-format
 msgid "Activity: {activity}"
-msgstr ""
+msgstr "활동: {activity}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:180
 #, rust-format
 msgid "Created: {time}"
-msgstr ""
+msgstr "생성: {time}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:184
 #, rust-format
 msgid "Last updated: {time}"
-msgstr ""
+msgstr "마지막 수정: {time}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:188
 #, rust-format
 msgid "Total duration: {duration}"
-msgstr ""
+msgstr "총 시간: {duration}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:197
 #: crates/app/src/desktop/dialogs/entry_report.rs:292
 msgid "None"
-msgstr ""
+msgstr "없음"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:192
 #, rust-format
 msgid "Latest saved stop: {time}"
-msgstr ""
+msgstr "마지막 저장된 종료 시간: {time}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:204
 msgid "No recorded sessions"
-msgstr ""
+msgstr "기록된 세션이 없습니다"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:220
 #: crates/app/src/export.rs:254
 msgid "Timer"
-msgstr ""
+msgstr "타이머"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:221
 #: crates/app/src/export.rs:255
 msgid "Manual"
-msgstr ""
+msgstr "수동"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:222
 #: crates/app/src/export.rs:256
 msgid "Idle reassignment"
-msgstr ""
+msgstr "유휴 시간 옮기기"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:223
 #: crates/app/src/export.rs:257
 msgid "Recovery"
-msgstr ""
+msgstr "복구"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:224
 msgid "Current session · provisional, awaiting review"
-msgstr ""
+msgstr "현재 세션 · 임시 기록, 검토 대기"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:225
 msgid "Current session · ongoing"
-msgstr ""
+msgstr "현재 세션 · 진행 중"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:247
 msgid "Task report"
-msgstr ""
+msgstr "작업 보고서"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:282
 #: crates/app/src/desktop/pages/tracker.rs:266
 #: crates/app/src/desktop/widgets/entry_row.rs:117
 msgid "Missing project"
-msgstr ""
+msgstr "프로젝트 없음"
 
 #: crates/app/src/desktop/dialogs/idle.rs:14
 msgid "You were away"
-msgstr ""
+msgstr "자리를 비웠습니다"
 
 #: crates/app/src/desktop/dialogs/idle.rs:15
 msgid "How should the idle interval be counted?"
-msgstr ""
+msgstr "자리를 비운 시간을 어떻게 처리할까요?"
 
 #: crates/app/src/desktop/dialogs/idle.rs:18
 msgid "Keep"
-msgstr ""
+msgstr "유지"
 
 #: crates/app/src/desktop/dialogs/idle.rs:19
 msgid "Discard and Resume"
-msgstr ""
+msgstr "버리고 다시 시작"
 
 #: crates/app/src/desktop/dialogs/idle.rs:20
 msgid "Reassign and Resume"
-msgstr ""
+msgstr "다른 프로젝트로 옮기고 다시 시작"
 
 #: crates/app/src/desktop/dialogs/idle.rs:21
 msgid "Stop"
-msgstr ""
+msgstr "중지"
 
 #: crates/app/src/desktop/dialogs/idle.rs:64
 msgid "Reassign idle interval"
-msgstr ""
+msgstr "유휴 시간 옮기기"
 
 #: crates/app/src/desktop/dialogs/idle.rs:66
 msgid "Choose the project that should receive the time you were away."
-msgstr ""
+msgstr "자리를 비운 시간을 기록할 프로젝트를 선택하세요."
 
 #: crates/app/src/desktop/dialogs/idle.rs:70
 msgid "Reassign"
-msgstr ""
+msgstr "옮기기"
 
 #: crates/app/src/desktop/dialogs/idle.rs:82
 msgid "Idle time"
-msgstr ""
+msgstr "유휴 시간"
 
 #: crates/app/src/desktop/dialogs/name_prompt.rs:11
 msgid "New Project"
-msgstr ""
+msgstr "새 프로젝트"
 
 #: crates/app/src/desktop/dialogs/name_prompt.rs:19
 msgid "New Activity"
-msgstr ""
+msgstr "새 활동"
 
 #: crates/app/src/desktop/dialogs/name_prompt.rs:31
 msgid "Name"
-msgstr ""
+msgstr "이름"
 
 #: crates/app/src/desktop/dialogs/name_prompt.rs:35
 msgid "Save"
-msgstr ""
+msgstr "저장"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:15
 msgid "Idle Detection"
-msgstr ""
+msgstr "유휴 상태 감지"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:18
 msgid "Idle threshold (minutes)"
-msgstr ""
+msgstr "유휴 감지 시간(분)"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:19
 msgid "Changes take effect the next time the app starts"
-msgstr ""
+msgstr "변경 사항은 앱을 다시 시작하면 적용됩니다"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:40
 msgid "Launch at login"
-msgstr ""
+msgstr "로그인할 때 시작"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:69
 msgid "Notifications"
-msgstr ""
+msgstr "알림"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:89
 msgid "Language (translation review)"
-msgstr ""
+msgstr "언어(번역 검토)"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:91
 msgid "System language"
-msgstr ""
+msgstr "시스템 언어"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:96
 msgid "Language"
-msgstr ""
+msgstr "언어"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:97
 msgid "Use Quit, then reopen Houra to apply the language"
-msgstr ""
+msgstr "언어를 적용하려면 «종료»를 누른 뒤 Houra를 다시 여세요"
 
 #: crates/app/src/desktop/dialogs/quit.rs:12
 msgid "A timer is still running"
-msgstr ""
+msgstr "타이머가 아직 실행 중입니다"
 
 #: crates/app/src/desktop/dialogs/quit.rs:14
 msgid "Stop the timer and quit, or keep Houra running in the background."
-msgstr ""
+msgstr "타이머를 중지하고 종료하거나 Houra를 백그라운드에서 계속 실행하세요."
 
 #: crates/app/src/desktop/dialogs/quit.rs:18
 msgid "Keep Running"
-msgstr ""
+msgstr "계속 실행"
 
 #: crates/app/src/desktop/dialogs/quit.rs:19
 msgid "Stop and Quit"
-msgstr ""
+msgstr "중지하고 종료"
 
 #: crates/app/src/desktop/dialogs/recovery.rs:22
 msgid "Recover interrupted timer?"
-msgstr ""
+msgstr "중단된 타이머를 복구할까요?"
 
 #: crates/app/src/desktop/dialogs/recovery.rs:24
 msgid ""
 "The app stopped during idle reconciliation. Edit the proposed end, then keep "
 "or discard it."
-msgstr ""
+msgstr "유휴 시간을 정리하는 중 앱이 종료되었습니다. 제안된 종료 시간을 수정한 뒤 유지하거나 버리세요."
+"유휴 시간을 정리하는 중 앱이 종료되었습니다. 제안된 종료 시간을 수정한 뒤 유"
+"지하거나 버리세요."
 
 #: crates/app/src/desktop/dialogs/recovery.rs:26
 msgid ""
 "Only time up to the last saved heartbeat is proposed. You may edit that end "
 "time."
-msgstr ""
+msgstr "마지막 저장 시점까지의 시간만 제안됩니다. 종료 시간을 수정할 수 있습니다."
+"마지막 저장 시점까지의 시간만 제안됩니다. 종료 시간을 수정할 수 있습니다."
 
 #: crates/app/src/desktop/dialogs/recovery.rs:41
 msgid "Keep and Resume"
-msgstr ""
+msgstr "유지하고 다시 시작"
 
 #: crates/app/src/desktop/dialogs/recovery.rs:42
 msgid "Keep and Stop"
-msgstr ""
+msgstr "유지하고 중지"
 
 #: crates/app/src/desktop/dialogs/recovery.rs:43
 msgid "Discard"
-msgstr ""
+msgstr "버리기"
 
 #: crates/app/src/desktop/pages/entries.rs:101
 msgid "Earlier today"
-msgstr ""
+msgstr "오늘 이전 기록"
 
 #: crates/app/src/desktop/pages/entries.rs:103
 msgid "Recorded today"
-msgstr ""
+msgstr "오늘 기록"
 
 #: crates/app/src/desktop/pages/entries.rs:105
 msgid "Recorded"
-msgstr ""
+msgstr "기록됨"
 
 #: crates/app/src/desktop/pages/entries.rs:108
 #, rust-format
 msgid "{count} entry"
 msgid_plural "{count} entries"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{count} 개 기록"
 
 #: crates/app/src/desktop/pages/entries.rs:120
 msgid "No time recorded for this day"
-msgstr ""
+msgstr "이날 기록된 시간이 없습니다"
 
 #: crates/app/src/desktop/pages/entries.rs:217
 msgid "Today, including current session"
-msgstr ""
+msgstr "오늘(현재 세션 포함)"
 
 #: crates/app/src/desktop/pages/entries.rs:219
 msgid "Total today"
-msgstr ""
+msgstr "오늘 합계"
 
 #: crates/app/src/desktop/pages/entries.rs:221
 msgid "Total"
-msgstr ""
+msgstr "합계"
 
 #: crates/app/src/desktop/pages/projects.rs:52
 msgid "Active"
-msgstr ""
+msgstr "활성"
 
 #: crates/app/src/desktop/pages/reports.rs:74
 msgid "No tracked time this week"
-msgstr ""
+msgstr "이번 주에 기록된 시간이 없습니다"
 
 #: crates/app/src/desktop/pages/reports.rs:93
 msgid "Export Weekly CSV"
-msgstr ""
+msgstr "주간 CSV 내보내기"
 
 #: crates/app/src/desktop/pages/reports.rs:104
 msgid "CSV export requires a local file"
-msgstr ""
+msgstr "CSV를 내보내려면 로컬 파일이 필요합니다"
 
 #: crates/app/src/desktop/pages/tracker.rs:214
 #, rust-format
 msgid "{duration} total on this entry"
-msgstr ""
+msgstr "이 기록의 총 시간: {duration}"
 
 #: crates/app/src/desktop/pages/tracker.rs:240
 msgid "Review"
-msgstr ""
+msgstr "검토"
 
 #: crates/app/src/desktop/pages/tracker.rs:277
 #, rust-format
 msgid "{project} · {activity}"
-msgstr ""
+msgstr "{project} · {activity}"
 
 #: crates/app/src/desktop/pages/tracker.rs:357
 msgid "Save changes"
-msgstr ""
+msgstr "변경 사항 저장"
 
 #: crates/app/src/desktop/platform.rs:217
 msgid "Idle time needs review"
-msgstr ""
+msgstr "유휴 시간을 검토해야 합니다"
 
 #: crates/app/src/desktop/platform.rs:218
 msgid "Open Houra to keep, discard, reassign, or stop."
-msgstr ""
+msgstr "Houra를 열어 유지, 버리기, 옮기기 또는 중지를 선택하세요."
 
 #: crates/app/src/desktop/platform.rs:228
 msgid "Save the active timer before suspend"
-msgstr ""
+msgstr "절전 모드 전에 진행 중인 타이머 저장"
 
 #: crates/app/src/desktop/window.rs:148
 msgid "Elapsed tracked time"
-msgstr ""
+msgstr "기록된 경과 시간"
 
 #: crates/app/src/desktop/window.rs:152
 msgid "Total time on the active entry"
-msgstr ""
+msgstr "현재 기록의 총 시간"
 
 #: crates/app/src/desktop/window.rs:321
 msgid "Could not save the change"
-msgstr ""
+msgstr "변경 사항을 저장할 수 없습니다"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:126
 #, rust-format
 msgid "{count} interval"
 msgid_plural "{count} intervals"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{count} 개 구간"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:146
 msgid "Current session"
-msgstr ""
+msgstr "현재 세션"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:153
 #, rust-format
 msgid "{project} · {times}"
-msgstr ""
+msgstr "{project} · {times}"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:159
 #, rust-format
 msgid "{project} · {activity} · {times}"
-msgstr ""
+msgstr "{project} · {activity} · {times}"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:187
 msgid "Continue"
-msgstr ""
+msgstr "계속"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:192
 msgid "Currently tracking"
-msgstr ""
+msgstr "기록 중"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:197
 msgid "Review required"
-msgstr ""
+msgstr "검토 필요"
 
 #: crates/app/src/desktop/widgets/management_row.rs:88
 msgid "Archived"
-msgstr ""
+msgstr "보관됨"
 
 #: crates/app/src/desktop/widgets/management_row.rs:100
 msgid "Restore"
-msgstr ""
+msgstr "복원"
 
 #: crates/app/src/desktop/widgets/management_row.rs:102
 msgid "Archive"
-msgstr ""
+msgstr "보관"
 
 #: crates/app/src/desktop/widgets/mod.rs:17
 #, rust-format
 msgid "{minutes}m"
-msgstr ""
+msgstr "{minutes}분"
 
 #: crates/app/src/desktop/widgets/mod.rs:20 crates/app/src/export.rs:223
 #, rust-format
 msgid "{hours}h {minutes}m"
-msgstr ""
+msgstr "{hours}시간 {minutes}분"
 
 #: crates/app/src/export.rs:208
 msgid "Untitled task"
-msgstr ""
+msgstr "제목 없는 작업"
 
 #: crates/app/src/export.rs:216
 #, rust-format
 msgid "{project} / {activity}"
-msgstr ""
+msgstr "{project} / {activity}"
 
 #: crates/app/src/export.rs:242
 #, rust-format
 msgid "{details} · {dates} · {duration}"
-msgstr ""
+msgstr "{details} · {dates} · {duration}"
 
 #: crates/app/src/export.rs:262
 #, rust-format
 msgid "{details} · {start} – {end} · {duration} · {source}"
-msgstr ""
+msgstr "{details} · {start} – {end} · {duration} · {source}"

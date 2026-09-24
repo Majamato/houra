@@ -8,6 +8,7 @@ data/ui/management-row.ui
 crates/app/src/desktop/application.rs
 crates/app/src/desktop/dialogs/backup_restore.rs
 crates/app/src/desktop/dialogs/entry_editor.rs
+crates/app/src/desktop/dialogs/entry_report.rs
 crates/app/src/desktop/dialogs/idle.rs
 crates/app/src/desktop/dialogs/name_prompt.rs
 crates/app/src/desktop/dialogs/preferences.rs
@@ -24,3 +25,4 @@ crates/app/src/desktop/widgets/management_row.rs
 crates/app/src/desktop/widgets/mod.rs
 crates/app/src/desktop/widgets/timer_action_button.rs
 crates/app/src/desktop/widgets/week_day_cell.rs
+crates/app/src/export.rs

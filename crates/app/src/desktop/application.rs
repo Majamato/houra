@@ -8,15 +8,17 @@ use libadwaita as adw;
 use tracing::{error, warn};
 
 use super::{platform, window::MainWindow};
+use crate::locale::tr;
 use crate::{APP_ID, AppError, TrackerService};
 
 /// Runs the GTK application until the main loop exits, then stops the
 /// storage thread.
 pub fn run(database_path: PathBuf) -> Result<(), AppError> {
+    let settings = load_settings();
+    crate::locale::initialize()?;
     register_resources()?;
     let service = TrackerService::start(database_path)?;
     let handle = service.handle.clone();
-    let settings = load_settings();
     complete_first_run(&settings);
     let background = std::env::args().any(|argument| argument == "--background");
     let application = adw::Application::builder().application_id(APP_ID).build();
@@ -25,7 +27,7 @@ pub fn run(database_path: PathBuf) -> Result<(), AppError> {
         glib::Char(0),
         glib::OptionFlags::NONE,
         glib::OptionArg::None,
-        "Start the tracker without presenting its window",
+        tr("Start the tracker without presenting its window"),
         None,
     );
     let _application_hold = application.hold();

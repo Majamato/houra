@@ -1,4 +1,5 @@
 use crate::desktop::log_background_error;
+use crate::locale::tr;
 use chrono::{Local, NaiveDateTime, TimeZone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -18,11 +19,11 @@ impl MainWindow {
             return;
         };
         let dialog = adw::AlertDialog::builder()
-            .heading("Recover interrupted timer?")
+            .heading(tr("Recover interrupted timer?"))
             .body(if pending.unresolved_idle_start_ms.is_some() {
-                "The app stopped during idle reconciliation. Edit the proposed end, then keep or discard it."
+                tr("The app stopped during idle reconciliation. Edit the proposed end, then keep or discard it.")
             } else {
-                "Only time up to the last saved heartbeat is proposed. You may edit that end time."
+                tr("Only time up to the last saved heartbeat is proposed. You may edit that end time.")
             })
             .build();
         let proposed_end = Local
@@ -37,9 +38,9 @@ impl MainWindow {
             .build();
         dialog.set_extra_child(Some(&end_entry));
         dialog.add_responses(&[
-            ("resume", "Keep and Resume"),
-            ("stop", "Keep and Stop"),
-            ("discard", "Discard"),
+            ("resume", tr("Keep and Resume")),
+            ("stop", tr("Keep and Stop")),
+            ("discard", tr("Discard")),
         ]);
         dialog.set_default_response(Some("stop"));
         let weak = self.downgrade();

@@ -1,3 +1,4 @@
+use crate::locale::{tr, trf};
 use std::collections::BTreeMap;
 
 use chrono::{Local, NaiveDate, TimeZone};
@@ -101,31 +102,41 @@ fn local_days(sessions: Vec<ReportSession>) -> BTreeMap<NaiveDate, Vec<ReportSes
 fn elapsed(ms: i64) -> String {
     let seconds = ms.max(0) / 1_000;
     let millis = ms.max(0) % 1_000;
-    let base = format!(
-        "{}h {:02}m {:02}s",
-        seconds / 3_600,
-        seconds / 60 % 60,
-        seconds % 60
+    let base = trf(
+        "{hours}h {minutes}m {seconds}s",
+        &[
+            ("hours", &(seconds / 3_600).to_string()),
+            ("minutes", &format!("{:02}", seconds / 60 % 60)),
+            ("seconds", &format!("{:02}", seconds % 60)),
+        ],
     );
     if millis == 0 {
         base
     } else {
-        format!("{base} {millis:03}ms")
+        trf(
+            "{duration} {milliseconds}ms",
+            &[
+                ("duration", &base),
+                ("milliseconds", &format!("{millis:03}")),
+            ],
+        )
     }
 }
 
 fn timestamp(ms: i64) -> String {
-    Local.timestamp_millis_opt(ms).single().map_or_else(
-        || "Unknown time".into(),
-        |time| time.format("%b %-d, %Y at %-I:%M:%S %p").to_string(),
-    )
+    if Local.timestamp_millis_opt(ms).single().is_some() {
+        crate::locale::ui_datetime(ms, "%x %X")
+    } else {
+        tr("Unknown time").into()
+    }
 }
 
 fn time_of_day(ms: i64) -> String {
-    Local.timestamp_millis_opt(ms).single().map_or_else(
-        || "Unknown time".into(),
-        |time| time.format("%-I:%M:%S %p").to_string(),
-    )
+    if Local.timestamp_millis_opt(ms).single().is_some() {
+        crate::locale::ui_datetime(ms, "%X")
+    } else {
+        tr("Unknown time").into()
+    }
 }
 
 fn text_line(text: &str) -> gtk::Label {
@@ -154,7 +165,7 @@ fn append_report(
         sum.saturating_add(segment.end_ms.saturating_sub(segment.start_ms))
     });
     let note = if entry.note.is_empty() {
-        "Tracked work"
+        tr("Tracked work")
     } else {
         &entry.note
     };
@@ -163,22 +174,34 @@ fn append_report(
     heading.set_selectable(false);
     content.append(&heading);
     for line in [
-        format!("Project: {project}"),
-        format!("Activity: {activity}"),
-        format!("Created: {}", timestamp(entry.created_at_ms)),
-        format!("Last updated: {}", timestamp(entry.updated_at_ms)),
-        format!("Total duration: {}", elapsed(total)),
-        format!(
-            "Latest saved stop: {}",
-            entry
-                .latest_end_ms()
-                .map_or_else(|| "None".into(), timestamp)
+        trf("Project: {project}", &[("project", project)]),
+        trf("Activity: {activity}", &[("activity", activity)]),
+        trf(
+            "Created: {time}",
+            &[("time", &timestamp(entry.created_at_ms))],
+        ),
+        trf(
+            "Last updated: {time}",
+            &[("time", &timestamp(entry.updated_at_ms))],
+        ),
+        trf(
+            "Total duration: {duration}",
+            &[("duration", &elapsed(total))],
+        ),
+        trf(
+            "Latest saved stop: {time}",
+            &[(
+                "time",
+                &entry
+                    .latest_end_ms()
+                    .map_or_else(|| tr("None").into(), timestamp),
+            )],
         ),
     ] {
         content.append(&text_line(&line));
     }
     if days.is_empty() {
-        content.append(&text_line("No recorded sessions"));
+        content.append(&text_line(tr("No recorded sessions")));
     }
     for (day, segments) in days.iter().rev() {
         let total = segments.iter().fold(0_i64, |sum, segment| {
@@ -186,7 +209,7 @@ fn append_report(
         });
         let title = text_line(&format!(
             "{} · {}",
-            day.format("%A, %B %-d, %Y"),
+            crate::locale::ui_date(*day, "%A, %x"),
             elapsed(total)
         ));
         title.add_css_class("heading");
@@ -194,12 +217,12 @@ fn append_report(
         content.append(&title);
         for segment in segments {
             let source = match segment.source {
-                Some(EntrySource::Timer) => "Timer",
-                Some(EntrySource::Manual) => "Manual",
-                Some(EntrySource::IdleReassignment) => "Idle reassignment",
-                Some(EntrySource::Recovery) => "Recovery",
-                None if segment.provisional => "Current session · provisional, awaiting review",
-                None => "Current session · ongoing",
+                Some(EntrySource::Timer) => tr("Timer"),
+                Some(EntrySource::Manual) => tr("Manual"),
+                Some(EntrySource::IdleReassignment) => tr("Idle reassignment"),
+                Some(EntrySource::Recovery) => tr("Recovery"),
+                None if segment.provisional => tr("Current session · provisional, awaiting review"),
+                None => tr("Current session · ongoing"),
             };
             let line = text_line(&format!(
                 "{} – {} · {} · {source}",
@@ -221,7 +244,7 @@ impl MainWindow {
             return;
         }
         let dialog = adw::Dialog::builder()
-            .title("Task report")
+            .title(tr("Task report"))
             .content_width(540)
             .content_height(600)
             .build();
@@ -256,7 +279,7 @@ impl MainWindow {
                         .and_then(|items| {
                             items.into_iter().find(|item| item.id == entry.project_id)
                         })
-                        .map_or_else(|| "Missing project".to_string(), |item| item.name);
+                        .map_or_else(|| tr("Missing project").to_string(), |item| item.name);
                     let activity = entry
                         .activity_id
                         .and_then(|id| {
@@ -266,7 +289,7 @@ impl MainWindow {
                                 .into_iter()
                                 .find(|item| item.id == id)
                         })
-                        .map_or_else(|| "None".to_string(), |item| item.name);
+                        .map_or_else(|| tr("None").to_string(), |item| item.name);
                     append_report(
                         &content,
                         &entry,
@@ -305,12 +328,16 @@ mod tests {
         let at = Local
             .with_ymd_and_hms(2026, 9, 24, 14, 5, 6)
             .single()
-            .expect("midafternoon local time should exist");
-        assert_eq!(
-            timestamp(at.timestamp_millis()),
-            "Sep 24, 2026 at 2:05:06 PM"
+            .unwrap_or_else(|| panic!("midafternoon local time should exist"));
+        let full = timestamp(at.timestamp_millis());
+        let clock = time_of_day(at.timestamp_millis());
+        assert!(!clock.is_empty());
+        assert!(full.contains(&clock));
+        assert!(!full.contains("UTC"));
+        assert_ne!(
+            full,
+            timestamp((at + chrono::Duration::days(1)).timestamp_millis())
         );
-        assert_eq!(time_of_day(at.timestamp_millis()), "2:05:06 PM");
     }
 
     fn entry(intervals: Vec<TrackedInterval>) -> TimeEntry {

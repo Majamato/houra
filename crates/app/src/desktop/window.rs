@@ -1,3 +1,4 @@
+use crate::locale::tr;
 use std::cell::{Cell, RefCell};
 
 use chrono::Datelike;
@@ -144,12 +145,12 @@ impl MainWindow {
     fn setup(&self) {
         self.imp()
             .timer_label
-            .update_property(&[gtk::accessible::Property::Label("Elapsed tracked time")]);
+            .update_property(&[gtk::accessible::Property::Label(tr("Elapsed tracked time"))]);
         self.imp()
             .active_entry_total_label
-            .update_property(&[gtk::accessible::Property::Label(
+            .update_property(&[gtk::accessible::Property::Label(tr(
                 "Total time on the active entry",
-            )]);
+            ))]);
         self.reload_projects();
         self.reload_activities();
         self.refresh_projects_page();
@@ -317,10 +318,10 @@ impl MainWindow {
 
     pub(super) fn show_database_error(&self, message: &str) {
         let dialog = adw::AlertDialog::builder()
-            .heading("Could not save the change")
+            .heading(tr("Could not save the change"))
             .body(message)
             .build();
-        dialog.add_response("close", "Close");
+        dialog.add_response("close", tr("Close"));
         dialog.present(Some(self));
     }
 }

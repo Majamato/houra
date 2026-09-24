@@ -1,3 +1,4 @@
+use crate::locale::tr;
 use std::{cell::Cell, sync::LazyLock};
 
 use glib::subclass::{InitializingObject, Signal};
@@ -84,7 +85,7 @@ impl ManagementRow {
         let row: Self = glib::Object::builder().build();
         row.set_title(name);
         row.set_subtitle(if archived {
-            "Archived"
+            tr("Archived")
         } else {
             active_subtitle
         });
@@ -96,9 +97,9 @@ impl ManagementRow {
             "user-trash-symbolic"
         });
         row.imp().archive_button.set_tooltip_text(Some(if archived {
-            "Restore"
+            tr("Restore")
         } else {
-            "Archive"
+            tr("Archive")
         }));
         row
     }

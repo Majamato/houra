@@ -1,4 +1,5 @@
 use crate::desktop::log_background_error;
+use crate::locale::tr;
 use gtk::prelude::*;
 use libadwaita as adw;
 use libadwaita::prelude::*;
@@ -11,11 +12,11 @@ impl MainWindow {
         let dialog = adw::PreferencesDialog::new();
         let page = adw::PreferencesPage::new();
         let group = adw::PreferencesGroup::builder()
-            .title("Idle Detection")
+            .title(tr("Idle Detection"))
             .build();
         let threshold = adw::SpinRow::with_range(1.0, 120.0, 1.0);
-        threshold.set_title("Idle threshold (minutes)");
-        threshold.set_subtitle("Changes take effect the next time the app starts");
+        threshold.set_title(tr("Idle threshold (minutes)"));
+        threshold.set_subtitle(tr("Changes take effect the next time the app starts"));
         let settings = crate::desktop::load_settings();
         let current_threshold = settings
             .as_ref()
@@ -36,7 +37,7 @@ impl MainWindow {
 
         // Toggle starting the app automatically when the user logs in.
         let launch = adw::SwitchRow::builder()
-            .title("Launch at login")
+            .title(tr("Launch at login"))
             .active(
                 settings
                     .as_ref()
@@ -65,7 +66,7 @@ impl MainWindow {
 
         // Toggle desktop notifications for tracker events.
         let notifications = adw::SwitchRow::builder()
-            .title("Notifications")
+            .title(tr("Notifications"))
             .active(
                 settings
                     .as_ref()

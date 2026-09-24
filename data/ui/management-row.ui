@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<interface>
+<interface domain="houra">
   <requires lib="Adw" version="1.5"/>
   <template class="HouraManagementRow" parent="AdwActionRow">
     <child type="suffix"><object class="GtkButton" id="archive_button"><property name="valign">center</property></object></child>

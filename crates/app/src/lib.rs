@@ -16,6 +16,8 @@ pub mod tracker_service;
 
 #[cfg(feature = "native-ui")]
 pub mod desktop;
+#[cfg(feature = "native-ui")]
+pub mod locale;
 
 pub use autostart::{default_path, set_enabled};
 pub use backup::BackupDocument;

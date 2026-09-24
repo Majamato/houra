@@ -32,6 +32,9 @@ pub enum AppError {
     #[error("the storage worker stopped unexpectedly")]
     WorkerStopped,
 
+    #[error("localization setup failed: {0}")]
+    Localization(String),
+
     #[error("backup version {found} is unsupported; expected {expected}")]
     UnsupportedBackupVersion { found: u32, expected: u32 },
 

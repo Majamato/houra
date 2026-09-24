@@ -1,3 +1,4 @@
+use crate::locale::tr;
 use chrono::{Local, TimeZone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -39,9 +40,14 @@ impl MainWindow {
         let Some(last_day) = end.date_naive().pred_opt() else {
             return;
         };
-        self.imp()
-            .report_week_label
-            .set_label(&export::date_range(start.date_naive(), last_day));
+        let first = crate::locale::ui_date(start.date_naive(), "%x");
+        let last = crate::locale::ui_date(last_day, "%x");
+        let date_range = if start.date_naive() == last_day {
+            first
+        } else {
+            format!("{first} – {last}")
+        };
+        self.imp().report_week_label.set_label(&date_range);
         while let Some(child) = self.imp().report_box.first_child() {
             self.imp().report_box.remove(&child);
         }
@@ -55,12 +61,17 @@ impl MainWindow {
         };
         let projects = handle.projects(true).unwrap_or_default();
         let activities = handle.activities(true).unwrap_or_default();
-        let rows =
-            export::report_display_rows(&entries, &projects, &activities, week, self.report_mode());
+        let rows = export::localized_report_display_rows(
+            &entries,
+            &projects,
+            &activities,
+            week,
+            self.report_mode(),
+        );
         if rows.is_empty() {
             self.imp()
                 .report_box
-                .append(&gtk::Label::new(Some("No tracked time this week")));
+                .append(&gtk::Label::new(Some(tr("No tracked time this week"))));
             return;
         }
         for row in rows {
@@ -79,7 +90,7 @@ impl MainWindow {
         };
         let mode = self.report_mode();
         let chooser = gtk::FileDialog::builder()
-            .title("Export Weekly CSV")
+            .title(tr("Export Weekly CSV"))
             .initial_name(format!("houra-{}.csv", start.format("%Y-%m-%d")))
             .build();
         let weak = self.downgrade();
@@ -89,7 +100,9 @@ impl MainWindow {
                 .map_err(|error| crate::AppError::InvalidBackup(error.to_string()))
                 .and_then(|file| {
                     let path = file.path().ok_or_else(|| {
-                        crate::AppError::InvalidBackup("CSV export requires a local file".into())
+                        crate::AppError::InvalidBackup(
+                            tr("CSV export requires a local file").into(),
+                        )
                     })?;
                     let week = (start.timestamp_millis(), end.timestamp_millis());
                     let entries = handle.entries(week.0, week.1)?;

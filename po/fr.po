@@ -1,747 +1,762 @@
-# SOME DESCRIPTIVE TITLE.
+# fr translations for Houra.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the houra package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Initial machine translation draft; review in the application before release.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: houra\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-24 10:45-0500\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2026-09-24 00:00-0500\n"
+"Last-Translator: Houra contributors\n"
+"Language-Team: Houra contributors\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: data/io.github.majamato.Houra.desktop.in:2
 #: data/io.github.majamato.Houra.metainfo.xml.in:6 data/ui/window.ui:6
 #: data/ui/window.ui:12
 msgid "Houra"
-msgstr ""
+msgstr "Houra"
 
 #: data/io.github.majamato.Houra.desktop.in:3
 msgid "Track focused work locally"
-msgstr ""
+msgstr "Suivez votre travail en local"
 
 #: data/io.github.majamato.Houra.desktop.in:9
 msgid "time;work;project;activity;report;"
-msgstr ""
+msgstr "temps;travail;projet;activité;rapport;"
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:7
 msgid "majamato"
-msgstr ""
+msgstr "majamato"
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:8
 msgid "Private, local-first tracking for focused work"
-msgstr ""
+msgstr "Suivi du travail privé et local"
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:10
 msgid ""
 "Track projects and activities, reconcile idle time, review weekly totals, "
 "and keep portable backups without creating an online account."
-msgstr ""
+msgstr "Suivez vos projets et activités, ajustez les périodes d'inactivité, consultez les totaux hebdomadaires et conservez des sauvegardes sans compte en ligne."
+"Suivez vos projets et activités, ajustez les périodes d'inactivité, "
+"consultez les totaux hebdomadaires et conservez des sauvegardes sans compte "
+"en ligne."
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:19
 msgid "Initial Fedora and GNOME release."
-msgstr ""
+msgstr "Première version pour Fedora et GNOME."
 
 #: data/io.github.majamato.Houra.gschema.xml:7
 msgid "Temporary language override for translation review"
-msgstr ""
+msgstr "Langue temporaire pour vérifier les traductions"
 
 #: data/io.github.majamato.Houra.gschema.xml:12
 msgid "Idle threshold in minutes"
-msgstr ""
+msgstr "Seuil d'inactivité en minutes"
 
 #: data/io.github.majamato.Houra.gschema.xml:16
 msgid "Launch in the background when signing in"
-msgstr ""
+msgstr "Démarrer en arrière-plan à la connexion"
 
 #: data/io.github.majamato.Houra.gschema.xml:20
 msgid "Show reconciliation notifications"
-msgstr ""
+msgstr "Afficher les notifications de vérification du temps"
 
 #: data/io.github.majamato.Houra.gschema.xml:24
 msgid "Whether first-run setup has completed"
-msgstr ""
+msgstr "Indique si la configuration initiale est terminée"
 
 #: data/ui/window.ui:12
 msgid "Main menu"
-msgstr ""
+msgstr "Menu principal"
 
 #: data/ui/window.ui:15
 msgid "Automatic idle detection is unavailable"
-msgstr ""
+msgstr "La détection automatique d'inactivité est indisponible"
 
 #: data/ui/window.ui:17
 msgid "Tracker"
-msgstr ""
+msgstr "Suivi du temps"
 
 #: data/ui/window.ui:22
 msgid "Your day"
-msgstr ""
+msgstr "Votre journée"
 
 #: data/ui/window.ui:23 crates/app/src/desktop/pages/tracker.rs:391
 #: crates/app/src/desktop/pages/tracker.rs:421
 msgid "Choose date"
-msgstr ""
+msgstr "Choisir une date"
 
 #: data/ui/window.ui:25
 msgid "+ Add time"
-msgstr ""
+msgstr "+ Ajouter du temps"
 
 #: data/ui/window.ui:29
 msgid "Today"
-msgstr ""
+msgstr "Aujourd'hui"
 
 #: data/ui/window.ui:32
 msgid "Previous week"
-msgstr ""
+msgstr "Semaine précédente"
 
 #: data/ui/window.ui:34
 msgid "Next week"
-msgstr ""
+msgstr "Semaine suivante"
 
 #: data/ui/window.ui:38
 msgid "START A SESSION"
-msgstr ""
+msgstr "DÉMARRER UNE SESSION"
 
 #: data/ui/window.ui:40 crates/app/src/desktop/dialogs/entry_editor.rs:195
 #: crates/app/src/desktop/dialogs/entry_editor.rs:352
 #: crates/app/src/desktop/pages/tracker.rs:345
 msgid "Project"
-msgstr ""
+msgstr "Projet"
 
 #: data/ui/window.ui:41 crates/app/src/desktop/dialogs/entry_editor.rs:196
 #: crates/app/src/desktop/dialogs/entry_editor.rs:353
 #: crates/app/src/desktop/pages/tracker.rs:346
 msgid "Activity"
-msgstr ""
+msgstr "Activité"
 
 #: data/ui/window.ui:45
 msgid "Note · Optional"
-msgstr ""
+msgstr "Note · Facultative"
 
 #: data/ui/window.ui:46 crates/app/src/desktop/pages/tracker.rs:342
 msgid "What are you working on?"
-msgstr ""
+msgstr "Sur quoi travaillez-vous ?"
 
 #: data/ui/window.ui:47
 msgid "Ready when you are."
-msgstr ""
+msgstr "Prêt à démarrer."
 
 #: data/ui/window.ui:47
 msgid "Start timer"
-msgstr ""
+msgstr "Démarrer le minuteur"
 
 #: data/ui/window.ui:51 crates/app/src/desktop/pages/tracker.rs:307
 msgid "Edit current session"
-msgstr ""
+msgstr "Modifier la session en cours"
 
 #: data/ui/window.ui:52
 msgid "TRACKING NOW"
-msgstr ""
+msgstr "EN COURS"
 
 #: data/ui/window.ui:60
 msgid "Stop timer"
-msgstr ""
+msgstr "Arrêter le minuteur"
 
 #: data/ui/window.ui:69
 msgid "Projects & Activities"
-msgstr ""
+msgstr "Projets et activités"
 
 #: data/ui/window.ui:70
 msgid "Projects"
-msgstr ""
+msgstr "Projets"
 
 #: data/ui/window.ui:70
 msgid "Add Project"
-msgstr ""
+msgstr "Ajouter un projet"
 
 #: data/ui/window.ui:70
 msgid "Activities"
-msgstr ""
+msgstr "Activités"
 
 #: data/ui/window.ui:70
 msgid "Add Activity"
-msgstr ""
+msgstr "Ajouter une activité"
 
 #: data/ui/window.ui:72
 msgid "Reports"
-msgstr ""
+msgstr "Rapports"
 
 #: data/ui/window.ui:73
 msgid "Weekly Report"
-msgstr ""
+msgstr "Rapport hebdomadaire"
 
 #: data/ui/window.ui:73
 msgid "Full report"
-msgstr ""
+msgstr "Rapport complet"
 
 #: data/ui/window.ui:73
 msgid "Export CSV"
-msgstr ""
+msgstr "Exporter au format CSV"
 
 #: data/ui/window.ui:79
 msgid "Add Manual Entry"
-msgstr ""
+msgstr "Ajouter une saisie manuelle"
 
 #: data/ui/window.ui:79
 msgid "Preferences"
-msgstr ""
+msgstr "Préférences"
 
 #: data/ui/window.ui:79
 msgid "Back Up Data"
-msgstr ""
+msgstr "Sauvegarder les données"
 
 #: data/ui/window.ui:79
 msgid "Restore Data"
-msgstr ""
+msgstr "Restaurer les données"
 
 #: data/ui/window.ui:79
 msgid "Quit"
-msgstr ""
+msgstr "Quitter"
 
 #: data/ui/entry-row.ui:15 crates/app/src/desktop/widgets/entry_row.rs:73
 msgid "View task report"
-msgstr ""
+msgstr "Voir le rapport de la tâche"
 
 #: data/ui/entry-row.ui:17
 msgid "Continue this work"
-msgstr ""
+msgstr "Poursuivre ce travail"
 
 #: crates/app/src/desktop/application.rs:30
 msgid "Start the tracker without presenting its window"
-msgstr ""
+msgstr "Démarrer le suivi sans afficher la fenêtre"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:14
 msgid "Back Up Houra"
-msgstr ""
+msgstr "Sauvegarder Houra"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:27
 msgid "backup requires a local file"
-msgstr ""
+msgstr "La sauvegarde nécessite un fichier local"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:44
 msgid "Stop the timer before restoring a backup."
-msgstr ""
+msgstr "Arrêtez le minuteur avant de restaurer une sauvegarde."
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:48
 msgid "Choose a Houra Backup"
-msgstr ""
+msgstr "Choisir une sauvegarde de Houra"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:57
 msgid "restore requires a local file"
-msgstr ""
+msgstr "La restauration nécessite un fichier local"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:70
 msgid "Replace all local data?"
-msgstr ""
+msgstr "Remplacer toutes les données locales ?"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:71
 msgid ""
 "The validated backup will replace projects, activities, and entries. This "
 "cannot be undone."
-msgstr ""
+msgstr "La sauvegarde vérifiée remplacera les projets, les activités et les entrées. Cette action est irréversible."
+"La sauvegarde vérifiée remplacera les projets, les activités et les entrées. "
+"Cette action est irréversible."
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:73
 #: crates/app/src/desktop/dialogs/idle.rs:70
 #: crates/app/src/desktop/dialogs/name_prompt.rs:35
 msgid "Cancel"
-msgstr ""
+msgstr "Annuler"
 
 #: crates/app/src/desktop/dialogs/backup_restore.rs:73
 msgid "Replace Data"
-msgstr ""
+msgstr "Remplacer les données"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:102
 msgid "Hours"
-msgstr ""
+msgstr "Heures"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:102
 msgid "Minutes"
-msgstr ""
+msgstr "Minutes"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:127
 #: crates/app/src/desktop/dialogs/entry_editor.rs:129
 #: crates/app/src/desktop/window.rs:324
 msgid "Close"
-msgstr ""
+msgstr "Fermer"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:150
 msgid "Manual Entry"
-msgstr ""
+msgstr "Saisie manuelle"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:167
 #: crates/app/src/desktop/dialogs/entry_editor.rs:320
 #: crates/app/src/desktop/pages/tracker.rs:89
 #: crates/app/src/desktop/pages/tracker.rs:330
 msgid "No activity"
-msgstr ""
+msgstr "Aucune activité"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:171
 msgid "Optional note"
-msgstr ""
+msgstr "Note facultative"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:197
 #: crates/app/src/desktop/dialogs/entry_editor.rs:354
 #: crates/app/src/desktop/pages/tracker.rs:347
 msgid "Note"
-msgstr ""
+msgstr "Note"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:198
 #: crates/app/src/desktop/dialogs/entry_editor.rs:379
 msgid "Start (local)"
-msgstr ""
+msgstr "Début (heure locale)"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:211
 #: crates/app/src/desktop/dialogs/entry_editor.rs:386
 #: crates/app/src/desktop/dialogs/entry_editor.rs:398
 msgid "Time spent"
-msgstr ""
+msgstr "Temps passé"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:216
 msgid "Save Entry"
-msgstr ""
+msgstr "Enregistrer l'entrée"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:228
 msgid "Start must use YYYY-MM-DD HH:MM:SS and identify one local time."
-msgstr ""
+msgstr "Le début doit utiliser le format YYYY-MM-DD HH:MM:SS et désigner une heure locale valide."
+"Le début doit utiliser le format YYYY-MM-DD HH:MM:SS et désigner une heure "
+"locale valide."
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:239
 msgid "Duration must be at least one minute."
-msgstr ""
+msgstr "La durée doit être d'au moins une minute."
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:296
 msgid "Edit Entry"
-msgstr ""
+msgstr "Modifier l'entrée"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:323
 #, rust-format
 msgid "{activity} (Archived)"
-msgstr ""
+msgstr "{activity} (archivée)"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:369
 msgid "Interval"
-msgstr ""
+msgstr "Intervalle"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:408
 msgid "Save Changes"
-msgstr ""
+msgstr "Enregistrer les modifications"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:445
 msgid ""
 "Total time must leave the final interval longer than zero and fit within the "
 "supported time range."
-msgstr ""
+msgstr "Après modification du total, le dernier intervalle doit rester supérieur à zéro et dans la plage de temps autorisée."
+"Après modification du total, le dernier intervalle doit rester supérieur à "
+"zéro et dans la plage de temps autorisée."
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:447
 msgid ""
 "Start must use YYYY-MM-DD HH:MM:SS, and duration must be at least one minute."
-msgstr ""
+msgstr "Le début doit utiliser le format YYYY-MM-DD HH:MM:SS et la durée doit être d'au moins une minute."
+"Le début doit utiliser le format YYYY-MM-DD HH:MM:SS et la durée doit être "
+"d'au moins une minute."
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:106
 #, rust-format
 msgid "{hours}h {minutes}m {seconds}s"
-msgstr ""
+msgstr "{hours} h {minutes} min {seconds} s"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:117
 #, rust-format
 msgid "{duration} {milliseconds}ms"
-msgstr ""
+msgstr "{duration} {milliseconds} ms"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:130
 #: crates/app/src/desktop/dialogs/entry_report.rs:138
 msgid "Unknown time"
-msgstr ""
+msgstr "Heure inconnue"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:168
 #: crates/app/src/desktop/pages/tracker.rs:257
 #: crates/app/src/desktop/widgets/entry_row.rs:170
 msgid "Tracked work"
-msgstr ""
+msgstr "Travail suivi"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:177
 #, rust-format
 msgid "Project: {project}"
-msgstr ""
+msgstr "Projet : {project}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:178
 #, rust-format
 msgid "Activity: {activity}"
-msgstr ""
+msgstr "Activité : {activity}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:180
 #, rust-format
 msgid "Created: {time}"
-msgstr ""
+msgstr "Créé : {time}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:184
 #, rust-format
 msgid "Last updated: {time}"
-msgstr ""
+msgstr "Dernière modification : {time}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:188
 #, rust-format
 msgid "Total duration: {duration}"
-msgstr ""
+msgstr "Durée totale : {duration}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:197
 #: crates/app/src/desktop/dialogs/entry_report.rs:292
 msgid "None"
-msgstr ""
+msgstr "Aucun"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:192
 #, rust-format
 msgid "Latest saved stop: {time}"
-msgstr ""
+msgstr "Dernier arrêt enregistré : {time}"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:204
 msgid "No recorded sessions"
-msgstr ""
+msgstr "Aucune session enregistrée"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:220
 #: crates/app/src/export.rs:254
 msgid "Timer"
-msgstr ""
+msgstr "Minuteur"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:221
 #: crates/app/src/export.rs:255
 msgid "Manual"
-msgstr ""
+msgstr "Manuel"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:222
 #: crates/app/src/export.rs:256
 msgid "Idle reassignment"
-msgstr ""
+msgstr "Réaffectation du temps d'inactivité"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:223
 #: crates/app/src/export.rs:257
 msgid "Recovery"
-msgstr ""
+msgstr "Récupération"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:224
 msgid "Current session · provisional, awaiting review"
-msgstr ""
+msgstr "Session en cours · provisoire, à vérifier"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:225
 msgid "Current session · ongoing"
-msgstr ""
+msgstr "Session en cours · active"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:247
 msgid "Task report"
-msgstr ""
+msgstr "Rapport de la tâche"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:282
 #: crates/app/src/desktop/pages/tracker.rs:266
 #: crates/app/src/desktop/widgets/entry_row.rs:117
 msgid "Missing project"
-msgstr ""
+msgstr "Projet introuvable"
 
 #: crates/app/src/desktop/dialogs/idle.rs:14
 msgid "You were away"
-msgstr ""
+msgstr "Vous étiez absent"
 
 #: crates/app/src/desktop/dialogs/idle.rs:15
 msgid "How should the idle interval be counted?"
-msgstr ""
+msgstr "Comment comptabiliser la période d'inactivité ?"
 
 #: crates/app/src/desktop/dialogs/idle.rs:18
 msgid "Keep"
-msgstr ""
+msgstr "Conserver"
 
 #: crates/app/src/desktop/dialogs/idle.rs:19
 msgid "Discard and Resume"
-msgstr ""
+msgstr "Ignorer et reprendre"
 
 #: crates/app/src/desktop/dialogs/idle.rs:20
 msgid "Reassign and Resume"
-msgstr ""
+msgstr "Réaffecter et reprendre"
 
 #: crates/app/src/desktop/dialogs/idle.rs:21
 msgid "Stop"
-msgstr ""
+msgstr "Arrêter"
 
 #: crates/app/src/desktop/dialogs/idle.rs:64
 msgid "Reassign idle interval"
-msgstr ""
+msgstr "Réaffecter la période d'inactivité"
 
 #: crates/app/src/desktop/dialogs/idle.rs:66
 msgid "Choose the project that should receive the time you were away."
-msgstr ""
+msgstr "Choisissez le projet auquel attribuer votre temps d'absence."
 
 #: crates/app/src/desktop/dialogs/idle.rs:70
 msgid "Reassign"
-msgstr ""
+msgstr "Réaffecter"
 
 #: crates/app/src/desktop/dialogs/idle.rs:82
 msgid "Idle time"
-msgstr ""
+msgstr "Temps d'inactivité"
 
 #: crates/app/src/desktop/dialogs/name_prompt.rs:11
 msgid "New Project"
-msgstr ""
+msgstr "Nouveau projet"
 
 #: crates/app/src/desktop/dialogs/name_prompt.rs:19
 msgid "New Activity"
-msgstr ""
+msgstr "Nouvelle activité"
 
 #: crates/app/src/desktop/dialogs/name_prompt.rs:31
 msgid "Name"
-msgstr ""
+msgstr "Nom"
 
 #: crates/app/src/desktop/dialogs/name_prompt.rs:35
 msgid "Save"
-msgstr ""
+msgstr "Enregistrer"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:15
 msgid "Idle Detection"
-msgstr ""
+msgstr "Détection d'inactivité"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:18
 msgid "Idle threshold (minutes)"
-msgstr ""
+msgstr "Seuil d'inactivité (minutes)"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:19
 msgid "Changes take effect the next time the app starts"
-msgstr ""
+msgstr "Les modifications prendront effet au prochain démarrage"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:40
 msgid "Launch at login"
-msgstr ""
+msgstr "Lancer à la connexion"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:69
 msgid "Notifications"
-msgstr ""
+msgstr "Notifications"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:89
 msgid "Language (translation review)"
-msgstr ""
+msgstr "Langue (vérification des traductions)"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:91
 msgid "System language"
-msgstr ""
+msgstr "Langue du système"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:96
 msgid "Language"
-msgstr ""
+msgstr "Langue"
 
 #: crates/app/src/desktop/dialogs/preferences.rs:97
 msgid "Use Quit, then reopen Houra to apply the language"
-msgstr ""
+msgstr "Choisissez « Quitter », puis rouvrez Houra pour appliquer la langue"
 
 #: crates/app/src/desktop/dialogs/quit.rs:12
 msgid "A timer is still running"
-msgstr ""
+msgstr "Un minuteur est toujours en cours"
 
 #: crates/app/src/desktop/dialogs/quit.rs:14
 msgid "Stop the timer and quit, or keep Houra running in the background."
-msgstr ""
+msgstr "Arrêtez le minuteur et quittez, ou laissez Houra fonctionner en arrière-plan."
+"Arrêtez le minuteur et quittez, ou laissez Houra fonctionner en arrière-plan."
 
 #: crates/app/src/desktop/dialogs/quit.rs:18
 msgid "Keep Running"
-msgstr ""
+msgstr "Continuer"
 
 #: crates/app/src/desktop/dialogs/quit.rs:19
 msgid "Stop and Quit"
-msgstr ""
+msgstr "Arrêter et quitter"
 
 #: crates/app/src/desktop/dialogs/recovery.rs:22
 msgid "Recover interrupted timer?"
-msgstr ""
+msgstr "Récupérer le minuteur interrompu ?"
 
 #: crates/app/src/desktop/dialogs/recovery.rs:24
 msgid ""
 "The app stopped during idle reconciliation. Edit the proposed end, then keep "
 "or discard it."
-msgstr ""
+msgstr "L'application s'est arrêtée pendant la vérification du temps d'inactivité. Modifiez la fin proposée, puis conservez ou ignorez ce temps."
+"L'application s'est arrêtée pendant la vérification du temps d'inactivité. "
+"Modifiez la fin proposée, puis conservez ou ignorez ce temps."
 
 #: crates/app/src/desktop/dialogs/recovery.rs:26
 msgid ""
 "Only time up to the last saved heartbeat is proposed. You may edit that end "
 "time."
-msgstr ""
+msgstr "Seul le temps jusqu'au dernier enregistrement est proposé. Vous pouvez modifier l'heure de fin."
+"Seul le temps jusqu'au dernier enregistrement est proposé. Vous pouvez "
+"modifier l'heure de fin."
 
 #: crates/app/src/desktop/dialogs/recovery.rs:41
 msgid "Keep and Resume"
-msgstr ""
+msgstr "Conserver et reprendre"
 
 #: crates/app/src/desktop/dialogs/recovery.rs:42
 msgid "Keep and Stop"
-msgstr ""
+msgstr "Conserver et arrêter"
 
 #: crates/app/src/desktop/dialogs/recovery.rs:43
 msgid "Discard"
-msgstr ""
+msgstr "Ignorer"
 
 #: crates/app/src/desktop/pages/entries.rs:101
 msgid "Earlier today"
-msgstr ""
+msgstr "Plus tôt aujourd'hui"
 
 #: crates/app/src/desktop/pages/entries.rs:103
 msgid "Recorded today"
-msgstr ""
+msgstr "Enregistré aujourd'hui"
 
 #: crates/app/src/desktop/pages/entries.rs:105
 msgid "Recorded"
-msgstr ""
+msgstr "Enregistré"
 
 #: crates/app/src/desktop/pages/entries.rs:108
 #, rust-format
 msgid "{count} entry"
 msgid_plural "{count} entries"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{count} entrée"
+msgstr[1] "{count} entrées"
 
 #: crates/app/src/desktop/pages/entries.rs:120
 msgid "No time recorded for this day"
-msgstr ""
+msgstr "Aucun temps enregistré pour ce jour"
 
 #: crates/app/src/desktop/pages/entries.rs:217
 msgid "Today, including current session"
-msgstr ""
+msgstr "Aujourd'hui, session en cours comprise"
 
 #: crates/app/src/desktop/pages/entries.rs:219
 msgid "Total today"
-msgstr ""
+msgstr "Total aujourd'hui"
 
 #: crates/app/src/desktop/pages/entries.rs:221
 msgid "Total"
-msgstr ""
+msgstr "Total"
 
 #: crates/app/src/desktop/pages/projects.rs:52
 msgid "Active"
-msgstr ""
+msgstr "Actif"
 
 #: crates/app/src/desktop/pages/reports.rs:74
 msgid "No tracked time this week"
-msgstr ""
+msgstr "Aucun temps suivi cette semaine"
 
 #: crates/app/src/desktop/pages/reports.rs:93
 msgid "Export Weekly CSV"
-msgstr ""
+msgstr "Exporter le rapport hebdomadaire en CSV"
 
 #: crates/app/src/desktop/pages/reports.rs:104
 msgid "CSV export requires a local file"
-msgstr ""
+msgstr "L'export CSV nécessite un fichier local"
 
 #: crates/app/src/desktop/pages/tracker.rs:214
 #, rust-format
 msgid "{duration} total on this entry"
-msgstr ""
+msgstr "Total de cette entrée : {duration}"
 
 #: crates/app/src/desktop/pages/tracker.rs:240
 msgid "Review"
-msgstr ""
+msgstr "Vérifier"
 
 #: crates/app/src/desktop/pages/tracker.rs:277
 #, rust-format
 msgid "{project} · {activity}"
-msgstr ""
+msgstr "{project} · {activity}"
 
 #: crates/app/src/desktop/pages/tracker.rs:357
 msgid "Save changes"
-msgstr ""
+msgstr "Enregistrer les modifications"
 
 #: crates/app/src/desktop/platform.rs:217
 msgid "Idle time needs review"
-msgstr ""
+msgstr "Une période d'inactivité doit être vérifiée"
 
 #: crates/app/src/desktop/platform.rs:218
 msgid "Open Houra to keep, discard, reassign, or stop."
-msgstr ""
+msgstr "Ouvrez Houra pour conserver, ignorer, réaffecter ou arrêter le temps."
 
 #: crates/app/src/desktop/platform.rs:228
 msgid "Save the active timer before suspend"
-msgstr ""
+msgstr "Enregistrer le minuteur actif avant la mise en veille"
 
 #: crates/app/src/desktop/window.rs:148
 msgid "Elapsed tracked time"
-msgstr ""
+msgstr "Temps suivi écoulé"
 
 #: crates/app/src/desktop/window.rs:152
 msgid "Total time on the active entry"
-msgstr ""
+msgstr "Durée totale de l'entrée active"
 
 #: crates/app/src/desktop/window.rs:321
 msgid "Could not save the change"
-msgstr ""
+msgstr "Impossible d'enregistrer la modification"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:126
 #, rust-format
 msgid "{count} interval"
 msgid_plural "{count} intervals"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{count} intervalle"
+msgstr[1] "{count} intervalles"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:146
 msgid "Current session"
-msgstr ""
+msgstr "Session en cours"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:153
 #, rust-format
 msgid "{project} · {times}"
-msgstr ""
+msgstr "{project} · {times}"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:159
 #, rust-format
 msgid "{project} · {activity} · {times}"
-msgstr ""
+msgstr "{project} · {activity} · {times}"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:187
 msgid "Continue"
-msgstr ""
+msgstr "Continuer"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:192
 msgid "Currently tracking"
-msgstr ""
+msgstr "Suivi en cours"
 
 #: crates/app/src/desktop/widgets/entry_row.rs:197
 msgid "Review required"
-msgstr ""
+msgstr "Vérification nécessaire"
 
 #: crates/app/src/desktop/widgets/management_row.rs:88
 msgid "Archived"
-msgstr ""
+msgstr "Archivé"
 
 #: crates/app/src/desktop/widgets/management_row.rs:100
 msgid "Restore"
-msgstr ""
+msgstr "Restaurer"
 
 #: crates/app/src/desktop/widgets/management_row.rs:102
 msgid "Archive"
-msgstr ""
+msgstr "Archiver"
 
 #: crates/app/src/desktop/widgets/mod.rs:17
 #, rust-format
 msgid "{minutes}m"
-msgstr ""
+msgstr "{minutes} min"
 
 #: crates/app/src/desktop/widgets/mod.rs:20 crates/app/src/export.rs:223
 #, rust-format
 msgid "{hours}h {minutes}m"
-msgstr ""
+msgstr "{hours} h {minutes} min"
 
 #: crates/app/src/export.rs:208
 msgid "Untitled task"
-msgstr ""
+msgstr "Tâche sans titre"
 
 #: crates/app/src/export.rs:216
 #, rust-format
 msgid "{project} / {activity}"
-msgstr ""
+msgstr "{project} / {activity}"
 
 #: crates/app/src/export.rs:242
 #, rust-format
 msgid "{details} · {dates} · {duration}"
-msgstr ""
+msgstr "{details} · {dates} · {duration}"
 
 #: crates/app/src/export.rs:262
 #, rust-format
 msgid "{details} · {start} – {end} · {duration} · {source}"
-msgstr ""
+msgstr "{details} · {start} – {end} · {duration} · {source}"

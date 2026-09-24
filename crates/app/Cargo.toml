@@ -9,7 +9,7 @@ default-run = "houra"
 
 [features]
 default = []
-native-ui = ["dep:gio", "dep:glib", "dep:gtk", "dep:libadwaita"]
+native-ui = ["dep:gio", "dep:glib", "dep:gtk", "dep:libadwaita", "dep:gettext-rs"]
 
 [dependencies]
 chrono.workspace = true
@@ -23,6 +23,7 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 houra-core = { path = "../core" }
 gio = { workspace = true, optional = true }
+gettext-rs = { workspace = true, optional = true }
 glib = { workspace = true, optional = true }
 gtk = { workspace = true, optional = true }
 libadwaita = { workspace = true, optional = true }

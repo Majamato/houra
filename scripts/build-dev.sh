@@ -29,6 +29,8 @@ require_command rustc rust
 require_command cc gcc
 require_command pkg-config pkgconf-pkg-config
 require_command glib-compile-resources glib2-devel
+require_command glib-compile-schemas glib2-devel
+require_command msgfmt gettext
 
 if command -v pkg-config >/dev/null 2>&1; then
     require_pkg_config gtk4 4.12 gtk4-devel

@@ -1,3 +1,4 @@
+use crate::locale::tr;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use houra_core::ProjectId;
@@ -48,7 +49,7 @@ impl MainWindow {
         }
         for activity in activities {
             let activity_row =
-                ManagementRow::new(&activity.name, "Active", activity.archived, true);
+                ManagementRow::new(&activity.name, tr("Active"), activity.archived, true);
             let activity_id = activity.id;
             activity_row.connect_archive_toggle_requested(glib::clone!(
                 #[weak(rename_to = window)]

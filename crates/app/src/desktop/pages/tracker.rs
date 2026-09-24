@@ -1,3 +1,4 @@
+use crate::locale::{tr, trf};
 use std::time::Duration;
 
 use chrono::{Datelike, Local, TimeZone};
@@ -85,7 +86,7 @@ impl MainWindow {
             .and_then(|id| activities.iter().position(|activity| activity.id == id))
             .and_then(|index| u32::try_from(index + 1).ok())
             .unwrap_or(0);
-        let names = std::iter::once("No activity".to_owned())
+        let names = std::iter::once(tr("No activity").to_owned())
             .chain(activities.iter().map(|activity| activity.name.clone()))
             .collect::<Vec<_>>();
         let name_refs = names.iter().map(String::as_str).collect::<Vec<_>>();
@@ -209,9 +210,12 @@ impl MainWindow {
                 ));
                 let total_seconds =
                     active_entry_total_seconds(self.imp().active_entry_saved_ms.get(), elapsed);
-                self.imp().active_entry_total_label.set_label(&format!(
-                    "{} total on this entry",
-                    crate::desktop::widgets::format_duration(total_seconds)
+                self.imp().active_entry_total_label.set_label(&trf(
+                    "{duration} total on this entry",
+                    &[(
+                        "duration",
+                        &crate::desktop::widgets::format_duration(total_seconds),
+                    )],
                 ));
                 self.imp().active_entry_total_label.set_visible(true);
                 self.imp().stopped_panel.set_visible(false);
@@ -233,7 +237,7 @@ impl MainWindow {
                 self.update_live_total(live_today);
             }
             TrackerState::RecoveryPending(_) => {
-                self.imp().timer_label.set_label("Review");
+                self.imp().timer_label.set_label(tr("Review"));
                 self.imp().active_entry_total_label.set_visible(false);
                 self.imp().stopped_panel.set_visible(false);
                 self.imp().running_panel.set_visible(true);
@@ -250,7 +254,7 @@ impl MainWindow {
         self.imp()
             .active_note_label
             .set_label(if active.note.is_empty() {
-                "Tracked work"
+                tr("Tracked work")
             } else {
                 &active.note
             });
@@ -259,7 +263,7 @@ impl MainWindow {
         let project = projects
             .iter()
             .find(|project| project.id == active.project_id)
-            .map_or("Missing project", |project| project.name.as_str());
+            .map_or(tr("Missing project"), |project| project.name.as_str());
         let activity = active
             .activity_id
             .and_then(|id| activities.iter().find(|activity| activity.id == id))
@@ -268,7 +272,12 @@ impl MainWindow {
             .active_meta_label
             .set_label(&activity.map_or_else(
                 || project.to_owned(),
-                |activity| format!("{project} · {activity}"),
+                |activity| {
+                    trf(
+                        "{project} · {activity}",
+                        &[("project", project), ("activity", activity)],
+                    )
+                },
             ));
     }
 
@@ -295,7 +304,7 @@ impl MainWindow {
         let projects = self.imp().projects.borrow().clone();
         let activities = self.imp().activities.borrow().clone();
         let dialog = adw::Dialog::builder()
-            .title("Edit current session")
+            .title(tr("Edit current session"))
             .content_width(440)
             .build();
         let content = gtk::Box::builder()
@@ -318,7 +327,7 @@ impl MainWindow {
                 .and_then(|index| u32::try_from(index).ok())
                 .unwrap_or(0),
         );
-        let mut activity_names = vec!["No activity"];
+        let mut activity_names = vec![tr("No activity")];
         activity_names.extend(activities.iter().map(|activity| activity.name.as_str()));
         let activity = gtk::DropDown::from_strings(&activity_names);
         activity.set_selected(
@@ -330,12 +339,12 @@ impl MainWindow {
         );
         let note = gtk::Entry::builder()
             .text(active.note)
-            .placeholder_text("What are you working on?")
+            .placeholder_text(tr("What are you working on?"))
             .build();
         for (label, widget) in [
-            ("Project", project.clone().upcast::<gtk::Widget>()),
-            ("Activity", activity.clone().upcast()),
-            ("Note", note.clone().upcast()),
+            (tr("Project"), project.clone().upcast::<gtk::Widget>()),
+            (tr("Activity"), activity.clone().upcast()),
+            (tr("Note"), note.clone().upcast()),
         ] {
             content.append(
                 &gtk::Label::builder()
@@ -345,7 +354,7 @@ impl MainWindow {
             );
             content.append(&widget);
         }
-        let save = gtk::Button::with_label("Save changes");
+        let save = gtk::Button::with_label(tr("Save changes"));
         save.add_css_class("suggested-action");
         content.append(&save);
         dialog.set_child(Some(&content));
@@ -379,7 +388,7 @@ impl MainWindow {
 
     pub(in crate::desktop) fn show_date_chooser(&self) {
         let dialog = adw::Dialog::builder()
-            .title("Choose date")
+            .title(tr("Choose date"))
             .content_width(360)
             .build();
         let calendar = gtk::Calendar::new();
@@ -409,7 +418,7 @@ impl MainWindow {
             .margin_end(18)
             .build();
         content.append(&calendar);
-        let choose = gtk::Button::with_label("Choose date");
+        let choose = gtk::Button::with_label(tr("Choose date"));
         choose.add_css_class("suggested-action");
         let selection_is_allowed = |calendar: &gtk::Calendar| {
             let selected = calendar.date();

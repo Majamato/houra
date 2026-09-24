@@ -52,7 +52,9 @@ glib::wrapper! {
 impl WeekDayCell {
     pub(in crate::desktop) fn new(date: NaiveDate, total_seconds: u64, selected: bool) -> Self {
         let cell: Self = glib::Object::builder().build();
-        cell.imp().weekday.set_label(&date.format("%a").to_string());
+        cell.imp()
+            .weekday
+            .set_label(&crate::locale::ui_date(date, "%a"));
         cell.imp().number.set_label(&date.day().to_string());
         let total = if total_seconds == 0 {
             "—".to_owned()

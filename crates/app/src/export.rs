@@ -190,6 +190,92 @@ pub fn report_display_rows(
     rows
 }
 
+/// Human-facing report rows. CSV output keeps its stable data representation.
+#[cfg(feature = "native-ui")]
+pub fn localized_report_display_rows(
+    entries: &[TimeEntry],
+    projects: &[Project],
+    activities: &[Activity],
+    week: (i64, i64),
+    mode: ReportMode,
+) -> Vec<DisplayRow> {
+    use crate::locale::{tr, trf, ui_date, ui_datetime};
+
+    let mut rows = Vec::new();
+    for task in weekly_tasks(entries, week) {
+        let (project, activity) = names(task.entry, projects, activities);
+        let title = if task.entry.note.is_empty() {
+            tr("Untitled task").to_owned()
+        } else {
+            task.entry.note.clone()
+        };
+        let details = if activity.is_empty() {
+            project.to_owned()
+        } else {
+            trf(
+                "{project} / {activity}",
+                &[("project", project), ("activity", activity)],
+            )
+        };
+        let duration = |ms: i64| {
+            let minutes = ms.max(0) / 60_000;
+            trf(
+                "{hours}h {minutes}m",
+                &[
+                    ("hours", &(minutes / 60).to_string()),
+                    ("minutes", &format!("{:02}", minutes % 60)),
+                ],
+            )
+        };
+        match mode {
+            ReportMode::Tasks => {
+                let first = ui_date(task.first_date, "%x");
+                let last = ui_date(task.last_date, "%x");
+                let dates = if task.first_date == task.last_date {
+                    first
+                } else {
+                    format!("{first} – {last}")
+                };
+                rows.push(DisplayRow {
+                    title,
+                    subtitle: trf(
+                        "{details} · {dates} · {duration}",
+                        &[
+                            ("details", &details),
+                            ("dates", &dates),
+                            ("duration", &duration(task.duration_ms)),
+                        ],
+                    ),
+                });
+            }
+            ReportMode::Full => {
+                for interval in task.intervals {
+                    let source = match interval.source {
+                        EntrySource::Timer => tr("Timer"),
+                        EntrySource::Manual => tr("Manual"),
+                        EntrySource::IdleReassignment => tr("Idle reassignment"),
+                        EntrySource::Recovery => tr("Recovery"),
+                    };
+                    rows.push(DisplayRow {
+                        title: title.clone(),
+                        subtitle: trf(
+                            "{details} · {start} – {end} · {duration} · {source}",
+                            &[
+                                ("details", &details),
+                                ("start", &ui_datetime(interval.start_ms, "%x %X")),
+                                ("end", &ui_datetime(interval.end_ms, "%x %X")),
+                                ("duration", &duration(interval.duration_ms())),
+                                ("source", source),
+                            ],
+                        ),
+                    });
+                }
+            }
+        }
+    }
+    rows
+}
+
 /// Writes the selected week's task totals or its individual intervals.
 pub fn write_csv<W: Write>(
     writer: W,

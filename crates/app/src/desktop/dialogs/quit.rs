@@ -1,3 +1,4 @@
+use crate::locale::tr;
 use gtk::prelude::*;
 use houra_core::TrackerCommand;
 use libadwaita as adw;
@@ -8,10 +9,15 @@ use crate::desktop::window::MainWindow;
 impl MainWindow {
     pub fn confirm_quit(&self) {
         let dialog = adw::AlertDialog::builder()
-            .heading("A timer is still running")
-            .body("Stop the timer and quit, or keep Houra running in the background.")
+            .heading(tr("A timer is still running"))
+            .body(tr(
+                "Stop the timer and quit, or keep Houra running in the background.",
+            ))
             .build();
-        dialog.add_responses(&[("cancel", "Keep Running"), ("quit", "Stop and Quit")]);
+        dialog.add_responses(&[
+            ("cancel", tr("Keep Running")),
+            ("quit", tr("Stop and Quit")),
+        ]);
         dialog.set_response_appearance("quit", adw::ResponseAppearance::Destructive);
         let handle = self.handle();
         let application = self.application();

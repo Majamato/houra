@@ -3,6 +3,8 @@ mod management_row;
 mod timer_action_button;
 mod week_day_cell;
 
+use crate::locale::trf;
+
 pub(super) use entry_row::{EntryRow, EntryTrackingState};
 pub(super) use management_row::ManagementRow;
 pub(super) use timer_action_button::TimerActionButton;
@@ -12,9 +14,15 @@ pub(super) fn format_duration(seconds: u64) -> String {
     let hours = seconds / 3600;
     let minutes = (seconds / 60) % 60;
     if hours == 0 {
-        format!("{minutes}m")
+        trf("{minutes}m", &[("minutes", &minutes.to_string())])
     } else {
-        format!("{hours}h {minutes:02}m")
+        trf(
+            "{hours}h {minutes}m",
+            &[
+                ("hours", &hours.to_string()),
+                ("minutes", &format!("{minutes:02}")),
+            ],
+        )
     }
 }
 

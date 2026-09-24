@@ -11,11 +11,14 @@ build=${1:-release}
 case "$build" in
     dev)
         "$script_dir/build-dev.sh"
+        glib-compile-schemas --strict --targetdir="$project_root/target/debug" "$project_root/data"
+        export GSETTINGS_SCHEMA_DIR="$project_root/target/debug"
         printf '\nRunning the development application...\n'
         "$project_root/target/debug/houra"
         ;;
     release)
         "$script_dir/build-release.sh"
+        export GSETTINGS_SCHEMA_DIR="$release_build_dir"
         printf '\nRunning the release application...\n'
         "$release_build_dir/houra"
         ;;

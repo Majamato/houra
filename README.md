@@ -117,6 +117,11 @@ point `GSETTINGS_SCHEMA_DIR` at a directory containing its compiled version.
 The database is `$XDG_DATA_HOME/houra/tracker.sqlite3`, normally
 `~/.local/share/houra/tracker.sqlite3`.
 
+## Translations
+
+Houra includes English, Spanish, Brazilian Portuguese, French, Simplified
+Chinese, Japanese, German, Korean, Italian, and Russian catalogs.
+
 ## Checks
 
 ```sh
@@ -124,6 +129,7 @@ cargo fmt --all -- --check
 cargo test --workspace --all-targets --locked
 cargo test --workspace --all-targets --locked --features native-ui
 cargo clippy --workspace --all-targets --locked --features native-ui -- -D warnings
+python3 scripts/check-translations.py
 ```
 
 The desktop-enabled tests also compile the GTK modules, but do not automate GUI

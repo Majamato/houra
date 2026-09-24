@@ -1,4 +1,5 @@
 use crate::desktop::log_background_error;
+use crate::locale::tr;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use houra_core::{ProjectId, TrackerCommand};
@@ -10,14 +11,14 @@ use crate::desktop::window::MainWindow;
 impl MainWindow {
     pub(in crate::desktop) fn show_idle_dialog(&self) {
         let dialog = adw::AlertDialog::builder()
-            .heading("You were away")
-            .body("How should the idle interval be counted?")
+            .heading(tr("You were away"))
+            .body(tr("How should the idle interval be counted?"))
             .build();
         dialog.add_responses(&[
-            ("keep", "Keep"),
-            ("discard", "Discard and Resume"),
-            ("reassign", "Reassign and Resume"),
-            ("stop", "Stop"),
+            ("keep", tr("Keep")),
+            ("discard", tr("Discard and Resume")),
+            ("reassign", tr("Reassign and Resume")),
+            ("stop", tr("Stop")),
         ]);
         dialog.set_default_response(Some("discard"));
         let handle = self.handle();
@@ -60,11 +61,13 @@ impl MainWindow {
             .collect::<Vec<_>>();
         let dropdown = gtk::DropDown::from_strings(&names);
         let dialog = adw::AlertDialog::builder()
-            .heading("Reassign idle interval")
-            .body("Choose the project that should receive the time you were away.")
+            .heading(tr("Reassign idle interval"))
+            .body(tr(
+                "Choose the project that should receive the time you were away.",
+            ))
             .build();
         dialog.set_extra_child(Some(&dropdown));
-        dialog.add_responses(&[("cancel", "Cancel"), ("reassign", "Reassign")]);
+        dialog.add_responses(&[("cancel", tr("Cancel")), ("reassign", tr("Reassign"))]);
         dialog.set_default_response(Some("reassign"));
         let weak = self.downgrade();
         dialog.connect_response(Some("reassign"), move |_, _| {
@@ -76,7 +79,7 @@ impl MainWindow {
                 houra_core::IdleDecision::ReassignAndResume {
                     project_id,
                     activity_id: None,
-                    note: "Idle time".into(),
+                    note: tr("Idle time").into(),
                 },
             ));
             if let Some(window) = weak.upgrade() {

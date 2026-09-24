@@ -1,3 +1,4 @@
+use crate::locale::{tr, trf};
 use chrono::{Local, NaiveDateTime, TimeZone};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -98,7 +99,7 @@ fn duration_controls(duration_ms: i64) -> (gtk::Box, gtk::SpinButton, gtk::SpinB
         .spacing(12)
         .homogeneous(true)
         .build();
-    for (label_text, input) in [("Hours", &hours), ("Minutes", &minutes)] {
+    for (label_text, input) in [(tr("Hours"), &hours), (tr("Minutes"), &minutes)] {
         let field = gtk::Box::builder()
             .orientation(gtk::Orientation::Vertical)
             .spacing(6)
@@ -123,9 +124,9 @@ fn set_dialog_content(dialog: &adw::Dialog, content: &impl IsA<gtk::Widget>) {
         .build();
     let close = gtk::Button::builder()
         .icon_name("window-close-symbolic")
-        .tooltip_text("Close")
+        .tooltip_text(tr("Close"))
         .build();
-    close.update_property(&[gtk::accessible::Property::Label("Close")]);
+    close.update_property(&[gtk::accessible::Property::Label(tr("Close"))]);
     close.add_css_class("flat");
     header.pack_end(&close);
     toolbar.add_top_bar(&header);
@@ -146,7 +147,7 @@ impl MainWindow {
 
         // Build the form used to add a manually recorded entry.
         let dialog = adw::Dialog::builder()
-            .title("Manual Entry")
+            .title(tr("Manual Entry"))
             .content_width(480)
             .content_height(480)
             .build();
@@ -163,11 +164,11 @@ impl MainWindow {
             .map(|project| project.name.as_str())
             .collect();
         let project = gtk::DropDown::from_strings(&project_names);
-        let mut activity_names = vec!["No activity"];
+        let mut activity_names = vec![tr("No activity")];
         activity_names.extend(activities.iter().map(|activity| activity.name.as_str()));
         let activity = gtk::DropDown::from_strings(&activity_names);
         let note = gtk::Entry::builder()
-            .placeholder_text("Optional note")
+            .placeholder_text(tr("Optional note"))
             .build();
         let now = Local::now();
         let selected_date = now
@@ -191,10 +192,10 @@ impl MainWindow {
 
         // Stack each field label above its input widget.
         for (label_text, widget) in [
-            ("Project", project.clone().upcast::<gtk::Widget>()),
-            ("Activity", activity.clone().upcast()),
-            ("Note", note.clone().upcast()),
-            ("Start (local)", start.clone().upcast()),
+            (tr("Project"), project.clone().upcast::<gtk::Widget>()),
+            (tr("Activity"), activity.clone().upcast()),
+            (tr("Note"), note.clone().upcast()),
+            (tr("Start (local)"), start.clone().upcast()),
         ] {
             let label = gtk::Label::builder()
                 .label(label_text)
@@ -207,12 +208,12 @@ impl MainWindow {
             duration_controls(chrono::Duration::hours(1).num_milliseconds());
         content.append(
             &gtk::Label::builder()
-                .label("Time spent")
+                .label(tr("Time spent"))
                 .halign(gtk::Align::Start)
                 .build(),
         );
         content.append(&duration);
-        let save = gtk::Button::with_label("Save Entry");
+        let save = gtk::Button::with_label(tr("Save Entry"));
         save.add_css_class("suggested-action");
         content.append(&save);
         set_dialog_content(&dialog, &content);
@@ -223,9 +224,9 @@ impl MainWindow {
         save.connect_clicked(move |_| {
             let Some(start_ms) = parse_local_timestamp(&start.text()) else {
                 if let Some(window) = weak.upgrade() {
-                    window.show_database_error(
+                    window.show_database_error(tr(
                         "Start must use YYYY-MM-DD HH:MM:SS and identify one local time.",
-                    );
+                    ));
                 }
                 return;
             };
@@ -235,7 +236,7 @@ impl MainWindow {
                 duration_minutes.value_as_int(),
             ) else {
                 if let Some(window) = weak.upgrade() {
-                    window.show_database_error("Duration must be at least one minute.");
+                    window.show_database_error(tr("Duration must be at least one minute."));
                 }
                 return;
             };
@@ -292,7 +293,7 @@ impl MainWindow {
 
         // Build the same entry form with the existing values selected.
         let dialog = adw::Dialog::builder()
-            .title("Edit Entry")
+            .title(tr("Edit Entry"))
             .content_width(480)
             .content_height(480)
             .build();
@@ -316,10 +317,10 @@ impl MainWindow {
         {
             project.set_selected(index);
         }
-        let activity_names = std::iter::once("No activity".to_owned())
+        let activity_names = std::iter::once(tr("No activity").to_owned())
             .chain(activities.iter().map(|activity| {
                 if activity.archived {
-                    format!("{} (Archived)", activity.name)
+                    trf("{activity} (Archived)", &[("activity", &activity.name)])
                 } else {
                     activity.name.clone()
                 }
@@ -348,9 +349,9 @@ impl MainWindow {
         };
         // Shared details update the whole entry.
         for (label_text, widget) in [
-            ("Project", project.clone().upcast::<gtk::Widget>()),
-            ("Activity", activity.clone().upcast()),
-            ("Note", note.clone().upcast()),
+            (tr("Project"), project.clone().upcast::<gtk::Widget>()),
+            (tr("Activity"), activity.clone().upcast()),
+            (tr("Note"), note.clone().upcast()),
         ] {
             content.append(
                 &gtk::Label::builder()
@@ -365,7 +366,7 @@ impl MainWindow {
         if let [interval] = existing.intervals.as_slice() {
             content.append(
                 &gtk::Label::builder()
-                    .label("Interval")
+                    .label(tr("Interval"))
                     .halign(gtk::Align::Start)
                     .css_classes(["heading"])
                     .build(),
@@ -375,14 +376,14 @@ impl MainWindow {
                 .build();
             content.append(
                 &gtk::Label::builder()
-                    .label("Start (local)")
+                    .label(tr("Start (local)"))
                     .halign(gtk::Align::Start)
                     .build(),
             );
             content.append(&start);
             content.append(
                 &gtk::Label::builder()
-                    .label("Time spent")
+                    .label(tr("Time spent"))
                     .halign(gtk::Align::Start)
                     .build(),
             );
@@ -394,7 +395,7 @@ impl MainWindow {
         } else if existing.intervals.len() > 1 {
             content.append(
                 &gtk::Label::builder()
-                    .label("Time spent")
+                    .label(tr("Time spent"))
                     .halign(gtk::Align::Start)
                     .build(),
             );
@@ -404,7 +405,7 @@ impl MainWindow {
             content.append(&duration);
             multi_interval_fields = Some((duration_hours, duration_minutes, initial_parts));
         }
-        let save = gtk::Button::with_label("Save Changes");
+        let save = gtk::Button::with_label(tr("Save Changes"));
         save.add_css_class("suggested-action");
         content.append(&save);
         set_dialog_content(&dialog, &content);
@@ -441,9 +442,9 @@ impl MainWindow {
             let Some(intervals) = intervals else {
                 if let Some(window) = weak.upgrade() {
                     let message = if multi_interval_fields.is_some() {
-                        "Total time must leave the final interval longer than zero and fit within the supported time range."
+                        tr("Total time must leave the final interval longer than zero and fit within the supported time range.")
                     } else {
-                        "Start must use YYYY-MM-DD HH:MM:SS, and duration must be at least one minute."
+                        tr("Start must use YYYY-MM-DD HH:MM:SS, and duration must be at least one minute.")
                     };
                     window.show_database_error(message);
                 }
