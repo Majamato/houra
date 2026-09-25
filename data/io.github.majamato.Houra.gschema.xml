@@ -8,7 +8,7 @@
     </key>
     <key name="launch-at-login" type="b">
       <default>true</default>
-      <summary>Launch in the background when signing in</summary>
+      <summary>Open Houra when signing in</summary>
     </key>
     <key name="notifications" type="b">
       <default>true</default>

@@ -35,6 +35,10 @@ pub enum AppError {
     #[error("localization setup failed: {0}")]
     Localization(String),
 
+    #[cfg(feature = "native-ui")]
+    #[error("could not register desktop application: {0}")]
+    DesktopRegistration(#[source] glib::Error),
+
     #[error("backup version {found} is unsupported; expected {expected}")]
     UnsupportedBackupVersion { found: u32, expected: u32 },
 

@@ -26,7 +26,7 @@ fn set_enabled_at(path: &Path, enabled: bool, executable: &Path) -> Result<(), A
         fs::create_dir_all(parent).map_err(|source| AppError::io(parent, source))?;
         let escaped = executable.to_string_lossy().replace(' ', "\\ ");
         let desktop = format!(
-            "[Desktop Entry]\nType=Application\nName=Houra\nExec={escaped} --background\nIcon=io.github.majamato.Houra\nX-GNOME-Autostart-enabled=true\nNoDisplay=true\n"
+            "[Desktop Entry]\nType=Application\nName=Houra\nExec={escaped}\nIcon=io.github.majamato.Houra\nX-GNOME-Autostart-enabled=true\nNoDisplay=true\n"
         );
         fs::write(path, desktop).map_err(|source| AppError::io(path, source))
     } else if path.exists() {
@@ -51,7 +51,7 @@ mod tests {
             assert_eq!(
                 fs::read_to_string(&path)?,
                 format!(
-                    "[Desktop Entry]\nType=Application\nName=Houra\nExec={escaped} --background\nIcon=io.github.majamato.Houra\nX-GNOME-Autostart-enabled=true\nNoDisplay=true\n"
+                    "[Desktop Entry]\nType=Application\nName=Houra\nExec={escaped}\nIcon=io.github.majamato.Houra\nX-GNOME-Autostart-enabled=true\nNoDisplay=true\n"
                 )
             );
         }

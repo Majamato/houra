@@ -60,8 +60,8 @@ msgid "Idle threshold in minutes"
 msgstr "アイドル判定時間（分）"
 
 #: data/io.github.majamato.Houra.gschema.xml:16
-msgid "Launch in the background when signing in"
-msgstr "ログイン時にバックグラウンドで起動"
+msgid "Open Houra when signing in"
+msgstr "ログイン時に Houra を開く"
 
 #: data/io.github.majamato.Houra.gschema.xml:20
 msgid "Show reconciliation notifications"
@@ -546,9 +546,8 @@ msgid "A timer is still running"
 msgstr "タイマーはまだ動作中です"
 
 #: crates/app/src/desktop/dialogs/quit.rs:14
-msgid "Stop the timer and quit, or keep Houra running in the background."
-msgstr "タイマーを停止して終了するか、Houra をバックグラウンドで動作させてください。"
-"タイマーを停止して終了するか、Houra をバックグラウンドで動作させてください。"
+msgid "Stop the timer and quit, or keep Houra open."
+msgstr "タイマーを停止して終了するか、Houra を開いたままにしてください。"
 
 #: crates/app/src/desktop/dialogs/quit.rs:18
 msgid "Keep Running"

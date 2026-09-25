@@ -60,8 +60,8 @@ msgid "Idle threshold in minutes"
 msgstr "유휴 상태 감지 시간(분)"
 
 #: data/io.github.majamato.Houra.gschema.xml:16
-msgid "Launch in the background when signing in"
-msgstr "로그인할 때 백그라운드에서 시작"
+msgid "Open Houra when signing in"
+msgstr "로그인할 때 Houra 열기"
 
 #: data/io.github.majamato.Houra.gschema.xml:20
 msgid "Show reconciliation notifications"
@@ -546,8 +546,8 @@ msgid "A timer is still running"
 msgstr "타이머가 아직 실행 중입니다"
 
 #: crates/app/src/desktop/dialogs/quit.rs:14
-msgid "Stop the timer and quit, or keep Houra running in the background."
-msgstr "타이머를 중지하고 종료하거나 Houra를 백그라운드에서 계속 실행하세요."
+msgid "Stop the timer and quit, or keep Houra open."
+msgstr "타이머를 중지하고 종료하거나 Houra를 열어 두세요."
 
 #: crates/app/src/desktop/dialogs/quit.rs:18
 msgid "Keep Running"

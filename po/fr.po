@@ -61,8 +61,8 @@ msgid "Idle threshold in minutes"
 msgstr "Seuil d'inactivité en minutes"
 
 #: data/io.github.majamato.Houra.gschema.xml:16
-msgid "Launch in the background when signing in"
-msgstr "Démarrer en arrière-plan à la connexion"
+msgid "Open Houra when signing in"
+msgstr "Ouvrir Houra à la connexion"
 
 #: data/io.github.majamato.Houra.gschema.xml:20
 msgid "Show reconciliation notifications"
@@ -550,9 +550,8 @@ msgid "A timer is still running"
 msgstr "Un minuteur est toujours en cours"
 
 #: crates/app/src/desktop/dialogs/quit.rs:14
-msgid "Stop the timer and quit, or keep Houra running in the background."
-msgstr "Arrêtez le minuteur et quittez, ou laissez Houra fonctionner en arrière-plan."
-"Arrêtez le minuteur et quittez, ou laissez Houra fonctionner en arrière-plan."
+msgid "Stop the timer and quit, or keep Houra open."
+msgstr "Arrêtez le minuteur et quittez, ou laissez Houra ouvert."
 
 #: crates/app/src/desktop/dialogs/quit.rs:18
 msgid "Keep Running"

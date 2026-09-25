@@ -1,4 +1,4 @@
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
 
@@ -8,7 +8,6 @@ use libadwaita as adw;
 use tracing::{error, warn};
 
 use super::{platform, window::MainWindow};
-use crate::locale::tr;
 use crate::{APP_ID, AppError, TrackerService};
 
 /// Runs the GTK application until the main loop exits, then stops the
@@ -17,23 +16,15 @@ pub fn run(database_path: PathBuf) -> Result<(), AppError> {
     let settings = load_settings();
     crate::locale::initialize()?;
     register_resources()?;
-    let service = TrackerService::start(database_path)?;
-    let handle = service.handle.clone();
-    complete_first_run(&settings);
-    let background = std::env::args().any(|argument| argument == "--background");
     let application = adw::Application::builder().application_id(APP_ID).build();
     application.add_main_option(
         "background",
         glib::Char(0),
-        glib::OptionFlags::NONE,
+        glib::OptionFlags::HIDDEN,
         glib::OptionArg::None,
-        tr("Start the tracker without presenting its window"),
+        "",
         None,
     );
-    let _application_hold = application.hold();
-    let main_window: Rc<RefCell<Option<MainWindow>>> = Rc::new(RefCell::new(None));
-    let suppress_first_present = Rc::new(Cell::new(background));
-
     application.connect_startup(|application| {
         load_css();
         application.set_accels_for_action("app.toggle-timer", &["<Control>space"]);
@@ -41,21 +32,33 @@ pub fn run(database_path: PathBuf) -> Result<(), AppError> {
         application.set_accels_for_action("app.preferences", &["<Control>comma"]);
         application.set_accels_for_action("app.quit", &["<Control>q"]);
     });
+    application
+        .register(None::<&gio::Cancellable>)
+        .map_err(AppError::DesktopRegistration)?;
+    if application.is_remote() {
+        application.activate();
+        return Ok(());
+    }
+
+    let service = TrackerService::start(database_path)?;
+    let handle = service.handle.clone();
+    synchronize_autostart(&settings);
+    let main_window: Rc<RefCell<Option<MainWindow>>> = Rc::new(RefCell::new(None));
 
     let activate_window = Rc::clone(&main_window);
     let activate_handle = handle.clone();
     application.connect_activate(move |application| {
-        let activate_suppression = Rc::clone(&suppress_first_present);
         if activate_window.borrow().is_none() {
             let window = MainWindow::new(application, activate_handle.clone());
             window.connect_close_request(|window| {
-                window.set_visible(false);
+                if let Some(application) = window.application() {
+                    application.activate_action("quit", None);
+                }
                 glib::Propagation::Stop
             });
             activate_window.replace(Some(window));
         }
-        let suppress_present = activate_suppression.replace(false);
-        if !suppress_present && let Some(window) = activate_window.borrow().as_ref() {
+        if let Some(window) = activate_window.borrow().as_ref() {
             window.present();
         }
     });
@@ -128,17 +131,17 @@ fn install_actions(
         .activate({
             let window = Rc::clone(window);
             let handle = handle.clone();
-            move |application: &adw::Application, _, _| {
-                let active = handle
-                    .snapshot()
-                    .map(|snapshot| snapshot.state.active().is_some())
-                    .unwrap_or(false);
-                if active {
+            move |application: &adw::Application, _, _| match handle.snapshot() {
+                Ok(snapshot) if snapshot.state.active().is_some() => {
                     if let Some(window) = window.borrow().as_ref() {
                         window.confirm_quit();
                     }
-                } else {
-                    application.quit();
+                }
+                Ok(_) => application.quit(),
+                Err(error) => {
+                    if let Some(window) = window.borrow().as_ref() {
+                        window.show_database_error(&error.to_string());
+                    }
                 }
             }
         })
@@ -189,14 +192,39 @@ pub(crate) fn log_background_error(context: &'static str, error: impl std::fmt::
 }
 
 pub(crate) fn load_settings() -> Option<gio::Settings> {
-    gio::SettingsSchemaSource::default()
-        .and_then(|source| source.lookup(crate::APP_ID, true))
-        .map(|schema| gio::Settings::new_full(&schema, None::<&gio::SettingsBackend>, None))
+    let installed =
+        gio::SettingsSchemaSource::default().and_then(|source| source.lookup(crate::APP_ID, true));
+    let schema = installed.or_else(|| {
+        let directory = std::env::current_exe().ok()?.parent()?.to_path_buf();
+        if !directory.join("gschemas.compiled").is_file() {
+            return None;
+        }
+        gio::SettingsSchemaSource::from_directory(&directory, None, false)
+            .ok()?
+            .lookup(crate::APP_ID, false)
+    })?;
+    Some(gio::Settings::new_full(
+        &schema,
+        None::<&gio::SettingsBackend>,
+        None,
+    ))
 }
 
-fn complete_first_run(settings: &Option<gio::Settings>) {
+fn synchronize_autostart(settings: &Option<gio::Settings>) {
     let Some(settings) = settings else { return };
     if settings.boolean("onboarding-complete") {
+        if settings.boolean("launch-at-login") {
+            match std::env::current_exe() {
+                Ok(executable) => {
+                    if let Err(error) = crate::autostart::set_enabled(true, &executable) {
+                        warn!(%error, "could not refresh autostart launcher");
+                    }
+                }
+                Err(error) => warn!(%error, "could not locate executable for autostart"),
+            }
+        } else if let Err(error) = crate::autostart::set_enabled(false, std::path::Path::new("")) {
+            warn!(%error, "could not disable autostart launcher");
+        }
         return;
     }
     let launch_enabled = match std::env::current_exe() {
