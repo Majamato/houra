@@ -215,6 +215,7 @@ impl<C: Clock> TrackerEngine<C> {
                         idle_start_ms,
                     });
                 }
+                notifications.push(Notification::IdleDetected);
                 TrackerState::IdlePending(PendingIdle {
                     active,
                     idle_start_ms,
@@ -231,6 +232,13 @@ impl<C: Clock> TrackerEngine<C> {
                 TrackerState::IdlePending(mut pending),
                 TrackerCommand::UserReturned { return_ms },
             ) => {
+                if pending.return_ms.is_some() {
+                    return Ok(Transition {
+                        snapshot: self.snapshot.clone(),
+                        completed_entries,
+                        notifications,
+                    });
+                }
                 if return_ms < pending.idle_start_ms {
                     return Err(DomainError::InvalidReturn {
                         idle_start_ms: pending.idle_start_ms,

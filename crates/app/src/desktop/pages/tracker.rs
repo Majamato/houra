@@ -116,6 +116,14 @@ impl MainWindow {
     }
 
     pub fn toggle_timer(&self) {
+        self.change_timer(false);
+    }
+
+    pub(in crate::desktop) fn start_timer_from_note(&self) {
+        self.change_timer(true);
+    }
+
+    fn change_timer(&self, start_only: bool) {
         let Some(handle) = self.handle() else { return };
         let state = match handle.snapshot() {
             Ok(snapshot) => snapshot.state,
@@ -130,9 +138,10 @@ impl MainWindow {
                 activity_id: self.selected_activity_id(),
                 note: self.imp().note_entry.text().to_string(),
             },
+            TrackerState::Running(_) if start_only => return,
             TrackerState::Running(_) => TrackerCommand::Stop,
             TrackerState::IdlePending(_) => {
-                self.show_idle_dialog();
+                self.review_idle();
                 return;
             }
             TrackerState::RecoveryPending(_) => {
@@ -158,7 +167,7 @@ impl MainWindow {
         match handle.snapshot().map(|snapshot| snapshot.state) {
             Ok(TrackerState::Stopped | TrackerState::Running(_)) => {}
             Ok(TrackerState::IdlePending(_)) => {
-                self.show_idle_dialog();
+                self.review_idle();
                 return;
             }
             Ok(TrackerState::RecoveryPending(_)) => {

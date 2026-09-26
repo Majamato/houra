@@ -752,3 +752,18 @@ msgstr "{details} · {dates} · {duration}"
 #, rust-format
 msgid "{details} · {start} – {end} · {duration} · {source}"
 msgstr "{details} · {start} – {end} · {duration} · {source}"
+
+msgid "Idle time started"
+msgstr "자리 비움 시간이 시작되었습니다"
+
+msgid "Open Houra to review this time when you return."
+msgstr "돌아오면 Houra를 열어 이 시간을 검토하세요."
+
+msgid "You were away for {duration}. How should this time be counted?"
+msgstr "{duration} 동안 자리를 비웠습니다. 이 시간을 어떻게 기록할까요?"
+
+msgid "less than a minute"
+msgstr "1분 미만"
+
+msgid "Choose the project that should receive {duration} of idle time."
+msgstr "{duration}의 자리 비움 시간을 할당할 프로젝트를 선택하세요."

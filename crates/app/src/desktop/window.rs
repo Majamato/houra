@@ -100,6 +100,7 @@ pub(super) mod imp {
         pub active_entry_duration_cached: Cell<bool>,
         pub displayed_today_ordinal: Cell<i32>,
         pub updating_activity_dropdown: Cell<bool>,
+        pub idle_dialog_open: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -219,6 +220,11 @@ impl MainWindow {
             #[weak(rename_to = window)]
             self,
             move |_| window.update_active_details()
+        ));
+        self.imp().note_entry.connect_activate(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| window.start_timer_from_note()
         ));
         self.imp().add_project_button.connect_clicked(glib::clone!(
             #[weak(rename_to = window)]

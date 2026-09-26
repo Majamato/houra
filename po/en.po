@@ -755,3 +755,18 @@ msgstr "{details} · {dates} · {duration}"
 #, rust-format
 msgid "{details} · {start} – {end} · {duration} · {source}"
 msgstr "{details} · {start} – {end} · {duration} · {source}"
+
+msgid "Idle time started"
+msgstr "Idle time started"
+
+msgid "Open Houra to review this time when you return."
+msgstr "Open Houra to review this time when you return."
+
+msgid "You were away for {duration}. How should this time be counted?"
+msgstr "You were away for {duration}. How should this time be counted?"
+
+msgid "less than a minute"
+msgstr "less than a minute"
+
+msgid "Choose the project that should receive {duration} of idle time."
+msgstr "Choose the project that should receive {duration} of idle time."

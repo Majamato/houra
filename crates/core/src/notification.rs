@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub enum Notification {
     TimerStarted,
     TimerStopped,
+    IdleDetected,
     IdleNeedsResolution,
     RecoveryNeedsResolution,
     RecoveryResolved,

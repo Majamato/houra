@@ -179,6 +179,29 @@ fn discard_idle_resumes_at_recorded_return_not_dialog_time() {
 }
 
 #[test]
+fn repeated_return_keeps_first_return_time_and_emits_no_second_alert() {
+    let clock = ManualClock::at(1_000);
+    let mut engine = TrackerEngine::new(clock.clone());
+    start(&mut engine);
+    clock.advance(Duration::from_secs(10));
+    let idle = engine
+        .apply(TrackerCommand::IdleDetected {
+            idle_start_ms: 5_000,
+        })
+        .unwrap_or_else(|error| panic!("{error}"));
+    assert_eq!(idle.notifications, vec![Notification::IdleDetected]);
+    let first = engine
+        .apply(TrackerCommand::UserReturned { return_ms: 11_000 })
+        .unwrap_or_else(|error| panic!("{error}"));
+    assert_eq!(first.notifications, vec![Notification::IdleNeedsResolution]);
+    let repeated = engine
+        .apply(TrackerCommand::UserReturned { return_ms: 20_000 })
+        .unwrap_or_else(|error| panic!("{error}"));
+    assert_eq!(repeated.snapshot, first.snapshot);
+    assert!(repeated.notifications.is_empty());
+}
+
+#[test]
 fn reassign_idle_preserves_whole_timeline() {
     let clock = ManualClock::at(1_000);
     let mut engine = TrackerEngine::new(clock.clone());
@@ -310,7 +333,10 @@ fn every_command_state_combination_accepts_or_preserves_snapshot() {
             if accepted[i].contains(&j) {
                 let transition = result.unwrap_or_else(|e| panic!("{i}/{j}: {e}"));
                 assert_eq!(transition.snapshot, *engine.snapshot());
-                assert_eq!(transition.snapshot.revision, 11);
+                assert_eq!(
+                    transition.snapshot.revision,
+                    10 + u64::from(i != 2 || j != 5)
+                );
                 assert_eq!(
                     transition.completed_entries.len(),
                     usize::from(j == 1 || j == 7 || (i == 1 && j == 9))
@@ -318,6 +344,8 @@ fn every_command_state_combination_accepts_or_preserves_snapshot() {
                 let notifications = match j {
                     0 => vec![Notification::TimerStarted],
                     1 => vec![Notification::TimerStopped],
+                    4 => vec![Notification::IdleDetected],
+                    5 if i == 2 => vec![],
                     5 => vec![Notification::IdleNeedsResolution],
                     7 | 8 => vec![Notification::RecoveryResolved],
                     9 if i == 0 => vec![Notification::TimerStarted],

@@ -1,7 +1,7 @@
 use crate::locale::tr;
 use gio::prelude::*;
 use glib::variant::ToVariant;
-use houra_core::TrackerCommand;
+use houra_core::{Notification as TrackerNotification, TrackerCommand};
 use std::os::fd::OwnedFd;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
@@ -56,13 +56,13 @@ fn start_mutter(
                 idle_watch.store(0, Ordering::Relaxed);
                 let idle_start_ms =
                     now.saturating_sub(i64::try_from(threshold_ms).unwrap_or(i64::MAX));
-                let _ignored = handle.apply(TrackerCommand::IdleDetected { idle_start_ms });
+                apply_idle_and_notify(&handle, idle_start_ms, notifications);
                 if let Ok(id) = add_active_watch(&proxy) {
                     active_watch.store(id, Ordering::Relaxed);
                 }
             } else if watch_id == active_watch.load(Ordering::Relaxed) {
                 active_watch.store(0, Ordering::Relaxed);
-                apply_return_and_notify(&handle, now, notifications);
+                let _ignored = apply_return_and_notify(&handle, now, notifications);
                 if let Ok(id) = add_idle_watch(&proxy, threshold_ms) {
                     idle_watch.store(id, Ordering::Relaxed);
                 }
@@ -145,9 +145,9 @@ fn start_screensaver(handle: TrackerHandle, notifications: bool) {
         };
         let now = chrono::Utc::now().timestamp_millis();
         if locked {
-            let _ignored = handle.apply(TrackerCommand::IdleDetected { idle_start_ms: now });
+            apply_idle_and_notify(&handle, now, notifications);
         } else {
-            apply_return_and_notify(&handle, now, notifications);
+            let _ignored = apply_return_and_notify(&handle, now, notifications);
         }
     });
     glib::timeout_add_seconds_local(30, move || {
@@ -181,14 +181,14 @@ fn start_logind(handle: TrackerHandle, notifications: bool) {
             };
             if sleeping {
                 let now = chrono::Utc::now().timestamp_millis();
-                let _ignored = handle.apply(TrackerCommand::IdleDetected { idle_start_ms: now });
+                apply_idle_and_notify(&handle, now, notifications);
                 let _ignored = handle.apply(TrackerCommand::Heartbeat);
                 if let Ok(mut guard) = inhibitor.lock() {
                     guard.take();
                 }
             } else {
                 let now = chrono::Utc::now().timestamp_millis();
-                apply_return_and_notify(&handle, now, notifications);
+                let _ignored = apply_return_and_notify(&handle, now, notifications);
                 if let Ok(mut guard) = inhibitor.lock() {
                     *guard = take_sleep_inhibitor(&proxy);
                 }
@@ -201,23 +201,59 @@ fn start_logind(handle: TrackerHandle, notifications: bool) {
     });
 }
 
-fn apply_return_and_notify(handle: &TrackerHandle, return_ms: i64, notifications: bool) {
-    if handle
-        .apply(TrackerCommand::UserReturned { return_ms })
-        .is_err()
-    {
+fn apply_idle_and_notify(handle: &TrackerHandle, idle_start_ms: i64, notifications: bool) {
+    let Ok(transition) = handle.apply(TrackerCommand::IdleDetected { idle_start_ms }) else {
         return;
-    }
-    if !notifications {
+    };
+    if !notifications_enabled(notifications)
+        || !transition
+            .notifications
+            .contains(&TrackerNotification::IdleDetected)
+    {
         return;
     }
     let Some(application) = gio::Application::default() else {
         return;
     };
+    let notification = gio::Notification::new(tr("Idle time started"));
+    notification.set_body(Some(tr("Open Houra to review this time when you return.")));
+    notification.set_default_action("app.review-idle");
+    application.send_notification(Some("idle-resolution"), &notification);
+}
+
+pub(super) fn apply_return_and_notify(
+    handle: &TrackerHandle,
+    return_ms: i64,
+    notifications: bool,
+) -> Result<(), AppError> {
+    let transition = handle.apply(TrackerCommand::UserReturned { return_ms })?;
+    if !notifications_enabled(notifications)
+        || !transition
+            .notifications
+            .contains(&TrackerNotification::IdleNeedsResolution)
+    {
+        return Ok(());
+    }
+    let Some(application) = gio::Application::default() else {
+        return Ok(());
+    };
     let notification = gio::Notification::new(tr("Idle time needs review"));
     notification.set_body(Some(tr("Open Houra to keep, discard, reassign, or stop.")));
-    notification.set_default_action("app.toggle-timer");
+    notification.set_default_action("app.review-idle");
     application.send_notification(Some("idle-resolution"), &notification);
+    Ok(())
+}
+
+pub(super) fn withdraw_idle_notification() {
+    if let Some(application) = gio::Application::default() {
+        application.withdraw_notification("idle-resolution");
+    }
+}
+
+fn notifications_enabled(initial_value: bool) -> bool {
+    crate::desktop::load_settings()
+        .as_ref()
+        .map_or(initial_value, |settings| settings.boolean("notifications"))
 }
 
 /// Asks logind for a delay inhibitor; dropping the fd releases it.

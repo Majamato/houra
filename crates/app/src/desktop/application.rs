@@ -107,6 +107,17 @@ fn install_actions(
             }
         })
         .build();
+    let review_idle = gio::ActionEntry::builder("review-idle")
+        .activate({
+            let window = Rc::clone(window);
+            move |application: &adw::Application, _, _| {
+                application.activate();
+                if let Some(window) = window.borrow().as_ref() {
+                    window.review_idle();
+                }
+            }
+        })
+        .build();
     let add = gio::ActionEntry::builder("add-entry")
         .activate({
             let window = Rc::clone(window);
@@ -166,7 +177,7 @@ fn install_actions(
             }
         })
         .build();
-    application.add_action_entries([toggle, add, preferences, backup, restore, quit]);
+    application.add_action_entries([toggle, review_idle, add, preferences, backup, restore, quit]);
 
     let idle_threshold = settings
         .as_ref()

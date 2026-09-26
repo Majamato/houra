@@ -752,3 +752,18 @@ msgstr "{details} · {dates} · {duration}"
 #, rust-format
 msgid "{details} · {start} – {end} · {duration} · {source}"
 msgstr "{details} · {start} – {end} · {duration} · {source}"
+
+msgid "Idle time started"
+msgstr "アイドル時間が始まりました"
+
+msgid "Open Houra to review this time when you return."
+msgstr "戻ったら Houra を開いて、この時間を確認してください。"
+
+msgid "You were away for {duration}. How should this time be counted?"
+msgstr "{duration} の間、席を外していました。この時間をどう記録しますか？"
+
+msgid "less than a minute"
+msgstr "1 分未満"
+
+msgid "Choose the project that should receive {duration} of idle time."
+msgstr "{duration} のアイドル時間を割り当てるプロジェクトを選択してください。"

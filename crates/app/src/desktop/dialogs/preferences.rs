@@ -79,6 +79,9 @@ impl MainWindow {
                 if let Some(settings) = &settings {
                     let _ignored = settings.set_boolean("notifications", row.is_active());
                 }
+                if !row.is_active() {
+                    crate::desktop::platform::withdraw_idle_notification();
+                }
             }
         });
         group.add(&notifications);

@@ -759,3 +759,18 @@ msgstr "{details} · {dates} · {duration}"
 #, rust-format
 msgid "{details} · {start} – {end} · {duration} · {source}"
 msgstr "{details} · {start} – {end} · {duration} · {source}"
+
+msgid "Idle time started"
+msgstr "Comenzó el tiempo de inactividad"
+
+msgid "Open Houra to review this time when you return."
+msgstr "Abre Houra para revisar este tiempo cuando regreses."
+
+msgid "You were away for {duration}. How should this time be counted?"
+msgstr "Estuviste ausente durante {duration}. ¿Cómo se debe contabilizar este tiempo?"
+
+msgid "less than a minute"
+msgstr "menos de un minuto"
+
+msgid "Choose the project that should receive {duration} of idle time."
+msgstr "Elige el proyecto al que se asignarán {duration} de tiempo de inactividad."
