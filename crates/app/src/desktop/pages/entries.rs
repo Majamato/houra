@@ -240,9 +240,11 @@ impl MainWindow {
             return;
         };
         self.imp().next_week_button.set_visible(visible_offset < 0);
+        let shortcut_visible = today_shortcut_visible(visible_offset, selected, today);
         self.imp()
-            .today_row
-            .set_visible(visible_offset != 0 || selected != today);
+            .today_button
+            .set_opacity(f64::from(u8::from(shortcut_visible)));
+        self.imp().today_button.set_sensitive(shortcut_visible);
         for day_index in 0..7 {
             let Some(date) = week_start.checked_add_signed(chrono::Duration::days(day_index))
             else {
@@ -345,5 +347,34 @@ impl MainWindow {
             )))
             .unwrap_or(today);
         self.refresh_week(selected, today);
+    }
+}
+
+/// Whether the Today shortcut accepts input. The shortcut row keeps its
+/// allocated space in both states so hiding the button never moves the
+/// week strip.
+fn today_shortcut_visible(visible_week_offset: i32, selected: NaiveDate, today: NaiveDate) -> bool {
+    visible_week_offset != 0 || selected != today
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn date(year: i32, month: u32, day: u32) -> NaiveDate {
+        NaiveDate::from_ymd_opt(year, month, day).unwrap_or(NaiveDate::MIN)
+    }
+
+    #[test]
+    fn today_shortcut_hidden_on_current_day() {
+        let today = date(2026, 9, 25);
+        assert!(!today_shortcut_visible(0, today, today));
+    }
+
+    #[test]
+    fn today_shortcut_shown_away_from_current_day() {
+        let today = date(2026, 9, 25);
+        assert!(today_shortcut_visible(0, date(2026, 9, 21), today));
+        assert!(today_shortcut_visible(-1, today, today));
     }
 }

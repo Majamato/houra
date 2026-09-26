@@ -57,8 +57,6 @@ pub(super) mod imp {
         #[template_child]
         pub next_week_button: gtk::TemplateChild<gtk::Button>,
         #[template_child]
-        pub today_row: gtk::TemplateChild<gtk::Box>,
-        #[template_child]
         pub today_button: gtk::TemplateChild<gtk::Button>,
         #[template_child]
         pub entries_heading: gtk::TemplateChild<gtk::Label>,
