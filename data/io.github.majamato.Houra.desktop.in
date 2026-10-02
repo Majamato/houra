@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Houra
+Comment=Track time by project and activity
+Exec=houra
+Icon=io.github.majamato.Houra
+Terminal=false
+Type=Application
+Categories=Office;ProjectManagement;GTK;GNOME;
+Keywords=time;work;project;activity;report;timer;tracker;timesheet;hours;productivity;
+StartupNotify=true

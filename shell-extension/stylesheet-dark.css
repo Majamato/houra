@@ -1,0 +1,57 @@
+/* Houra's top-bar element (dark style: black top bar). The element inherits
+   #panel .panel-button: pill shape, 3px border, hover and press shading. */
+
+#panel .panel-button.houra-indicator.houra-active {
+  -natural-hpadding: 6px;
+  -minimum-hpadding: 6px;
+}
+#panel .panel-button.houra-indicator.houra-active .houra-box {
+  spacing: 0.409em;
+  padding-left: 0.409em;
+}
+#panel .panel-button.houra-indicator.houra-active .houra-glyph {
+  padding: 0;
+  margin: 0;
+}
+#panel .panel-button.houra-indicator .houra-time {
+  font-feature-settings: "tnum";
+}
+#panel .panel-button.houra-indicator.houra-running .houra-glyph {
+  color: st-mix(-st-accent-color, #ffffff, 60%);
+}
+#panel .panel-button.houra-indicator.houra-attention .houra-glyph {
+  color: #f8e45c;
+}
+
+#panel .panel-button.houra-indicator .houra-toggle {
+  min-width: 1.364em;
+  min-height: 1.364em;
+  padding: 0;
+  border-radius: 999px;
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.12);
+  transition-duration: 150ms;
+}
+#panel .panel-button.houra-indicator .houra-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+#panel .panel-button.houra-indicator .houra-toggle:active {
+  background-color: rgba(255, 255, 255, 0.30);
+}
+#panel .panel-button.houra-indicator .houra-toggle:focus {
+  box-shadow: inset 0 0 0 2px st-transparentize(st-mix(-st-accent-color, #ffffff, 60%), 0.2);
+}
+#panel .panel-button.houra-indicator .houra-toggle-icon {
+  icon-size: 0.818em;
+}
+
+#panel .panel-button.houra-indicator.houra-paused .houra-toggle {
+  color: -st-accent-fg-color;
+  background-color: -st-accent-color;
+}
+#panel .panel-button.houra-indicator.houra-paused .houra-toggle:hover {
+  background-color: st-lighten(-st-accent-color, 4%);
+}
+#panel .panel-button.houra-indicator.houra-paused .houra-toggle:active {
+  background-color: st-lighten(-st-accent-color, 9%);
+}

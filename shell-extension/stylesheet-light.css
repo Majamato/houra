@@ -1,0 +1,73 @@
+/* Houra's top-bar element (light style: light top bar). The element inherits
+   #panel .panel-button: pill shape, 3px border, hover and press shading. */
+
+#panel .panel-button.houra-indicator.houra-active {
+  -natural-hpadding: 6px;
+  -minimum-hpadding: 6px;
+}
+#panel .panel-button.houra-indicator.houra-active .houra-box {
+  spacing: 0.409em;
+  padding-left: 0.409em;
+}
+#panel .panel-button.houra-indicator.houra-active .houra-glyph {
+  padding: 0;
+  margin: 0;
+}
+#panel .panel-button.houra-indicator .houra-time {
+  font-feature-settings: "tnum";
+}
+#panel .panel-button.houra-indicator.houra-running .houra-glyph {
+  color: -st-accent-color;
+}
+#panel .panel-button.houra-indicator.houra-attention .houra-glyph {
+  color: #9c6e03;
+}
+
+#panel .panel-button.houra-indicator .houra-toggle {
+  min-width: 1.364em;
+  min-height: 1.364em;
+  padding: 0;
+  border-radius: 999px;
+  color: #222226;
+  background-color: rgba(34, 34, 38, 0.10);
+  transition-duration: 150ms;
+}
+#panel .panel-button.houra-indicator .houra-toggle:hover {
+  background-color: rgba(34, 34, 38, 0.18);
+}
+#panel .panel-button.houra-indicator .houra-toggle:active {
+  background-color: rgba(34, 34, 38, 0.26);
+}
+#panel .panel-button.houra-indicator .houra-toggle:focus {
+  box-shadow: inset 0 0 0 2px st-transparentize(-st-accent-color, 0.2);
+}
+#panel .panel-button.houra-indicator .houra-toggle-icon {
+  icon-size: 0.818em;
+}
+
+#panel .panel-button.houra-indicator.houra-paused .houra-toggle {
+  color: -st-accent-fg-color;
+  background-color: -st-accent-color;
+}
+#panel .panel-button.houra-indicator.houra-paused .houra-toggle:hover {
+  background-color: st-lighten(-st-accent-color, 4%);
+}
+#panel .panel-button.houra-indicator.houra-paused .houra-toggle:active {
+  background-color: st-lighten(-st-accent-color, 9%);
+}
+
+/* The overview's top bar is transparent with white text in light style too. */
+#panel:overview .panel-button.houra-indicator.houra-attention .houra-glyph {
+  color: #f8e45c;
+}
+#panel:overview .panel-button.houra-indicator .houra-toggle {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+#panel:overview .panel-button.houra-indicator .houra-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+#panel:overview .panel-button.houra-indicator.houra-paused .houra-toggle {
+  color: -st-accent-fg-color;
+  background-color: -st-accent-color;
+}

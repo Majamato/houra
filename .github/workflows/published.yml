@@ -1,0 +1,88 @@
+# Runs once a drafted release is published: publishes houra-bin to the AUR and
+# checks the documented curl | bash install against the live release.
+name: Published release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag, such as v0.1.0
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.tag }}
+
+jobs:
+  aur:
+    name: Publish houra-bin to the AUR
+    runs-on: ubuntu-latest
+    container: docker.io/library/archlinux:latest
+    steps:
+      - name: Install packaging tools
+        run: pacman -Syu --noconfirm --needed base-devel namcap gtk4 libadwaita git openssh github-cli
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TAG }}
+      - name: Download the binary tarball
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir release --pattern 'houra-*-x86_64-linux.tar.xz'
+      - name: Build and check the package
+        run: |
+          useradd -m builder
+          chown -R builder "$PWD"
+          su builder -c "scripts/make-aur-package.sh release aur && cd aur && makepkg --noconfirm && namcap PKGBUILD ./*.pkg.tar.zst"
+          pacman -U --noconfirm aur/houra-bin-*.pkg.tar.zst
+          houra --version
+      - name: Push to the AUR
+        env:
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+        if: env.AUR_SSH_PRIVATE_KEY != ''
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$AUR_SSH_PRIVATE_KEY" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          ssh-keyscan aur.archlinux.org > ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/aur -o IdentitiesOnly=yes"
+          git clone ssh://aur@aur.archlinux.org/houra-bin.git aur-repo
+          cp aur/PKGBUILD aur/.SRCINFO aur/houra.install aur-repo/
+          cd aur-repo
+          git config user.name "Mario Martínez"
+          git config user.email "mariojmt9@gmail.com"
+          git add PKGBUILD .SRCINFO houra.install
+          if git diff --cached --quiet; then
+            echo "The AUR package is already up to date."
+          else
+            git commit -m "Update to ${TAG#v}"
+            git push origin HEAD:master
+          fi
+      - name: Keep the package files when there is no AUR key
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aur
+          path: |
+            aur/PKGBUILD
+            aur/.SRCINFO
+            aur/houra.install
+          include-hidden-files: true
+
+  install-script:
+    name: curl | bash on Fedora 44
+    runs-on: ubuntu-latest
+    container: docker.io/library/fedora:44
+    steps:
+      - name: Install Houra's runtime libraries
+        run: dnf -y install gtk4 libadwaita glib2 xz findutils
+      - name: Install the latest release as a regular user
+        run: |
+          useradd -m tester
+          su - tester -c 'curl -fsSL https://github.com/${{ github.repository }}/releases/latest/download/install.sh | bash'
+          su - tester -c '/home/tester/.local/bin/houra --version' | tee version.txt
+          grep -qx "houra ${TAG#v}" version.txt
+          su - tester -c '/home/tester/.local/share/houra-installer/install.sh --uninstall'

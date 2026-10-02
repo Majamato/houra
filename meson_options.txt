@@ -1,0 +1,2 @@
+option('offline', type: 'boolean', value: false, description: 'Pass --offline to Cargo')
+option('shell-extension', type: 'boolean', value: true, description: 'Install the GNOME Shell extension that shows Houra in the top bar')

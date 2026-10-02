@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.majamato.Houra</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Houra</name>
+  <developer id="io.github.majamato"><name>majamato</name></developer>
+  <summary>Know where your hours go</summary>
+  <description>
+    <p>Pick a project and an activity, start the timer, and Houra keeps count. Breaks, idle
+    time, suspends and crashes don’t cost you tracked time, and the running timer stays
+    visible in GNOME’s top bar.</p>
+    <p>Everything is stored on your computer, with no account to create. Weekly reports
+    and CSV export turn your hours into timesheets.</p>
+    <ul>
+      <li>Track time by project and activity, with a note, pause and resume</li>
+      <li>Review time you were away: keep it, discard it or move it to another project</li>
+      <li>Recover the active timer after a crash or suspend</li>
+      <li>See and pause the timer from the top bar</li>
+      <li>Weekly reports with CSV export and rounding options</li>
+      <li>JSON backup and restore</li>
+    </ul>
+    <p>This is an early release, tested on Fedora 44 with GNOME 50.</p>
+  </description>
+  <launchable type="desktop-id">io.github.majamato.Houra.desktop</launchable>
+  <provides><binary>houra</binary></provides>
+  <translation type="gettext">houra</translation>
+  <url type="homepage">https://github.com/Majamato/houra</url>
+  <url type="bugtracker">https://github.com/Majamato/houra/issues</url>
+  <url type="vcs-browser">https://github.com/Majamato/houra</url>
+  <url type="contribute">https://github.com/Majamato/houra/blob/main/CONTRIBUTING.md</url>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <branding>
+    <color type="primary" scheme_preference="light">#62a0ea</color>
+    <color type="primary" scheme_preference="dark">#1c71d8</color>
+  </branding>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Track time by project and activity</caption>
+      <image>https://raw.githubusercontent.com/Majamato/houra/v0.1.0/data/screenshots/tracker.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Review the week and export it as CSV</caption>
+      <image>https://raw.githubusercontent.com/Majamato/houra/v0.1.0/data/screenshots/reports.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Decide what happens to time you were away</caption>
+      <image>https://raw.githubusercontent.com/Majamato/houra/v0.1.0/data/screenshots/idle.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Dark style</caption>
+      <image>https://raw.githubusercontent.com/Majamato/houra/v0.1.0/data/screenshots/tracker-dark.png</image>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.1.0" date="2026-10-01">
+      <description>
+        <p>First public release.</p>
+        <ul>
+          <li>Time tracking by project and activity</li>
+          <li>Idle review, crash recovery and suspend handling</li>
+          <li>Top-bar timer for GNOME Shell</li>
+          <li>Weekly reports, CSV export and JSON backups</li>
+          <li>Available in 10 languages</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+</component>

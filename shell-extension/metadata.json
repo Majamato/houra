@@ -1,0 +1,8 @@
+{
+  "uuid": "houra@majamato.github.io",
+  "name": "Houra",
+  "description": "Shows Houra's active timer in the top bar, with a button to pause or resume it. Click it to open Houra. Installed and enabled together with the Houra app.",
+  "shell-version": ["49", "50", "51"],
+  "url": "https://github.com/Majamato/houra",
+  "gettext-domain": "houra"
+}

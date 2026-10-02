@@ -1,0 +1,301 @@
+use std::collections::BTreeMap;
+
+use chrono::{DateTime, Datelike, Local, TimeZone};
+use serde::{Deserialize, Serialize};
+
+use crate::{ActivityId, DomainError, ProjectId, TimeEntry};
+
+/// Rejects entries whose half-open intervals overlap; adjacent ones are fine.
+pub fn validate_no_overlaps(entries: &[TimeEntry]) -> Result<(), DomainError> {
+    let mut ordered = entries
+        .iter()
+        .flat_map(|entry| {
+            entry
+                .intervals
+                .iter()
+                .map(move |interval| (entry.id, interval))
+        })
+        .collect::<Vec<_>>();
+    ordered.sort_by_key(|(_, interval)| (interval.start_ms, interval.end_ms));
+    let mut conflicts = Vec::new();
+    let mut found_overlap = false;
+    // An earlier long interval can overlap entries beyond its immediate neighbor.
+    let mut furthest_end = i64::MIN;
+    for (index, (entry_id, interval)) in ordered.iter().enumerate() {
+        let overlaps_previous = interval.start_ms < furthest_end;
+        let overlaps_next = ordered
+            .get(index + 1)
+            .is_some_and(|(_, next)| next.start_ms < interval.end_ms);
+        if overlaps_previous || overlaps_next {
+            found_overlap = true;
+            if let Some(id) = entry_id {
+                conflicts.push(*id);
+            }
+        }
+        furthest_end = furthest_end.max(interval.end_ms);
+    }
+    conflicts.sort_unstable();
+    conflicts.dedup();
+    if found_overlap {
+        Err(DomainError::Overlap { conflicts })
+    } else {
+        Ok(())
+    }
+}
+
+/// One local day, project and activity. Derived `Ord` sorts by those fields in order.
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+pub struct ReportBucket {
+    /// Local calendar year of the bucket.
+    pub local_year: i32,
+    /// Day of the year; pairs with the year to name one local day.
+    pub local_ordinal: u32,
+    /// Project the bucket totals.
+    pub project_id: ProjectId,
+    /// Activity the bucket totals, if the entries have one.
+    pub activity_id: Option<ActivityId>,
+}
+
+/// Totaled duration and entry count for one report bucket.
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+pub struct ReportRow {
+    /// Day, project, and activity this row totals.
+    pub bucket: ReportBucket,
+    /// Milliseconds inside the bucket, clipped to the queried range.
+    pub duration_ms: i64,
+    /// Entries contributing to this row, counted once each.
+    pub entry_count: usize,
+}
+
+/// Groups entries by local day, project, and activity.
+/// Entries crossing midnight split at the local boundary, including non-24-hour DST days.
+pub fn group_entries(entries: &[TimeEntry]) -> Vec<ReportRow> {
+    group_entries_in_range(entries, i64::MIN, i64::MAX)
+}
+
+/// Groups only the portion of each interval inside `[start_ms, end_ms)`.
+pub fn group_entries_in_range(entries: &[TimeEntry], start_ms: i64, end_ms: i64) -> Vec<ReportRow> {
+    let mut totals: BTreeMap<ReportBucket, (i64, std::collections::BTreeSet<usize>)> =
+        BTreeMap::new();
+    for (entry_index, entry) in entries.iter().enumerate() {
+        for interval in &entry.intervals {
+            let mut cursor = interval.start_ms.max(start_ms);
+            let interval_end = interval.end_ms.min(end_ms);
+            while cursor < interval_end {
+                let Some(local) = Local.timestamp_millis_opt(cursor).single() else {
+                    break;
+                };
+                let next_midnight = next_local_midnight(local).min(interval_end);
+                let bucket = ReportBucket {
+                    local_year: local.year(),
+                    local_ordinal: local.ordinal(),
+                    project_id: entry.project_id,
+                    activity_id: entry.activity_id,
+                };
+                let total = totals.entry(bucket).or_default();
+                total.0 = total.0.saturating_add(next_midnight.saturating_sub(cursor));
+                total.1.insert(entry_index);
+                cursor = next_midnight;
+            }
+        }
+    }
+    totals
+        .into_iter()
+        .map(|(bucket, (duration_ms, entries))| ReportRow {
+            bucket,
+            duration_ms,
+            entry_count: entries.len(),
+        })
+        .collect()
+}
+
+fn next_local_midnight(local: DateTime<Local>) -> i64 {
+    let next_date = local.date_naive().succ_opt();
+    next_date
+        .and_then(|date| date.and_hms_opt(0, 0, 0))
+        .and_then(|naive| Local.from_local_datetime(&naive).earliest())
+        .map_or(i64::MAX, |date| date.timestamp_millis())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{EntryId, EntrySource};
+
+    fn entry(id: Option<i64>, start_ms: i64, end_ms: i64) -> TimeEntry {
+        TimeEntry {
+            id: id.map(EntryId),
+            project_id: ProjectId(1),
+            activity_id: None,
+            note: String::new(),
+            intervals: vec![crate::TrackedInterval {
+                id: None,
+                start_ms,
+                end_ms,
+                source: EntrySource::Manual,
+            }],
+            created_at_ms: end_ms,
+            updated_at_ms: end_ms,
+        }
+    }
+
+    #[test]
+    fn adjacent_entries_do_not_overlap() {
+        assert!(validate_no_overlaps(&[entry(Some(1), 0, 10), entry(Some(2), 10, 20)]).is_ok());
+    }
+
+    #[test]
+    fn overlapping_entries_report_both_ids() {
+        let result = validate_no_overlaps(&[entry(Some(1), 0, 11), entry(Some(2), 10, 20)]);
+        assert_eq!(
+            result,
+            Err(DomainError::Overlap {
+                conflicts: vec![EntryId(1), EntryId(2)]
+            })
+        );
+    }
+
+    #[test]
+    fn grouping_preserves_total_duration() {
+        let entries = [entry(Some(1), 1_700_000_000_000, 1_700_100_000_000)];
+        let total: i64 = group_entries(&entries)
+            .iter()
+            .map(|row| row.duration_ms)
+            .sum();
+        assert_eq!(total, entries[0].duration_ms());
+    }
+    #[test]
+    fn multiple_intervals_count_parent_once_per_bucket_and_range_is_clipped() {
+        let mut entry = entry(Some(1), 100, 200);
+        entry.intervals.push(crate::TrackedInterval {
+            id: None,
+            start_ms: 300,
+            end_ms: 500,
+            source: EntrySource::Timer,
+        });
+        let rows = group_entries_in_range(&[entry], 150, 400);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].duration_ms, 150);
+        assert_eq!(rows[0].entry_count, 1);
+    }
+    #[test]
+    fn anonymous_overlaps_are_rejected() {
+        assert_eq!(
+            validate_no_overlaps(&[entry(None, 0, 10), entry(None, 5, 15)]),
+            Err(DomainError::Overlap { conflicts: vec![] })
+        );
+    }
+    #[test]
+    fn nested_unordered_and_duplicate_ids_report_every_known_conflict() {
+        assert_eq!(
+            validate_no_overlaps(&[
+                entry(Some(3), 8, 9),
+                entry(Some(2), 2, 3),
+                entry(Some(1), 0, 10),
+                entry(Some(2), 2, 3)
+            ]),
+            Err(DomainError::Overlap {
+                conflicts: vec![EntryId(1), EntryId(2), EntryId(3)]
+            })
+        );
+    }
+    #[test]
+    fn local_days_and_dst_in_isolated_processes() {
+        if let Ok(zone) = std::env::var("HOURA_REPORT_TEST_ZONE") {
+            for (month, day, ordinal, dst_hours) in [(3, 10, 70, 23), (11, 3, 308, 25)] {
+                let start = Local
+                    .with_ymd_and_hms(2024, month, day, 0, 0, 0)
+                    .single()
+                    .unwrap_or_else(|| panic!("invalid fixture"));
+                let end = Local
+                    .with_ymd_and_hms(2024, month, day + 1, 0, 0, 0)
+                    .single()
+                    .unwrap_or_else(|| panic!("invalid fixture"));
+                let entry = TimeEntry {
+                    id: None,
+                    project_id: ProjectId(1),
+                    activity_id: None,
+                    note: String::new(),
+                    intervals: vec![crate::TrackedInterval {
+                        id: None,
+                        start_ms: start.timestamp_millis(),
+                        end_ms: end.timestamp_millis() + 1000,
+                        source: EntrySource::Manual,
+                    }],
+                    created_at_ms: 0,
+                    updated_at_ms: 0,
+                };
+                let mut other = entry.clone();
+                other.intervals[0].end_ms = other.intervals[0].start_ms + 1000;
+                other.activity_id = Some(ActivityId(2));
+                let mut project = other.clone();
+                project.project_id = ProjectId(2);
+                let rows = group_entries(&[entry.clone(), entry, other, project]);
+                assert_eq!(
+                    rows,
+                    vec![
+                        ReportRow {
+                            bucket: ReportBucket {
+                                local_year: 2024,
+                                local_ordinal: ordinal,
+                                project_id: ProjectId(1),
+                                activity_id: None
+                            },
+                            duration_ms: if zone == "UTC" {
+                                172_800_000
+                            } else {
+                                dst_hours * 7_200_000
+                            },
+                            entry_count: 2
+                        },
+                        ReportRow {
+                            bucket: ReportBucket {
+                                local_year: 2024,
+                                local_ordinal: ordinal,
+                                project_id: ProjectId(1),
+                                activity_id: Some(ActivityId(2))
+                            },
+                            duration_ms: 1000,
+                            entry_count: 1
+                        },
+                        ReportRow {
+                            bucket: ReportBucket {
+                                local_year: 2024,
+                                local_ordinal: ordinal,
+                                project_id: ProjectId(2),
+                                activity_id: Some(ActivityId(2))
+                            },
+                            duration_ms: 1000,
+                            entry_count: 1
+                        },
+                        ReportRow {
+                            bucket: ReportBucket {
+                                local_year: 2024,
+                                local_ordinal: ordinal + 1,
+                                project_id: ProjectId(1),
+                                activity_id: None
+                            },
+                            duration_ms: 2000,
+                            entry_count: 2
+                        },
+                    ]
+                );
+            }
+            return;
+        }
+        for zone in ["UTC", "America/New_York"] {
+            let status = std::process::Command::new(
+                std::env::current_exe().unwrap_or_else(|e| panic!("{e}")),
+            )
+            .args([
+                "--exact",
+                "reports::tests::local_days_and_dst_in_isolated_processes",
+            ])
+            .env("TZ", zone)
+            .env("HOURA_REPORT_TEST_ZONE", zone)
+            .status()
+            .unwrap_or_else(|e| panic!("{e}"));
+            assert!(status.success(), "report child failed for {zone}");
+        }
+    }
+}

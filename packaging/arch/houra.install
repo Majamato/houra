@@ -1,0 +1,3 @@
+post_install() {
+  echo 'Start Houra, then log out and back in once so GNOME Shell loads its top-bar extension.'
+}

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="houra">
+  <schema id="io.github.majamato.Houra" path="/io/github/majamato/Houra/">
+    <key name="idle-threshold-minutes" type="u">
+      <default>5</default>
+      <range min="1" max="120"/>
+      <summary>Idle threshold in minutes</summary>
+    </key>
+    <key name="launch-at-login" type="b">
+      <default>true</default>
+      <summary>Open Houra when signing in</summary>
+    </key>
+    <key name="notifications" type="b">
+      <default>true</default>
+      <summary>Show reconciliation notifications</summary>
+    </key>
+    <key name="duration-rounding" type="s">
+      <choices>
+        <choice value="up"/>
+        <choice value="nearest"/>
+        <choice value="down"/>
+      </choices>
+      <default>'up'</default>
+      <summary>How finished entry totals round to whole minutes</summary>
+    </key>
+    <key name="date-format" type="s">
+      <choices>
+        <choice value="system"/>
+        <choice value="day-month-year"/>
+        <choice value="month-day-year"/>
+        <choice value="year-month-day"/>
+      </choices>
+      <default>'system'</default>
+      <summary>Date format for displayed and editable dates</summary>
+    </key>
+    <key name="onboarding-complete" type="b">
+      <default>false</default>
+      <summary>Whether first-run setup has completed</summary>
+    </key>
+  </schema>
+</schemalist>

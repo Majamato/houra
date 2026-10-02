@@ -1,0 +1,957 @@
+# zh_CN translations for Houra.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the houra package.
+# Initial machine translation draft; review in the application before release.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: houra\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-01 10:03-0500\n"
+"PO-Revision-Date: 2026-09-24 00:00-0500\n"
+"Last-Translator: Houra contributors\n"
+"Language-Team: Houra contributors\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: data/io.github.majamato.Houra.desktop.in:2
+#: data/io.github.majamato.Houra.metainfo.xml.in:6 data/ui/window.ui:6
+#: data/ui/window.ui:12 shell-extension/indicator.js:62
+#: shell-extension/indicator.js:162
+msgid "Houra"
+msgstr "Houra"
+
+#: data/io.github.majamato.Houra.desktop.in:3
+#: data/io.github.majamato.Houra.metainfo.xml.in:42
+msgid "Track time by project and activity"
+msgstr "按项目和活动记录时间"
+
+#: data/io.github.majamato.Houra.desktop.in:9
+msgid "time;work;project;activity;report;timer;tracker;timesheet;hours;productivity;"
+msgstr "时间;工作;项目;活动;报表;计时器;计时;工时表;工时;效率;"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:7
+msgid "majamato"
+msgstr "majamato"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:8
+msgid "Know where your hours go"
+msgstr "了解你的时间都去哪儿了"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:10
+msgid ""
+"Pick a project and an activity, start the timer, and Houra keeps count. "
+"Breaks, idle time, suspends and crashes don’t cost you tracked time, and the "
+"running timer stays visible in GNOME’s top bar."
+msgstr ""
+"选择项目和活动，开始计时，Houra 就会替你计数。休息、空闲、挂起和崩溃都不会让"
+"已记录的时间丢失，正在运行的计时器也会一直显示在 GNOME 顶栏中。"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:13
+msgid ""
+"Everything is stored on your computer, with no account to create. Weekly "
+"reports and CSV export turn your hours into timesheets."
+msgstr ""
+"所有数据都保存在你的电脑上，无需创建账户。每周报表和 CSV 导出可以把你的工时整"
+"理成工时表。"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:16
+msgid "Track time by project and activity, with a note, pause and resume"
+msgstr "按项目和活动记录时间，支持备注、暂停和继续"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:17
+msgid ""
+"Review time you were away: keep it, discard it or move it to another project"
+msgstr "查看离开期间的时间：保留、放弃或移到其他项目"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:18
+msgid "Recover the active timer after a crash or suspend"
+msgstr "崩溃或挂起后恢复正在运行的计时器"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:19
+msgid "See and pause the timer from the top bar"
+msgstr "在顶栏中查看并暂停计时器"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:20
+msgid "Weekly reports with CSV export and rounding options"
+msgstr "每周报表，支持 CSV 导出和取整选项"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:21
+msgid "JSON backup and restore"
+msgstr "JSON 备份与恢复"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:23
+msgid "This is an early release, tested on Fedora 44 with GNOME 50."
+msgstr "这是早期版本，已在 Fedora 44 和 GNOME 50 上测试。"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:46
+msgid "Review the week and export it as CSV"
+msgstr "查看一周记录并导出为 CSV"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:50
+msgid "Decide what happens to time you were away"
+msgstr "决定如何处理离开期间的时间"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:54
+msgid "Dark style"
+msgstr "深色风格"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:62
+msgid "First public release."
+msgstr "首个公开版本。"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:64
+msgid "Time tracking by project and activity"
+msgstr "按项目和活动计时"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:65
+msgid "Idle review, crash recovery and suspend handling"
+msgstr "空闲检查、崩溃恢复和挂起处理"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:66
+msgid "Top-bar timer for GNOME Shell"
+msgstr "GNOME Shell 顶栏计时器"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:67
+msgid "Weekly reports, CSV export and JSON backups"
+msgstr "每周报表、CSV 导出和 JSON 备份"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:68
+msgid "Available in 10 languages"
+msgstr "支持 10 种语言"
+
+#: data/io.github.majamato.Houra.gschema.xml:7
+msgid "Idle threshold in minutes"
+msgstr "空闲阈值（分钟）"
+
+#: data/io.github.majamato.Houra.gschema.xml:11
+msgid "Open Houra when signing in"
+msgstr "登录时打开 Houra"
+
+#: data/io.github.majamato.Houra.gschema.xml:15
+msgid "Show reconciliation notifications"
+msgstr "显示时间核对通知"
+
+#: data/io.github.majamato.Houra.gschema.xml:24
+msgid "How finished entry totals round to whole minutes"
+msgstr "已完成记录的总计如何取整到整分钟"
+
+#: data/io.github.majamato.Houra.gschema.xml:34
+msgid "Date format for displayed and editable dates"
+msgstr "显示和可编辑日期的日期格式"
+
+#: data/io.github.majamato.Houra.gschema.xml:38
+msgid "Whether first-run setup has completed"
+msgstr "首次运行设置是否完成"
+
+#: data/ui/window.ui:12
+msgid "Main menu"
+msgstr "主菜单"
+
+#: data/ui/window.ui:15
+msgid "Automatic idle detection is unavailable"
+msgstr "自动空闲检测不可用"
+
+#: data/ui/window.ui:17
+msgid "Tracker"
+msgstr "计时"
+
+#: data/ui/window.ui:22
+msgid "Your day"
+msgstr "今天的记录"
+
+#: data/ui/window.ui:23 crates/app/src/desktop/pages/tracker.rs:580
+msgid "Choose date"
+msgstr "选择日期"
+
+#: data/ui/window.ui:25
+msgid "+ Add time"
+msgstr "+ 添加时间"
+
+#: data/ui/window.ui:29 crates/app/src/desktop/pages/tracker.rs:598
+msgid "Today"
+msgstr "今天"
+
+#: data/ui/window.ui:32
+msgid "Previous week"
+msgstr "上一周"
+
+#: data/ui/window.ui:34
+msgid "Next week"
+msgstr "下一周"
+
+#: data/ui/window.ui:38
+msgid "START TRACKING"
+msgstr "开始计时"
+
+#: data/ui/window.ui:40 crates/app/src/desktop/dialogs/entry_editor.rs:221
+#: crates/app/src/desktop/dialogs/entry_editor.rs:374
+#: crates/app/src/desktop/pages/tracker.rs:507
+msgid "Project"
+msgstr "项目"
+
+#: data/ui/window.ui:41 crates/app/src/desktop/dialogs/entry_editor.rs:222
+#: crates/app/src/desktop/dialogs/entry_editor.rs:375
+#: crates/app/src/desktop/pages/tracker.rs:508
+msgid "Activity"
+msgstr "活动"
+
+#: data/ui/window.ui:45
+msgid "Note · Optional"
+msgstr "备注 · 可选"
+
+#: data/ui/window.ui:46 crates/app/src/desktop/pages/tracker.rs:504
+msgid "What are you working on?"
+msgstr "你正在做什么？"
+
+#: data/ui/window.ui:47
+msgid "Ready when you are."
+msgstr "准备就绪。"
+
+#: data/ui/window.ui:47
+msgid "Start timer"
+msgstr "开始计时"
+
+#: data/ui/window.ui:51 crates/app/src/desktop/pages/tracker.rs:469
+msgid "Edit active timer"
+msgstr "编辑当前计时"
+
+#: data/ui/window.ui:57 crates/app/src/desktop/pages/tracker.rs:399
+msgid "TRACKING NOW"
+msgstr "正在计时"
+
+#: data/ui/window.ui:59 crates/app/src/desktop/pages/tracker.rs:403
+msgid "Pause"
+msgstr "暂停"
+
+#: data/ui/window.ui:59
+msgid "Finish"
+msgstr "完成"
+
+#: data/ui/window.ui:68
+msgid "Projects & Activities"
+msgstr "项目和活动"
+
+#: data/ui/window.ui:69
+msgid "Projects"
+msgstr "项目"
+
+#: data/ui/window.ui:69
+msgid "Add Project"
+msgstr "添加项目"
+
+#: data/ui/window.ui:69
+msgid "Activities"
+msgstr "活动"
+
+#: data/ui/window.ui:69
+msgid "Add Activity"
+msgstr "添加活动"
+
+#: data/ui/window.ui:71
+msgid "Reports"
+msgstr "报表"
+
+#: data/ui/window.ui:72
+msgid "Weekly Report"
+msgstr "每周报表"
+
+#: data/ui/window.ui:72
+msgid "Full report"
+msgstr "完整报表"
+
+#: data/ui/window.ui:72
+msgid "Export CSV"
+msgstr "导出 CSV"
+
+#: data/ui/window.ui:78
+msgid "Add Manual Entry"
+msgstr "添加手动记录"
+
+#: data/ui/window.ui:78
+msgid "Preferences"
+msgstr "首选项"
+
+#: data/ui/window.ui:78
+msgid "Back Up Data"
+msgstr "备份数据"
+
+#: data/ui/window.ui:78
+msgid "Restore Data"
+msgstr "恢复数据"
+
+#: data/ui/window.ui:78 crates/app/src/desktop/dialogs/quit.rs:27
+msgid "Quit"
+msgstr "退出"
+
+#: data/ui/entry-row.ui:18 crates/app/src/desktop/widgets/entry_row.rs:97
+msgid "View task report"
+msgstr "查看任务报告"
+
+#: data/ui/entry-row.ui:19 crates/app/src/desktop/widgets/entry_row.rs:89
+msgid "Delete this time entry"
+msgstr "删除此时间条目"
+
+#: data/ui/entry-row.ui:20 crates/app/src/desktop/widgets/entry_row.rs:81
+msgid "Continue this work"
+msgstr "继续这项工作"
+
+#: crates/app/src/desktop/application.rs:261
+msgid "Automatic idle detection needs GNOME. Timers still work."
+msgstr "自动空闲检测需要 GNOME。计时器仍可正常使用。"
+
+#: crates/app/src/desktop/dialogs/backup_restore.rs:15
+msgid "Back Up Houra"
+msgstr "备份 Houra"
+
+#: crates/app/src/desktop/dialogs/backup_restore.rs:25
+msgid "backup requires a local file"
+msgstr "备份需要本地文件"
+
+#: crates/app/src/desktop/dialogs/backup_restore.rs:46
+msgid "Stop the timer before restoring a backup."
+msgstr "恢复备份前请停止计时。"
+
+#: crates/app/src/desktop/dialogs/backup_restore.rs:50
+msgid "Choose a Houra Backup"
+msgstr "选择 Houra 备份"
+
+#: crates/app/src/desktop/dialogs/backup_restore.rs:56
+msgid "restore requires a local file"
+msgstr "恢复需要本地文件"
+
+#: crates/app/src/desktop/dialogs/backup_restore.rs:72
+msgid "Replace all local data?"
+msgstr "替换所有本地数据？"
+
+#: crates/app/src/desktop/dialogs/backup_restore.rs:73
+msgid ""
+"The validated backup will replace projects, activities, and entries. This "
+"cannot be undone."
+msgstr "经验证的备份将替换项目、活动和记录。此操作无法撤销。"
+
+#: crates/app/src/desktop/dialogs/backup_restore.rs:75
+#: crates/app/src/desktop/dialogs/idle.rs:158
+#: crates/app/src/desktop/dialogs/name_prompt.rs:35
+#: crates/app/src/desktop/pages/entries.rs:241
+msgid "Cancel"
+msgstr "取消"
+
+#: crates/app/src/desktop/dialogs/backup_restore.rs:75
+msgid "Replace Data"
+msgstr "替换数据"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:128
+msgid "Hours"
+msgstr "小时"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:128
+msgid "Minutes"
+msgstr "分钟"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:153
+#: crates/app/src/desktop/dialogs/entry_editor.rs:155
+#: crates/app/src/desktop/window.rs:462
+msgid "Close"
+msgstr "关闭"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:175
+msgid "Manual Entry"
+msgstr "手动记录"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:192
+#: crates/app/src/desktop/dialogs/entry_editor.rs:350
+#: crates/app/src/desktop/pages/tracker.rs:89
+#: crates/app/src/desktop/pages/tracker.rs:492
+msgid "No activity"
+msgstr "无活动"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:196
+msgid "Optional note"
+msgstr "可选备注"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:223
+#: crates/app/src/desktop/dialogs/entry_editor.rs:376
+#: crates/app/src/desktop/pages/tracker.rs:509
+msgid "Note"
+msgstr "备注"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:224
+#: crates/app/src/desktop/dialogs/entry_editor.rs:402
+msgid "Start (local)"
+msgstr "开始时间（本地）"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:239
+#: crates/app/src/desktop/dialogs/entry_editor.rs:409
+#: crates/app/src/desktop/dialogs/entry_editor.rs:427
+msgid "Time spent"
+msgstr "用时"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:244
+msgid "Save Entry"
+msgstr "保存记录"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:256
+#, rust-format
+msgid "Start must look like {example} and identify one local time."
+msgstr "开始时间必须采用 {example} 格式，并对应一个本地时间。"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:268
+msgid "Duration must be at least one minute."
+msgstr "时长至少为一分钟。"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:326
+msgid "Edit Entry"
+msgstr "编辑记录"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:353
+#, rust-format
+msgid "{activity} (Archived)"
+msgstr "{activity}（已归档）"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:391
+msgid "Interval"
+msgstr "时间段"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:437
+msgid "Save Changes"
+msgstr "保存更改"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:474
+msgid ""
+"Total time must leave the final interval longer than zero and fit within the "
+"supported time range."
+msgstr "调整总时长后，最后一个时间段必须大于零且位于支持的时间范围内。"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:477
+#, rust-format
+msgid ""
+"Start must look like {example}, and duration must be at least one minute."
+msgstr "开始时间必须采用 {example} 格式，时长至少为一分钟。"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:109
+#: crates/app/src/desktop/widgets/mod.rs:44
+#, rust-format
+msgid "{hours}h {minutes}m {seconds}s"
+msgstr "{hours}小时{minutes}分钟{seconds}秒"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:120
+#, rust-format
+msgid "{duration} {milliseconds}ms"
+msgstr "{duration} {milliseconds}毫秒"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:133
+#: crates/app/src/desktop/dialogs/entry_report.rs:141
+#: crates/app/src/desktop/dialogs/entry_report.rs:386
+msgid "Unknown time"
+msgstr "未知时间"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:172
+#: crates/app/src/desktop/pages/entries.rs:383
+#: crates/app/src/desktop/pages/tracker.rs:419
+#: crates/app/src/desktop/top_bar/mod.rs:167
+#: crates/app/src/desktop/widgets/entry_row.rs:196
+msgid "Tracked work"
+msgstr "已记录的工作"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:181
+#, rust-format
+msgid "Project: {project}"
+msgstr "项目：{project}"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:182
+#, rust-format
+msgid "Activity: {activity}"
+msgstr "活动：{activity}"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:184
+#, rust-format
+msgid "Created: {time}"
+msgstr "创建时间：{time}"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:188
+#, rust-format
+msgid "Last updated: {time}"
+msgstr "最后更新：{time}"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:192
+#, rust-format
+msgid "Total duration: {duration}"
+msgstr "总时长：{duration}"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:201
+#: crates/app/src/desktop/dialogs/entry_report.rs:311
+msgid "None"
+msgstr "无"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:196
+#, rust-format
+msgid "Latest saved stop: {time}"
+msgstr "最后保存的停止时间：{time}"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:208
+msgid "No tracked intervals"
+msgstr "没有已记录的时间段"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:224
+#: crates/app/src/export.rs:269
+msgid "Timer"
+msgstr "计时器"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:225
+#: crates/app/src/export.rs:270
+msgid "Manual"
+msgstr "手动"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:226
+#: crates/app/src/export.rs:271
+msgid "Idle reassignment"
+msgstr "重新分配空闲时间"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:227
+#: crates/app/src/export.rs:272
+msgid "Recovery"
+msgstr "恢复"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:228
+msgid "Active timer · provisional, awaiting review"
+msgstr "当前计时 · 临时记录，等待检查"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:229
+msgid "Active timer · ongoing"
+msgstr "当前计时 · 进行中"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:251
+msgid "Task report"
+msgstr "任务报告"
+
+#: crates/app/src/desktop/dialogs/entry_report.rs:301
+#: crates/app/src/desktop/dialogs/idle.rs:209
+#: crates/app/src/desktop/pages/tracker.rs:428
+#: crates/app/src/desktop/widgets/entry_row.rs:143
+msgid "Missing project"
+msgstr "项目不存在"
+
+#: crates/app/src/desktop/dialogs/idle.rs:62
+msgid "You were away"
+msgstr "你离开了一段时间"
+
+#: crates/app/src/desktop/dialogs/idle.rs:65
+#, rust-format
+msgid "Discard {duration}"
+msgstr "放弃 {duration}"
+
+#: crates/app/src/desktop/dialogs/idle.rs:66
+#, rust-format
+msgid "Keep {duration} on this entry"
+msgstr "将 {duration} 保留在此记录中"
+
+#: crates/app/src/desktop/dialogs/idle.rs:68
+#, rust-format
+msgid "Move {duration} to another project…"
+msgstr "将 {duration} 移至其他项目…"
+
+#: crates/app/src/desktop/dialogs/idle.rs:71
+#, rust-format
+msgid "Discard {duration} and stop"
+msgstr "放弃 {duration} 并停止"
+
+#: crates/app/src/desktop/dialogs/idle.rs:152
+#, rust-format
+msgid "Move {duration} to another project"
+msgstr "将 {duration} 移至其他项目"
+
+#: crates/app/src/desktop/dialogs/idle.rs:158
+msgid "Move time"
+msgstr "移动时间"
+
+#: crates/app/src/desktop/dialogs/idle.rs:176
+msgid "Idle time"
+msgstr "空闲时间"
+
+#: crates/app/src/desktop/dialogs/idle.rs:199
+msgid "less than a minute"
+msgstr "不到一分钟"
+
+#: crates/app/src/desktop/dialogs/idle.rs:217
+#: crates/app/src/desktop/pages/tracker.rs:439
+#, rust-format
+msgid "{project} · {activity}"
+msgstr "{project} · {activity}"
+
+#: crates/app/src/desktop/dialogs/idle.rs:233
+#, rust-format
+msgid ""
+"You stepped away from {entry} at {start} and came back at {end} "
+"({duration}). Time tracked before that is already saved. Your timer keeps "
+"running unless you stop it."
+msgstr ""
+"你于 {start} 离开了 {entry}，于 {end} 返回（{duration}）。此前记录的时间已保"
+"存。除非停止，计时器将继续运行。"
+
+#: crates/app/src/desktop/dialogs/idle.rs:253
+#, rust-format
+msgid ""
+"The {duration} you were away ({range}) will be saved to the project you "
+"choose, and your timer will keep tracking {entry}."
+msgstr ""
+"离开的这 {duration}（{range}）将保存到所选项目，计时器将继续记录 {entry}。"
+
+#: crates/app/src/desktop/dialogs/name_prompt.rs:11
+msgid "New Project"
+msgstr "新建项目"
+
+#: crates/app/src/desktop/dialogs/name_prompt.rs:19
+msgid "New Activity"
+msgstr "新建活动"
+
+#: crates/app/src/desktop/dialogs/name_prompt.rs:31
+msgid "Name"
+msgstr "名称"
+
+#: crates/app/src/desktop/dialogs/name_prompt.rs:35
+msgid "Save"
+msgstr "保存"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:19
+msgid "Idle Detection"
+msgstr "空闲检测"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:22
+msgid "Idle threshold (minutes)"
+msgstr "空闲阈值（分钟）"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:23
+msgid "Changes take effect the next time the app starts"
+msgstr "更改将在下次启动应用时生效"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:42
+msgid "Launch at login"
+msgstr "登录时启动"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:70
+msgid "Notifications"
+msgstr "通知"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:93
+msgid "Time Rounding"
+msgstr "时间取整"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:97
+msgid "Round finished entries"
+msgstr "对已完成的记录取整"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:99
+msgid "The running timer stays exact; totals round when an entry is finished"
+msgstr "正在运行的计时器保持精确；记录完成后总计会取整"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:135
+msgid "Date Display"
+msgstr "日期显示"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:139
+msgid "Date format"
+msgstr "日期格式"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:207
+msgid "Round up"
+msgstr "向上取整"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:208
+msgid "Round to nearest minute"
+msgstr "四舍五入到最近的分钟"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:209
+msgid "Round down"
+msgstr "向下取整"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:215
+msgid "System default"
+msgstr "系统默认"
+
+#: crates/app/src/desktop/dialogs/preferences.rs:226
+#, rust-format
+msgid "Example: {date}"
+msgstr "示例：{date}"
+
+#: crates/app/src/desktop/dialogs/quit.rs:17
+msgid "A timer is paused"
+msgstr "计时器已暂停"
+
+#: crates/app/src/desktop/dialogs/quit.rs:18
+msgid "Quit and resume later, or finish the entry now."
+msgstr "退出并稍后继续，或立即完成该记录。"
+
+#: crates/app/src/desktop/dialogs/quit.rs:22
+msgid "A timer is still running"
+msgstr "计时器仍在运行"
+
+#: crates/app/src/desktop/dialogs/quit.rs:23
+msgid "Finish the timer and quit, or keep Houra open."
+msgstr "完成计时并退出，或保持 Houra 打开。"
+
+#: crates/app/src/desktop/dialogs/quit.rs:27
+#: crates/app/src/desktop/dialogs/quit.rs:31
+msgid "Finish and Quit"
+msgstr "完成并退出"
+
+#: crates/app/src/desktop/dialogs/quit.rs:30
+msgid "Keep Running"
+msgstr "继续运行"
+
+#: crates/app/src/desktop/dialogs/recovery.rs:22
+msgid "Recover interrupted timer?"
+msgstr "恢复中断的计时？"
+
+#: crates/app/src/desktop/dialogs/recovery.rs:24
+msgid ""
+"The app stopped during idle reconciliation. Edit the proposed end, then keep "
+"or discard it."
+msgstr "应用在核对空闲时间时停止。编辑建议的结束时间，然后保留或放弃这段时间。"
+
+#: crates/app/src/desktop/dialogs/recovery.rs:26
+msgid ""
+"Only time up to the last saved heartbeat is proposed. You may edit that end "
+"time."
+msgstr "仅建议保留上次保存记录之前的时间。你可以编辑结束时间。"
+
+#: crates/app/src/desktop/dialogs/recovery.rs:48
+msgid "Keep and Resume"
+msgstr "保留并继续"
+
+#: crates/app/src/desktop/dialogs/recovery.rs:49
+msgid "Keep and Stop"
+msgstr "保留并停止"
+
+#: crates/app/src/desktop/dialogs/recovery.rs:50
+msgid "Discard"
+msgstr "放弃"
+
+#: crates/app/src/desktop/dialogs/recovery.rs:72
+#, rust-format
+msgid "End time must look like {example} and identify one local time."
+msgstr "结束时间必须采用 {example} 格式，并对应一个本地时间。"
+
+#: crates/app/src/desktop/pages/entries.rs:111
+msgid "Earlier today"
+msgstr "今天早些时候"
+
+#: crates/app/src/desktop/pages/entries.rs:113
+msgid "Recorded today"
+msgstr "今天已记录"
+
+#: crates/app/src/desktop/pages/entries.rs:115
+msgid "Recorded"
+msgstr "已记录"
+
+#: crates/app/src/desktop/pages/entries.rs:118
+#, rust-format
+msgid "{count} entry"
+msgid_plural "{count} entries"
+msgstr[0] "{count} 条记录"
+
+#: crates/app/src/desktop/pages/entries.rs:129
+msgid "No time recorded for this day"
+msgstr "当天没有记录时间"
+
+#: crates/app/src/desktop/pages/entries.rs:219
+msgid "Today, including the active timer"
+msgstr "今天，包括当前计时"
+
+#: crates/app/src/desktop/pages/entries.rs:221
+msgid "Total today"
+msgstr "今日合计"
+
+#: crates/app/src/desktop/pages/entries.rs:223
+msgid "Total"
+msgstr "合计"
+
+#: crates/app/src/desktop/pages/entries.rs:235
+msgid "Delete this time entry?"
+msgstr "删除此时间条目？"
+
+#: crates/app/src/desktop/pages/entries.rs:241
+msgid "Delete"
+msgstr "删除"
+
+#: crates/app/src/desktop/pages/entries.rs:388
+#: crates/app/src/desktop/widgets/entry_row.rs:152
+#, rust-format
+msgid "{count} interval"
+msgid_plural "{count} intervals"
+msgstr[0] "{count} 个时间段"
+
+#: crates/app/src/desktop/pages/entries.rs:395
+#, rust-format
+msgid "\"{note}\" ({intervals}, {duration}) will be permanently deleted."
+msgstr "“{note}”（{intervals}，{duration}）将被永久删除。"
+
+#: crates/app/src/desktop/pages/projects.rs:52
+msgid "Active"
+msgstr "活跃"
+
+#: crates/app/src/desktop/pages/reports.rs:73
+msgid "No tracked time this week"
+msgstr "本周没有记录时间"
+
+#: crates/app/src/desktop/pages/reports.rs:92
+msgid "Export Weekly CSV"
+msgstr "导出每周 CSV 报表"
+
+#: crates/app/src/desktop/pages/reports.rs:99
+msgid "CSV export requires a local file"
+msgstr "导出 CSV 需要本地文件"
+
+#: crates/app/src/desktop/pages/tracker.rs:349
+msgid "Review"
+msgstr "检查"
+
+#: crates/app/src/desktop/pages/tracker.rs:397
+msgid "PAUSED"
+msgstr "已暂停"
+
+#: crates/app/src/desktop/pages/tracker.rs:403
+msgid "Resume"
+msgstr "继续"
+
+#: crates/app/src/desktop/pages/tracker.rs:519
+msgid "Save changes"
+msgstr "保存更改"
+
+#: crates/app/src/desktop/pages/tracker.rs:587
+msgid "Only today and past dates can be chosen."
+msgstr "只能选择今天或过去的日期。"
+
+#: crates/app/src/desktop/pages/tracker.rs:600
+msgid "Choose"
+msgstr "选择"
+
+#: crates/app/src/desktop/platform.rs:236
+msgid "Idle time started"
+msgstr "空闲时间已开始"
+
+#: crates/app/src/desktop/platform.rs:237
+msgid "Open Houra to review this time when you return."
+msgstr "返回后打开 Houra 以检查这段时间。"
+
+#: crates/app/src/desktop/platform.rs:258 shell-extension/indicator.js:265
+msgid "Idle time needs review"
+msgstr "需要检查空闲时间"
+
+#: crates/app/src/desktop/platform.rs:259
+msgid "Open Houra to choose what happens to that time."
+msgstr "打开 Houra 以选择如何处理这段时间。"
+
+#: crates/app/src/desktop/platform.rs:282
+msgid "Save the active timer before suspend"
+msgstr "休眠前保存正在运行的计时器"
+
+#: crates/app/src/desktop/window.rs:163
+msgid "Total time on the active entry"
+msgstr "当前记录的总时间"
+
+#: crates/app/src/desktop/window.rs:459
+msgid "Could not save the change"
+msgstr "无法保存更改"
+
+#: crates/app/src/desktop/widgets/entry_row.rs:172
+msgid "Active timer"
+msgstr "当前计时"
+
+#: crates/app/src/desktop/widgets/entry_row.rs:179
+#, rust-format
+msgid "{project} · {times}"
+msgstr "{project} · {times}"
+
+#: crates/app/src/desktop/widgets/entry_row.rs:185
+#, rust-format
+msgid "{project} · {activity} · {times}"
+msgstr "{project} · {activity} · {times}"
+
+#: crates/app/src/desktop/widgets/entry_row.rs:216
+msgid "Currently tracking"
+msgstr "正在计时"
+
+#: crates/app/src/desktop/widgets/entry_row.rs:221
+msgid "Paused"
+msgstr "已暂停"
+
+#: crates/app/src/desktop/widgets/entry_row.rs:226
+msgid "Review required"
+msgstr "需要检查"
+
+#: crates/app/src/desktop/widgets/management_row.rs:89
+msgid "Archived"
+msgstr "已归档"
+
+#: crates/app/src/desktop/widgets/management_row.rs:101
+msgid "Restore"
+msgstr "恢复"
+
+#: crates/app/src/desktop/widgets/management_row.rs:103
+msgid "Archive"
+msgstr "归档"
+
+#: crates/app/src/desktop/widgets/mod.rs:19
+#: crates/app/src/desktop/widgets/mod.rs:40 shell-extension/indicator.js:223
+#, rust-format
+msgid "{minutes}m"
+msgstr "{minutes}分钟"
+
+#: crates/app/src/desktop/widgets/mod.rs:22
+#: crates/app/src/desktop/widgets/mod.rs:42 crates/app/src/export.rs:244
+#: shell-extension/indicator.js:224
+#, rust-format
+msgid "{hours}h {minutes}m"
+msgstr "{hours}小时{minutes}分钟"
+
+#: crates/app/src/desktop/widgets/mod.rs:41
+#, rust-format
+msgid "{minutes}m {seconds}s"
+msgstr "{minutes}分钟{seconds}秒"
+
+#: crates/app/src/export.rs:229
+msgid "Untitled task"
+msgstr "未命名任务"
+
+#: crates/app/src/export.rs:237
+#, rust-format
+msgid "{project} / {activity}"
+msgstr "{project} / {activity}"
+
+#: crates/app/src/export.rs:257
+#, rust-format
+msgid "{details} · {dates} · {duration}"
+msgstr "{details} · {dates} · {duration}"
+
+#: crates/app/src/export.rs:277
+#, rust-format
+msgid "{details} · {start} – {end} · {duration} · {source}"
+msgstr "{details} · {start} – {end} · {duration} · {source}"
+
+#: shell-extension/indicator.js:172
+msgid "Resume timer"
+msgstr "继续计时"
+
+#: shell-extension/indicator.js:172
+msgid "Pause timer"
+msgstr "暂停计时"
+
+#: shell-extension/indicator.js:261
+msgid "Tracking: {work}"
+msgstr "正在计时：{work}"
+
+#: shell-extension/indicator.js:263
+msgid "Paused: {work}"
+msgstr "已暂停：{work}"
+
+#: shell-extension/indicator.js:267
+msgid "Interrupted timer needs review"
+msgstr "需要检查中断的计时"
+
+#: shell-extension/indicator.js:269
+msgid "Open Houra"
+msgstr "打开 Houra"

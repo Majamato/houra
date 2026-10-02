@@ -1,0 +1,250 @@
+# Builds every Houra package from the checked-out commit and tests each one on
+# the distributions it targets. CI and the release workflow both call it.
+name: Packages
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  sources:
+    name: Release tarballs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build the source and vendored-crates tarballs
+        run: scripts/make-release-tarballs.sh dist HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sources
+          path: dist/
+          if-no-files-found: error
+
+  binary:
+    name: Binary tarball (Debian 13)
+    needs: sources
+    runs-on: ubuntu-latest
+    # The oldest supported base: glibc 2.41, GTK 4.18, libadwaita 1.7. The
+    # Rust image adds the toolchain Houra needs, which Debian 13 lacks.
+    container: docker.io/library/rust:1.88-trixie
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: sources
+          path: dist
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            meson ninja-build pkgconf libgtk-4-dev libadwaita-1-dev libglib2.0-dev \
+            libglib2.0-dev-bin gettext xz-utils
+      - name: Build the binary tarball
+        run: scripts/make-binary-tarball.sh dist binary
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binary
+          path: binary/
+          if-no-files-found: error
+
+  deb:
+    name: Debian package
+    needs: sources
+    runs-on: ubuntu-latest
+    # Built on testing so its library minimums install on testing and sid.
+    container: docker.io/library/debian:testing
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: sources
+          path: dist
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential devscripts equivs lintian xz-utils
+          mk-build-deps -i -r -t 'apt-get -y --no-install-recommends' packaging/debian/control
+      - name: Build the .deb
+        run: scripts/make-deb.sh dist deb --binary
+      - name: Lintian
+        run: lintian --fail-on error deb/houra_*_amd64.deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deb
+          path: deb/houra_*_amd64.deb
+          if-no-files-found: error
+
+  ppa:
+    name: PPA source packages
+    needs: sources
+    runs-on: ubuntu-latest
+    container: docker.io/library/ubuntu:26.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: sources
+          path: dist
+      - name: Install packaging tools
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential devscripts equivs xz-utils
+      - name: Build an unsigned source package for each Ubuntu series
+        run: |
+          for series in resolute stonking; do
+            scripts/make-deb.sh dist ppa --series "$series"
+          done
+      # Launchpad builds without network access; so does this, from the
+      # source package alone, to catch missing build dependencies first.
+      - name: Build the 26.04 source package as Launchpad would
+        run: |
+          dpkg-source -x ppa/houra_*~ubuntu26.04.1.dsc /tmp/ppa-build
+          cd /tmp/ppa-build
+          mk-build-deps -i -r -t 'apt-get -y --no-install-recommends' debian/control
+          dpkg-buildpackage -b -us -uc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ppa
+          path: ppa/
+          if-no-files-found: error
+
+  install-script:
+    name: install.sh on ${{ matrix.image }}
+    needs: binary
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: docker.io/library/fedora:43
+            setup: dnf -y install gtk4 libadwaita glib2 desktop-file-utils xz findutils
+          - image: docker.io/library/fedora:44
+            setup: dnf -y install gtk4 libadwaita glib2 desktop-file-utils xz findutils
+          - image: docker.io/library/fedora:rawhide
+            setup: dnf -y install gtk4 libadwaita glib2 desktop-file-utils xz findutils
+          - image: docker.io/library/ubuntu:26.04
+            setup: >-
+              apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y
+              --no-install-recommends libgtk-4-1 libadwaita-1-0 libglib2.0-bin
+              desktop-file-utils xz-utils
+          - image: docker.io/library/ubuntu:devel
+            setup: >-
+              apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y
+              --no-install-recommends libgtk-4-1 libadwaita-1-0 libglib2.0-bin
+              desktop-file-utils xz-utils
+          - image: docker.io/library/debian:testing
+            setup: >-
+              apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y
+              --no-install-recommends libgtk-4-1 libadwaita-1-0 libglib2.0-bin
+              desktop-file-utils xz-utils
+          - image: docker.io/library/debian:sid
+            setup: >-
+              apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y
+              --no-install-recommends libgtk-4-1 libadwaita-1-0 libglib2.0-bin
+              desktop-file-utils xz-utils
+          - image: docker.io/library/archlinux:latest
+            setup: pacman -Syu --noconfirm --needed gtk4 libadwaita desktop-file-utils xz
+          - image: registry.opensuse.org/opensuse/tumbleweed:latest
+            setup: >-
+              zypper -n install libgtk-4-1 libadwaita-1-0 glib2-tools desktop-file-utils
+              xz gawk findutils tar
+    steps:
+      - name: Install Houra's runtime libraries
+        run: ${{ matrix.setup }}
+      - uses: actions/download-artifact@v5
+        with:
+          name: binary
+          path: binary
+      - uses: actions/checkout@v5
+        with:
+          path: source
+      - name: Install, update and remove Houra with install.sh
+        run: source/scripts/smoke-test-install.sh binary
+
+  install-script-missing-libraries:
+    name: install.sh without libadwaita
+    needs: binary
+    runs-on: ubuntu-latest
+    container: docker.io/library/ubuntu:26.04
+    steps:
+      - run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libgtk-4-1 xz-utils
+      - uses: actions/download-artifact@v5
+        with:
+          name: binary
+          path: binary
+      - name: The installer names the missing package and installs nothing
+        run: |
+          tar -xJf binary/houra-*.tar.xz --wildcards --strip-components=1 '*/install.sh'
+          useradd -m tester
+          if su tester -c "bash install.sh --from-file $(ls "$PWD"/binary/houra-*.tar.xz)" 2>error.txt; then
+            echo "install.sh succeeded without libadwaita" >&2
+            exit 1
+          fi
+          cat error.txt
+          grep -qF 'sudo apt install libadwaita-1-0' error.txt
+          test ! -e /home/tester/.local/bin/houra
+
+  deb-install:
+    name: .deb on ${{ matrix.image }}
+    needs: deb
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - docker.io/library/debian:testing
+          - docker.io/library/debian:sid
+          - docker.io/library/ubuntu:26.04
+          - docker.io/library/ubuntu:devel
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: deb
+          path: deb
+      - name: Install the package
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y ./deb/houra_*_amd64.deb libglib2.0-bin
+      - name: Check the installed files
+        run: |
+          houra --version
+          test -f /usr/share/gnome-shell/extensions/houra@majamato.github.io/metadata.json
+          gsettings list-keys io.github.majamato.Houra
+
+  aur:
+    name: AUR houra-bin
+    needs: binary
+    runs-on: ubuntu-latest
+    container: docker.io/library/archlinux:latest
+    steps:
+      - name: Install packaging tools
+        run: pacman -Syu --noconfirm --needed base-devel namcap gtk4 libadwaita git
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: binary
+          path: binary
+      - name: Build and check the package
+        run: |
+          useradd -m builder
+          chown -R builder "$PWD"
+          su builder -c "scripts/make-aur-package.sh binary aur && cd aur && makepkg --noconfirm && namcap PKGBUILD ./*.pkg.tar.zst"
+          pacman -U --noconfirm aur/houra-bin-*.pkg.tar.zst
+          houra --version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aur
+          path: |
+            aur/PKGBUILD
+            aur/.SRCINFO
+            aur/houra.install
+          include-hidden-files: true
+          if-no-files-found: error

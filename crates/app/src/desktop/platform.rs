@@ -1,0 +1,298 @@
+use crate::locale::tr;
+use gio::prelude::*;
+use glib::variant::ToVariant;
+use houra_core::{Notification as TrackerNotification, TrackerCommand};
+use std::os::fd::OwnedFd;
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::{Arc, Mutex};
+use tracing::warn;
+
+use crate::{AppError, TrackerHandle};
+
+/// logind's delay inhibitor, released on suspend and retaken on resume.
+type SleepInhibitor = Arc<Mutex<Option<OwnedFd>>>;
+
+/// Keeps the session and system proxies (and the sleep inhibitor) alive;
+/// dropping it disconnects them.
+pub struct Integrations {
+    _proxies: Vec<gio::DBusProxy>,
+    _sleep_inhibitor: Option<SleepInhibitor>,
+}
+
+/// Connects the three GNOME/systemd event sources. Each is independent: a
+/// missing service disables only itself. Screensaver and logind are optional;
+/// the result reports why Mutter's idle monitor is missing.
+pub fn start_integrations(
+    handle: TrackerHandle,
+    idle_threshold_minutes: u32,
+    notifications: bool,
+) -> (Integrations, Result<(), AppError>) {
+    // GNOME Shell silently drops notifications from apps it cannot match to a
+    // `<app id>.desktop` launcher.
+    let launcher = format!("{}.desktop", crate::APP_ID);
+    if gio::DesktopAppInfo::new(&launcher).is_none() {
+        warn!(%launcher, "no launcher matches the application ID; GNOME Shell will drop Houra's notifications");
+    }
+    let mut proxies = Vec::new();
+    proxies.extend(start_screensaver(handle.clone(), notifications));
+    let sleep_inhibitor = start_logind(handle.clone(), notifications).map(|(proxy, inhibitor)| {
+        proxies.push(proxy);
+        inhibitor
+    });
+    let mutter = start_mutter(handle, idle_threshold_minutes, notifications)
+        .map(|proxy| proxies.push(proxy));
+    let integrations = Integrations {
+        _proxies: proxies,
+        _sleep_inhibitor: sleep_inhibitor,
+    };
+    (integrations, mutter)
+}
+
+fn start_mutter(
+    handle: TrackerHandle,
+    idle_threshold_minutes: u32,
+    notifications: bool,
+) -> Result<gio::DBusProxy, AppError> {
+    let proxy = gio::DBusProxy::for_bus_sync(
+        gio::BusType::Session,
+        gio::DBusProxyFlags::DO_NOT_AUTO_START,
+        None::<&gio::DBusInterfaceInfo>,
+        "org.gnome.Mutter.IdleMonitor",
+        "/org/gnome/Mutter/IdleMonitor/Core",
+        "org.gnome.Mutter.IdleMonitor",
+        None::<&gio::Cancellable>,
+    )
+    .map_err(|error| AppError::IdleDetection(format!("Mutter IdleMonitor: {error}")))?;
+
+    let threshold_ms = u64::from(idle_threshold_minutes.clamp(1, 120)) * 60 * 1_000;
+    let idle_watch = Arc::new(AtomicU32::new(add_idle_watch(&proxy, threshold_ms)?));
+    let active_watch = Arc::new(AtomicU32::new(0));
+
+    // Handlers use the proxy they receive: capturing it would keep it alive
+    // after `Integrations` drops.
+    proxy.connect_g_signal({
+        let idle_watch = Arc::clone(&idle_watch);
+        let active_watch = Arc::clone(&active_watch);
+        move |proxy, _, signal, parameters| {
+            if signal != "WatchFired" {
+                return;
+            }
+            let Some((watch_id,)) = parameters.get::<(u32,)>() else {
+                return;
+            };
+            let now = chrono::Utc::now().timestamp_millis();
+            if watch_id == idle_watch.load(Ordering::Relaxed) {
+                idle_watch.store(0, Ordering::Relaxed);
+                let idle_start_ms =
+                    now.saturating_sub(i64::try_from(threshold_ms).unwrap_or(i64::MAX));
+                apply_idle_and_notify(&handle, idle_start_ms, notifications);
+                if let Ok(id) = add_active_watch(proxy) {
+                    active_watch.store(id, Ordering::Relaxed);
+                }
+            } else if watch_id == active_watch.load(Ordering::Relaxed) {
+                active_watch.store(0, Ordering::Relaxed);
+                let _ignored = apply_return_and_notify(&handle, now, notifications);
+                if let Ok(id) = add_idle_watch(proxy, threshold_ms) {
+                    idle_watch.store(id, Ordering::Relaxed);
+                }
+            }
+        }
+    });
+
+    proxy.connect_g_name_owner_notify({
+        let idle_watch = Arc::clone(&idle_watch);
+        let active_watch = Arc::clone(&active_watch);
+        move |proxy| {
+            active_watch.store(0, Ordering::Relaxed);
+            if proxy.g_name_owner().is_some() {
+                if let Ok(id) = add_idle_watch(proxy, threshold_ms) {
+                    idle_watch.store(id, Ordering::Relaxed);
+                }
+            } else {
+                idle_watch.store(0, Ordering::Relaxed);
+            }
+        }
+    });
+    Ok(proxy)
+}
+
+fn add_idle_watch(proxy: &gio::DBusProxy, threshold_ms: u64) -> Result<u32, AppError> {
+    let reply = proxy
+        .call_sync(
+            "AddIdleWatch",
+            Some(&(threshold_ms,).to_variant()),
+            gio::DBusCallFlags::NONE,
+            -1,
+            None::<&gio::Cancellable>,
+        )
+        .map_err(|error| AppError::IdleDetection(format!("adding idle watch: {error}")))?;
+    reply
+        .get::<(u32,)>()
+        .map(|value| value.0)
+        .ok_or_else(|| AppError::IdleDetection("Mutter returned an invalid idle watch".into()))
+}
+
+fn add_active_watch(proxy: &gio::DBusProxy) -> Result<u32, AppError> {
+    let reply = proxy
+        .call_sync(
+            "AddUserActiveWatch",
+            None,
+            gio::DBusCallFlags::NONE,
+            -1,
+            None::<&gio::Cancellable>,
+        )
+        .map_err(|error| AppError::IdleDetection(format!("adding active watch: {error}")))?;
+    reply
+        .get::<(u32,)>()
+        .map(|value| value.0)
+        .ok_or_else(|| AppError::IdleDetection("Mutter returned an invalid active watch".into()))
+}
+
+fn start_screensaver(handle: TrackerHandle, notifications: bool) -> Option<gio::DBusProxy> {
+    let proxy = gio::DBusProxy::for_bus_sync(
+        gio::BusType::Session,
+        gio::DBusProxyFlags::DO_NOT_AUTO_START,
+        None::<&gio::DBusInterfaceInfo>,
+        "org.gnome.ScreenSaver",
+        "/org/gnome/ScreenSaver",
+        "org.gnome.ScreenSaver",
+        None::<&gio::Cancellable>,
+    )
+    .ok()?;
+    proxy.connect_g_signal(move |_, _, signal, parameters| {
+        if signal != "ActiveChanged" {
+            return;
+        }
+        let Some((locked,)) = parameters.get::<(bool,)>() else {
+            return;
+        };
+        let now = chrono::Utc::now().timestamp_millis();
+        if locked {
+            apply_idle_and_notify(&handle, now, notifications);
+        } else {
+            let _ignored = apply_return_and_notify(&handle, now, notifications);
+        }
+    });
+    Some(proxy)
+}
+
+fn start_logind(
+    handle: TrackerHandle,
+    notifications: bool,
+) -> Option<(gio::DBusProxy, SleepInhibitor)> {
+    let proxy = gio::DBusProxy::for_bus_sync(
+        gio::BusType::System,
+        gio::DBusProxyFlags::DO_NOT_AUTO_START,
+        None::<&gio::DBusInterfaceInfo>,
+        "org.freedesktop.login1",
+        "/org/freedesktop/login1",
+        "org.freedesktop.login1.Manager",
+        None::<&gio::Cancellable>,
+    )
+    .ok()?;
+    let inhibitor = Arc::new(Mutex::new(take_sleep_inhibitor(&proxy)));
+    proxy.connect_g_signal({
+        let inhibitor = Arc::clone(&inhibitor);
+        move |proxy, _, signal, parameters| {
+            if signal != "PrepareForSleep" {
+                return;
+            }
+            let Some((sleeping,)) = parameters.get::<(bool,)>() else {
+                return;
+            };
+            if sleeping {
+                let now = chrono::Utc::now().timestamp_millis();
+                apply_idle_and_notify(&handle, now, notifications);
+                let _ignored = handle.apply(TrackerCommand::Heartbeat);
+                if let Ok(mut guard) = inhibitor.lock() {
+                    guard.take();
+                }
+            } else {
+                let now = chrono::Utc::now().timestamp_millis();
+                let _ignored = apply_return_and_notify(&handle, now, notifications);
+                if let Ok(mut guard) = inhibitor.lock() {
+                    *guard = take_sleep_inhibitor(proxy);
+                }
+            }
+        }
+    });
+    Some((proxy, inhibitor))
+}
+
+fn apply_idle_and_notify(handle: &TrackerHandle, idle_start_ms: i64, notifications: bool) {
+    let Ok(transition) = handle.apply(TrackerCommand::IdleDetected { idle_start_ms }) else {
+        return;
+    };
+    if !notifications_enabled(notifications)
+        || !transition
+            .notifications
+            .contains(&TrackerNotification::IdleDetected)
+    {
+        return;
+    }
+    let Some(application) = gio::Application::default() else {
+        return;
+    };
+    let notification = gio::Notification::new(tr("Idle time started"));
+    notification.set_body(Some(tr("Open Houra to review this time when you return.")));
+    notification.set_default_action("app.review-idle");
+    application.send_notification(Some("idle-resolution"), &notification);
+}
+
+pub(super) fn apply_return_and_notify(
+    handle: &TrackerHandle,
+    return_ms: i64,
+    notifications: bool,
+) -> Result<(), AppError> {
+    let transition = handle.apply(TrackerCommand::UserReturned { return_ms })?;
+    if !notifications_enabled(notifications)
+        || !transition
+            .notifications
+            .contains(&TrackerNotification::IdleNeedsResolution)
+    {
+        return Ok(());
+    }
+    let Some(application) = gio::Application::default() else {
+        return Ok(());
+    };
+    let notification = gio::Notification::new(tr("Idle time needs review"));
+    notification.set_body(Some(tr("Open Houra to choose what happens to that time.")));
+    notification.set_default_action("app.review-idle");
+    application.send_notification(Some("idle-resolution"), &notification);
+    Ok(())
+}
+
+pub(super) fn withdraw_idle_notification() {
+    if let Some(application) = gio::Application::default() {
+        application.withdraw_notification("idle-resolution");
+    }
+}
+
+fn notifications_enabled(initial_value: bool) -> bool {
+    crate::desktop::load_settings()
+        .as_ref()
+        .map_or(initial_value, |settings| settings.boolean("notifications"))
+}
+
+/// Asks logind for a delay inhibitor; dropping the fd releases it.
+fn take_sleep_inhibitor(proxy: &gio::DBusProxy) -> Option<OwnedFd> {
+    let parameters = (
+        "sleep",
+        "Houra",
+        tr("Save the active timer before suspend"),
+        "delay",
+    )
+        .to_variant();
+    let (reply, fd_list) = proxy
+        .call_with_unix_fd_list_sync(
+            "Inhibit",
+            Some(&parameters),
+            gio::DBusCallFlags::NONE,
+            -1,
+            None::<&gio::UnixFDList>,
+            None::<&gio::Cancellable>,
+        )
+        .ok()?;
+    let (index,) = reply.get::<(i32,)>()?;
+    fd_list?.get(index).ok()
+}

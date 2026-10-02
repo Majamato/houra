@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Checks (Fedora 44)
+    runs-on: ubuntu-latest
+    container: docker.io/library/fedora:44
+    env:
+      # The install script tests run as root here; let them install per user.
+      HOURA_ALLOW_ROOT: "1"
+    steps:
+      - name: Install build dependencies
+        run: |
+          dnf -y install cargo rust clippy rustfmt gcc git meson ninja-build pkgconf \
+            gtk4-devel libadwaita-devel glib2-devel gettext gjs python3 appstream \
+            desktop-file-utils ShellCheck xz findutils dbus-daemon
+      - uses: actions/checkout@v5
+      - name: Formatting
+        run: cargo fmt --all -- --check
+      - name: Tests without the GNOME UI
+        run: cargo test --workspace --all-targets --locked
+      - name: Tests with the GNOME UI
+        run: cargo test --workspace --all-targets --locked --features native-ui
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked --features native-ui -- -D warnings
+      - name: Translations
+        run: python3 scripts/check-translations.py
+      - name: Top-bar extension tests
+        run: |
+          gjs -m shell-extension/tests/format.test.js
+          dbus-run-session -- gjs -m shell-extension/tests/activeTimer.test.js
+      - name: Script tests
+        run: python3 -B -m unittest discover -s scripts/tests
+      - name: ShellCheck
+        run: shellcheck scripts/*.sh build-aux/*.sh
+      - name: Installable metadata
+        run: |
+          meson setup build-meson
+          meson compile -C build-meson
+          appstreamcli validate --no-net build-meson/io.github.majamato.Houra.metainfo.xml
+          desktop-file-validate build-meson/io.github.majamato.Houra.desktop
+
+  packages:
+    name: Packages
+    uses: ./.github/workflows/packages.yml

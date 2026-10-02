@@ -1,0 +1,35 @@
+#!/usr/bin/make -f
+# Builds offline from the crates in vendor/, which dpkg-source unpacks from
+# the orig-vendor component tarball. Launchpad builds have no network access.
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export CARGO_HOME = $(CURDIR)/debian/cargo-home
+
+include /usr/share/dpkg/architecture.mk
+BUILD_DIR = obj-$(DEB_HOST_GNU_TYPE)
+
+%:
+	dh $@ --buildsystem=meson
+
+override_dh_auto_configure:
+	bash build-aux/use-vendored-crates.sh $(CURDIR)
+	dh_auto_configure -- -Doffline=true
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	cargo test --workspace --all-targets --offline --locked
+	desktop-file-validate $(BUILD_DIR)/io.github.majamato.Houra.desktop
+	appstreamcli validate --no-net $(BUILD_DIR)/io.github.majamato.Houra.metainfo.xml
+endif
+
+# Debian ships the license in debian/copyright.
+execute_after_dh_auto_install:
+	rm -r debian/houra/usr/share/licenses
+
+execute_after_dh_auto_clean:
+	rm -rf debian/cargo-home target .cargo
+
+# dh_clean deletes *.orig files, but vendored crates ship Cargo.toml.orig and
+# Cargo's checksums cover it.
+override_dh_clean:
+	dh_clean -Xvendor/
