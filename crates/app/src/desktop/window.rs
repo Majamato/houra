@@ -37,6 +37,8 @@ pub(super) mod imp {
         #[template_child]
         pub tracking_eyebrow: gtk::TemplateChild<gtk::Label>,
         #[template_child]
+        pub tracker_panels: gtk::TemplateChild<gtk::Stack>,
+        #[template_child]
         pub stopped_panel: gtk::TemplateChild<gtk::Box>,
         #[template_child]
         pub running_panel: gtk::TemplateChild<gtk::Box>,
@@ -108,6 +110,8 @@ pub(super) mod imp {
         pub active_entry_saved_ms: Cell<i64>,
         pub active_entry_duration_cached: Cell<bool>,
         pub displayed_today_ordinal: Cell<i32>,
+        pub last_top_entry: Cell<Option<EntryId>>,
+        pub last_top_date: Cell<Option<chrono::NaiveDate>>,
         pub updating_activity_dropdown: Cell<bool>,
         pub idle_dialog_open: Cell<bool>,
         pub clock_tick: RefCell<Option<glib::SourceId>>,

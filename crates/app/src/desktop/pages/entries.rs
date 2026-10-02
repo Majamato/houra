@@ -20,6 +20,21 @@ fn day_bounds(date: NaiveDate) -> Option<(chrono::DateTime<Local>, chrono::DateT
     Some((start, end))
 }
 
+/// How long an entry row takes to slide open or closed, in milliseconds.
+const ROW_SLIDE_MS: u32 = 250;
+
+/// Wraps a row so it slides open once shown. A revealer only animates while
+/// mapped, so the reveal waits for the map.
+fn slide_in(row: &impl IsA<gtk::Widget>) -> gtk::Revealer {
+    let revealer = gtk::Revealer::builder()
+        .transition_type(gtk::RevealerTransitionType::SlideDown)
+        .transition_duration(ROW_SLIDE_MS)
+        .child(row)
+        .build();
+    revealer.connect_map(|revealer| revealer.set_reveal_child(true));
+    revealer
+}
+
 impl MainWindow {
     pub(in crate::desktop) fn refresh_entries(&self) {
         let Some(handle) = self.handle() else { return };
@@ -198,7 +213,7 @@ impl MainWindow {
                 row.connect_delete_requested(glib::clone!(
                     #[weak(rename_to = window)]
                     self,
-                    move |_| window.show_delete_entry(entry_to_delete.clone())
+                    move |row| window.show_delete_entry(entry_to_delete.clone(), row)
                 ));
                 if let Some(id) = entry.id {
                     row.connect_report_requested(glib::clone!(
@@ -207,9 +222,24 @@ impl MainWindow {
                         move |_| window.show_entry_report(id)
                     ));
                 }
-                self.imp().entries_box.append(&row);
+                // Starting or continuing lifts an entry to the top; let that
+                // row slide open. Day changes and plain refreshes stay still.
+                let arrives_on_top = position == 0
+                    && is_active
+                    && date == today
+                    && self.imp().last_top_date.get() == Some(date)
+                    && self.imp().last_top_entry.get() != entry.id;
+                if arrives_on_top {
+                    self.imp().entries_box.append(&slide_in(&row));
+                } else {
+                    self.imp().entries_box.append(&row);
+                }
             }
         }
+        self.imp()
+            .last_top_entry
+            .set(entries.last().and_then(|entry| entry.id));
+        self.imp().last_top_date.set(Some(date));
         let stored_seconds = stored_seconds(&entries, &totals, day_start_ms, day_end_ms);
         self.imp().stored_day_seconds.set(stored_seconds);
 
@@ -228,7 +258,7 @@ impl MainWindow {
         self.refresh_timer_only();
     }
 
-    pub(in crate::desktop) fn show_delete_entry(&self, entry: TimeEntry) {
+    pub(in crate::desktop) fn show_delete_entry(&self, entry: TimeEntry, row: &EntryRow) {
         let Some(handle) = self.handle() else { return };
         let Some(id) = entry.id else { return };
         let dialog = adw::AlertDialog::builder()
@@ -241,17 +271,73 @@ impl MainWindow {
         dialog.add_responses(&[("cancel", tr("Cancel")), ("delete", tr("Delete"))]);
         dialog.set_response_appearance("delete", adw::ResponseAppearance::Destructive);
         let weak = self.downgrade();
+        let row = row.downgrade();
         dialog.connect_response(Some("delete"), move |_, _| {
             let Some(window) = weak.upgrade() else { return };
             match handle.delete_entry(id) {
                 Ok(()) => {
-                    window.refresh();
                     window.refresh_report();
+                    match row.upgrade() {
+                        Some(row) => window.slide_out_deleted_row(&row),
+                        None => window.refresh(),
+                    }
                 }
                 Err(error) => window.show_database_error(&error.to_string()),
             }
         });
         dialog.present(Some(self));
+    }
+
+    /// Collapses a deleted entry's row, then rebuilds the list without it.
+    /// The entry is already gone; this only animates its departure. A row a
+    /// later refresh already replaced just triggers the rebuild.
+    fn slide_out_deleted_row(&self, row: &EntryRow) {
+        let entries_box: &gtk::Widget = self.imp().entries_box.upcast_ref();
+        // The row sits in the list directly, or inside its slide-in revealer.
+        let slot: gtk::Widget = match row.parent() {
+            Some(parent) if &parent == entries_box => row.clone().upcast(),
+            Some(parent) if parent.parent().as_ref() == Some(entries_box) => parent,
+            _ => {
+                self.refresh();
+                return;
+            }
+        };
+        let previous = slot.prev_sibling();
+        // Rows are joined by separators; the one this row leaves behind goes
+        // with it.
+        if let Some(separator) = previous
+            .clone()
+            .or_else(|| slot.next_sibling())
+            .and_downcast::<gtk::Separator>()
+        {
+            separator.set_visible(false);
+        }
+        if let Some(revealer) = slot.downcast_ref::<gtk::Revealer>() {
+            revealer.set_child(None::<&gtk::Widget>);
+        }
+        self.imp().entries_box.remove(&slot);
+
+        let revealer = gtk::Revealer::builder()
+            .transition_type(gtk::RevealerTransitionType::SlideUp)
+            .transition_duration(ROW_SLIDE_MS)
+            .reveal_child(true)
+            .child(row)
+            .build();
+        revealer.connect_child_revealed_notify(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |revealer| {
+                if !revealer.is_child_revealed() {
+                    window.refresh();
+                }
+            }
+        ));
+        // A revealer only animates while mapped, so the collapse waits for
+        // the map.
+        revealer.connect_map(|revealer| revealer.set_reveal_child(false));
+        self.imp()
+            .entries_box
+            .insert_child_after(&revealer, previous.as_ref());
     }
 
     fn refresh_week(&self, selected: NaiveDate, today: NaiveDate) {

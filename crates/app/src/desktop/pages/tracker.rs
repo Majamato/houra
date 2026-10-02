@@ -346,14 +346,12 @@ impl MainWindow {
             TrackerState::RecoveryPending(_) => {
                 self.imp().timer_label.set_text(tr("Review"));
                 self.imp().tracking_eyebrow.set_visible(false);
-                self.imp().stopped_panel.set_visible(false);
-                self.imp().running_panel.set_visible(true);
+                self.show_tracker_panel(true);
                 self.show_timer_actions(false);
             }
             TrackerState::Stopped => {
                 self.clear_active_entry_duration();
-                self.imp().stopped_panel.set_visible(true);
-                self.imp().running_panel.set_visible(false);
+                self.show_tracker_panel(false);
             }
         }
     }
@@ -381,11 +379,33 @@ impl MainWindow {
                 self.is_active(),
             ));
         self.imp().tracking_eyebrow.set_visible(true);
-        self.imp().stopped_panel.set_visible(false);
-        self.imp().running_panel.set_visible(true);
+        self.show_tracker_panel(true);
         self.set_active_labels(active);
         self.show_timer_actions(paused);
         self.update_live_total(live_today);
+    }
+
+    /// Shows the running or the stopped card. Starting slides the running card
+    /// up over the form; stopping slides it down toward the recorded rows.
+    /// Clock ticks land here too, so an unchanged card never re-animates.
+    fn show_tracker_panel(&self, running: bool) {
+        let stack = &self.imp().tracker_panels;
+        let panel: &gtk::Widget = if running {
+            self.imp().running_panel.upcast_ref()
+        } else {
+            self.imp().stopped_panel.upcast_ref()
+        };
+        if stack.visible_child().as_ref() == Some(panel) {
+            return;
+        }
+        stack.set_transition_type(if !stack.is_mapped() {
+            gtk::StackTransitionType::None
+        } else if running {
+            gtk::StackTransitionType::OverUp
+        } else {
+            gtk::StackTransitionType::UnderDown
+        });
+        stack.set_visible_child(panel);
     }
 
     /// Swaps the running panel between tracking and paused presentation.
