@@ -1,4 +1,5 @@
 # Repository rules
 
-- Do not preserve compatibility with legacy databases, backup formats, or public APIs unless the user explicitly requests it.
-- Continue testing all behavior that remains supported after a change.
+Houra is released and people depend on it. Databases, backups, settings and the
+D-Bus interface from any released version must keep working after an upgrade:
+migrate old data, don't reject it.
