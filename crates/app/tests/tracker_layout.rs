@@ -180,3 +180,34 @@ fn tracking_status_sits_beneath_the_counter_outside_the_details_button() {
         ancestor = objects[index].parent;
     }
 }
+
+#[test]
+fn tracker_cards_share_one_stack_so_swaps_can_animate() {
+    let objects = parse_objects(WINDOW_UI);
+    let parent_id = |wanted: &str| {
+        let found = objects_with_id(&objects, wanted);
+        assert_eq!(
+            found.len(),
+            1,
+            "window.ui must declare exactly one {wanted}"
+        );
+        found
+            .first()
+            .and_then(|&index| objects[index].parent)
+            .and_then(|parent| objects[parent].id.as_deref())
+    };
+    assert_eq!(
+        parent_id("stopped_panel"),
+        Some("tracker_panels"),
+        "stopped_panel must sit directly in the tracker_panels stack"
+    );
+    assert_eq!(
+        parent_id("running_panel"),
+        Some("tracker_panels"),
+        "running_panel must sit directly in the tracker_panels stack"
+    );
+    assert!(
+        WINDOW_UI.contains("<object class=\"GtkStack\" id=\"tracker_panels\">"),
+        "tracker_panels must be a GtkStack"
+    );
+}
