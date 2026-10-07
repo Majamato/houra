@@ -38,9 +38,13 @@ class DesktopInstallTests(unittest.TestCase):
             path = tools / tool
             path.write_text("#!/bin/sh\nexit 0\n")
             path.chmod(0o755)
+        empty_data_dirs = self.root / "empty-data-dirs"
+        empty_data_dirs.mkdir()
         self.env = dict(os.environ, XDG_DATA_HOME=str(self.data),
                         HOURA_BUILD_DIR=str(self.build),
+                        XDG_DATA_DIRS=str(empty_data_dirs),
                         PATH=f"{tools}:{os.environ['PATH']}")
+        self.env.pop("HOURA_INSTALL_DESKTOP", None)
 
     def run_script(self, script):
         return subprocess.run([str(ROOT / "scripts" / script)], env=self.env,
@@ -87,6 +91,29 @@ class DesktopInstallTests(unittest.TestCase):
 
     def test_first_release_build_creates_launcher(self):
         self.launcher.unlink()
+        result = self.run_script("build-release.sh")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assert_current_launcher()
+
+    def test_release_build_skips_launcher_when_packaged_app_exists(self):
+        packaged = self.root / "packaged"
+        launcher = packaged / "applications/io.github.majamato.Houra.desktop"
+        launcher.parent.mkdir(parents=True)
+        launcher.write_text("[Desktop Entry]\nName=Houra\n")
+        self.env["XDG_DATA_DIRS"] = str(packaged)
+        previous = self.launcher.read_bytes()
+        result = self.run_script("build-release.sh")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.launcher.read_bytes(), previous)
+        self.assertIn("Skipping the local launcher install", result.stdout)
+
+    def test_install_desktop_override_installs_despite_packaged_app(self):
+        packaged = self.root / "packaged"
+        launcher = packaged / "applications/io.github.majamato.Houra.desktop"
+        launcher.parent.mkdir(parents=True)
+        launcher.write_text("[Desktop Entry]\nName=Houra\n")
+        self.env["XDG_DATA_DIRS"] = str(packaged)
+        self.env["HOURA_INSTALL_DESKTOP"] = "1"
         result = self.run_script("build-release.sh")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assert_current_launcher()

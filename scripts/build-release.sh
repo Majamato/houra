@@ -6,6 +6,15 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 project_root=$(cd -- "$script_dir/.." && pwd)
 build_dir=${HOURA_BUILD_DIR:-"$project_root/build-release"}
 
+packaged_houra() {
+    local dir dirs
+    IFS=: read -ra dirs <<<"${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+    for dir in "${dirs[@]}"; do
+        [[ -f $dir/applications/io.github.majamato.Houra.desktop ]] && return 0
+    done
+    return 1
+}
+
 missing_packages=()
 
 require_command() {
@@ -62,7 +71,9 @@ fi
 printf 'Building the release application...\n'
 meson compile -C "$build_dir" "$@"
 glib-compile-schemas --strict --targetdir="$build_dir" "$project_root/data"
-if [[ ${HOURA_INSTALL_DESKTOP:-1} != 0 ]]; then
+if [[ -z ${HOURA_INSTALL_DESKTOP+x} ]] && packaged_houra; then
+    printf 'Skipping the local launcher install because a packaged Houra launcher exists (set HOURA_INSTALL_DESKTOP=1 to override).\n'
+elif [[ ${HOURA_INSTALL_DESKTOP:-1} != 0 ]]; then
     HOURA_BUILD_DIR="$build_dir" "$script_dir/install-desktop.py"
 fi
 printf '\nRelease binary:\n  %s/houra\n' "$build_dir"

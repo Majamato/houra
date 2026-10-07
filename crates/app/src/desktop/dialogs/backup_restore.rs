@@ -13,9 +13,8 @@ impl MainWindow {
         let Some(handle) = self.handle() else { return };
         let chooser = gtk::FileDialog::builder()
             .title(tr("Back Up Houra"))
-            .initial_name(format!(
-                "houra-backup-{}.json",
-                Local::now().format("%Y-%m-%d")
+            .initial_name(crate::identity::backup_filename_suggestion(
+                &Local::now().format("%Y-%m-%d").to_string(),
             ))
             .build();
         let weak = self.downgrade();

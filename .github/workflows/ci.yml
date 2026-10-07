@@ -32,26 +32,43 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Tests without the GNOME UI
         run: cargo test --workspace --all-targets --locked
+      - name: Tests without the GNOME UI, development variant
+        run: cargo test --workspace --all-targets --locked --features dev-app
       - name: Tests with the GNOME UI
         run: cargo test --workspace --all-targets --locked --features native-ui
+      - name: Tests with the GNOME UI, development variant
+        run: cargo test --workspace --all-targets --locked --features native-ui,dev-app
       - name: Clippy
         run: cargo clippy --workspace --all-targets --locked --features native-ui -- -D warnings
+      - name: Clippy, development variant
+        run: cargo clippy --workspace --all-targets --locked --features native-ui,dev-app -- -D warnings
       - name: Translations
         run: python3 scripts/check-translations.py
       - name: Top-bar extension tests
         run: |
           gjs -m shell-extension/tests/format.test.js
           dbus-run-session -- gjs -m shell-extension/tests/activeTimer.test.js
+          python3 -B scripts/prepare-dev.py --output-dir "$RUNNER_TEMP/houra-dev-artifacts"
+          dbus-run-session -- gjs -m shell-extension/tests/activeTimer.test.js "$RUNNER_TEMP/houra-dev-artifacts/shell-extension"
+          gjs -m shell-extension/tests/identity.test.js "$RUNNER_TEMP/houra-dev-artifacts/shell-extension"
       - name: Script tests
         run: python3 -B -m unittest discover -s scripts/tests
       - name: ShellCheck
         run: shellcheck scripts/*.sh build-aux/*.sh
+      - name: Release library tests, development variant
+        run: cargo test -p houra --lib --release --locked --features dev-app
       - name: Installable metadata
         run: |
           meson setup build-meson
           meson compile -C build-meson
           appstreamcli validate --no-net build-meson/io.github.majamato.Houra.metainfo.xml
           desktop-file-validate build-meson/io.github.majamato.Houra.desktop
+          DESTDIR="$RUNNER_TEMP/stage" meson install -C build-meson --no-rebuild
+          if find "$RUNNER_TEMP/stage" \( -iname '*devel*' -o -iname '*houra-dev*' \) | grep .; then
+            echo "development artifacts leaked into the production install" >&2
+            exit 1
+          fi
+          test -f "$RUNNER_TEMP/stage/usr/local/share/gnome-shell/extensions/houra@majamato.github.io/identity.js"
 
   packages:
     name: Packages

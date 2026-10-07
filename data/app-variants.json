@@ -1,0 +1,24 @@
+{
+  "stable": {
+    "app_id": "io.github.majamato.Houra",
+    "app_name": "Houra",
+    "data_subdir": "houra",
+    "settings_path": "/io/github/majamato/Houra/",
+    "extension_uuid": "houra@majamato.github.io",
+    "launch_at_login_default": true,
+    "extension_gettext_domain": "houra",
+    "extension_style_prefix": "houra",
+    "extension_gtype_name": "Gjs_HouraIndicator"
+  },
+  "devel": {
+    "app_id": "io.github.majamato.Houra.Devel",
+    "app_name": "Houra Dev",
+    "data_subdir": "houra-dev",
+    "settings_path": "/io/github/majamato/Houra/Devel/",
+    "extension_uuid": "houra-dev@majamato.github.io",
+    "launch_at_login_default": false,
+    "extension_gettext_domain": "houra-dev",
+    "extension_style_prefix": "houra-dev",
+    "extension_gtype_name": "Gjs_HouraDevIndicator"
+  }
+}

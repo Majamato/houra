@@ -110,20 +110,63 @@ Use a recent stable Rust toolchain. The desktop build also needs a C compiler,
 `pkg-config`, GTK 4, libadwaita, and GLib development tools. The build scripts
 check dependencies and print missing Fedora packages.
 
-For an incremental development build:
+Houra has two identities. The stable app (`io.github.majamato.Houra`) is what
+users install. The development variant (`io.github.majamato.Houra.Devel`,
+shown as Houra Dev) runs alongside it with a separate database, separate
+preferences, its own launcher and autostart entry, and its own top-bar
+extension. The identities are defined in `data/app-variants.json` and selected
+by the explicit `dev-app` Cargo feature; debug or release optimization never
+decides which database the app uses.
 
 ```sh
+# Build development artifacts without installing or starting the app.
 ./scripts/build-dev.sh
-./target/debug/houra
+
+# Build, install dev desktop assets, and run Houra Dev.
+./scripts/build-and-run.sh dev
+
+# Build and run an optimized development variant.
+./scripts/build-and-run.sh dev --release
+
+# Install existing development artifacts without starting the app.
+./scripts/install-dev.sh
+
+# Remove Houra Dev's desktop assets (--purge-data also removes its database).
+./scripts/uninstall-dev.sh
+
+# Explicitly build and run the production variant.
+./scripts/build-and-run.sh release
 ```
 
-The equivalent Cargo build is:
+Warning: `build-and-run.sh release` runs the production identity, so it is
+not isolated from an installed Houra. It uses the production database,
+settings, autostart entry and bus name; it rewrites the production autostart
+entry to point at the local build; and a branch with a newer database schema
+would lock the packaged app out of its database. The script refuses to run
+while a packaged Houra launcher exists; pass `release --replace-packaged` to
+override it, or use `dev` for isolated development.
+
+Houra Dev is single-instance: if it is already running, `build-and-run.sh dev`
+only raises the old window and the rebuilt binary exits, so quit Houra Dev first.
+
+`build-dev.sh` is build-only: it compiles with `native-ui,dev-app` into the
+isolated `target/dev` directory and prepares the dev settings schema, launcher,
+icons, and extension beside the binary. Debug builds land at
+`target/dev/debug/houra`, optimized dev builds (`build-dev.sh --release`) at
+`target/dev/release/houra`. `build-and-run.sh dev` additionally installs only
+the dev launcher, icons, and extension, then starts the matching dev binary.
+
+The equivalent direct Cargo builds are:
 
 ```sh
+cargo build --workspace --locked --features native-ui,dev-app
 cargo build --workspace --locked --features native-ui
 ```
 
-The `native-ui` feature enables the desktop modules. Without it, the application
+Build with `native-ui,dev-app`: plain `native-ui` builds are the production
+app. They use the production database, settings and autostart entry, and if
+the packaged Houra is running they only raise its window and exit. The
+`native-ui` feature enables the desktop modules. Without it, the application
 library and its tests build without GTK, and the executable prints a message
 explaining how to enable the UI.
 
@@ -149,19 +192,24 @@ launcher and icons from an existing release build, run:
 ```
 
 Set `HOURA_INSTALL_DESKTOP=0` when building only for staging or packaging.
+When the variable is unset and a packaged Houra launcher exists, the script
+skips the local launcher install; set `HOURA_INSTALL_DESKTOP=1` to install it
+anyway.
 The local launcher takes precedence over an installed package's launcher. Remove
 `~/.local/share/applications/io.github.majamato.Houra.desktop` when switching to
 the packaged app, or the equivalent file under `$XDG_DATA_HOME`.
 
 Staging prepares an installation tree; it does not install into the running
-desktop session. A Cargo-only build uses the settings schema if it is already
-installed. To exercise preferences during development, install the schema or
-point `GSETTINGS_SCHEMA_DIR` at a directory containing its compiled version.
-`./scripts/build-and-run.sh` (or `./scripts/build-and-run.sh dev`) builds,
-compiles the schema next to the binary, and starts Houra.
+desktop session. A Cargo-only stable build uses the settings schema if it is
+already installed. To exercise preferences during development, install the
+schema or point `GSETTINGS_SCHEMA_DIR` at a directory containing its compiled
+version. Development builds prepare and find their own schema automatically.
 
-The database is `$XDG_DATA_HOME/houra/houra.sqlite3`, normally
-`~/.local/share/houra/houra.sqlite3`.
+The production database is `$XDG_DATA_HOME/houra/houra.sqlite3`, normally
+`~/.local/share/houra/houra.sqlite3`. The development database is
+`$XDG_DATA_HOME/houra-dev/houra.sqlite3`. Houra Dev never copies, migrates, or
+opens the production database; for realistic data, export a JSON backup from
+the production app and import it explicitly into Houra Dev.
 
 ## Top bar
 
@@ -174,12 +222,18 @@ app exports on its own bus name. The contract lives in
 `shell-extension/activeTimer.js` must embed an identical copy; a test enforces it.
 
 Meson installs the extension to `$datadir/gnome-shell/extensions/houra@majamato.github.io`.
-Houra adds it to GNOME Shell's `enabled-extensions` setting when it starts. For a
-development copy in your home directory:
+Houra adds it to GNOME Shell's `enabled-extensions` setting when it starts. The
+development extension has its own UUID, `houra-dev@majamato.github.io`, its own
+bus target, GObject type, CSS classes, and translation domain, so both
+extensions run side by side. For a development copy in your home directory:
 
 ```sh
 ./scripts/install-shell-extension.sh
 ```
+
+This installs the prepared dev extension by default; pass `release` to install
+the stable sources instead. `./scripts/build-and-run.sh dev` installs the dev
+extension automatically.
 
 A copy in your home directory takes precedence over the one a package installs, so
 remove `~/.local/share/gnome-shell/extensions/houra@majamato.github.io` before
@@ -221,12 +275,20 @@ To add a language, add its code to `po/LINGUAS` and create its catalogue with
 ```sh
 cargo fmt --all -- --check
 cargo test --workspace --all-targets --locked
+cargo test --workspace --all-targets --locked --features dev-app
 cargo test --workspace --all-targets --locked --features native-ui
+cargo test --workspace --all-targets --locked --features native-ui,dev-app
+cargo test -p houra --lib --release --locked --features dev-app
 cargo clippy --workspace --all-targets --locked --features native-ui -- -D warnings
+cargo clippy --workspace --all-targets --locked --features native-ui,dev-app -- -D warnings
 python3 scripts/check-translations.py
-gjs -m shell-extension/tests/format.test.js
-gjs -m shell-extension/tests/activeTimer.test.js
 python3 -B -m unittest discover -s scripts/tests
+gjs -m shell-extension/tests/format.test.js
+dbus-run-session -- gjs -m shell-extension/tests/activeTimer.test.js
+dev_artifacts=$(mktemp -d)
+python3 -B scripts/prepare-dev.py --output-dir "$dev_artifacts"
+dbus-run-session -- gjs -m shell-extension/tests/activeTimer.test.js "$dev_artifacts/shell-extension"
+gjs -m shell-extension/tests/identity.test.js "$dev_artifacts/shell-extension"
 shellcheck scripts/*.sh build-aux/*.sh
 ```
 

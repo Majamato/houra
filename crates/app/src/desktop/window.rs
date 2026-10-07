@@ -27,6 +27,8 @@ pub(super) mod imp {
         #[template_child]
         pub integration_banner: gtk::TemplateChild<adw::Banner>,
         #[template_child]
+        pub brand_button: gtk::TemplateChild<gtk::MenuButton>,
+        #[template_child]
         pub timer_label: gtk::TemplateChild<gtk::Label>,
         #[template_child]
         pub start_button: gtk::TemplateChild<TimerActionButton>,
@@ -162,6 +164,13 @@ impl MainWindow {
     }
 
     fn setup(&self) {
+        // Stable keeps the translatable template strings; only Houra Dev
+        // overrides them with its untranslated brand.
+        #[cfg(feature = "dev-app")]
+        {
+            self.set_title(Some(crate::APP_NAME));
+            self.imp().brand_button.set_label(crate::APP_NAME);
+        }
         self.imp()
             .timer_label
             .update_property(&[gtk::accessible::Property::Label(tr(
