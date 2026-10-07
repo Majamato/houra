@@ -55,6 +55,7 @@ window {
 .entry-title { font-size: 14px; }
 .entry-meta { color: alpha(@window_fg_color, .62); font-size: 12px; }
 .entry-duration { min-width: 62px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.entry-total { font-size: 12px; color: alpha(@window_fg_color, .62); font-variant-numeric: tabular-nums; }
 .entries-card .entry-actions-separator {
   background-color: transparent;
   background-image: linear-gradient(to bottom, transparent, alpha(@window_fg_color, .22) 28%, alpha(@window_fg_color, .22) 72%, transparent);

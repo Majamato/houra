@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: houra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 10:03-0500\n"
+"POT-Creation-Date: 2026-10-07 12:37-0500\n"
 "PO-Revision-Date: 2026-09-24 00:00-0500\n"
 "Last-Translator: Houra contributors\n"
 "Language-Team: Houra contributors\n"
@@ -19,8 +19,7 @@ msgstr ""
 
 #: data/io.github.majamato.Houra.desktop.in:2
 #: data/io.github.majamato.Houra.metainfo.xml.in:6 data/ui/window.ui:6
-#: data/ui/window.ui:12 shell-extension/indicator.js:62
-#: shell-extension/indicator.js:162
+#: data/ui/window.ui:12
 msgid "Houra"
 msgstr "Houra"
 
@@ -168,7 +167,7 @@ msgstr "時間記録"
 msgid "Your day"
 msgstr "今日の記録"
 
-#: data/ui/window.ui:23 crates/app/src/desktop/pages/tracker.rs:580
+#: data/ui/window.ui:23 crates/app/src/desktop/pages/tracker.rs:608
 msgid "Choose date"
 msgstr "日付を選択"
 
@@ -176,7 +175,7 @@ msgstr "日付を選択"
 msgid "+ Add time"
 msgstr "+ 時間を追加"
 
-#: data/ui/window.ui:29 crates/app/src/desktop/pages/tracker.rs:598
+#: data/ui/window.ui:29
 msgid "Today"
 msgstr "今日"
 
@@ -188,123 +187,123 @@ msgstr "前の週"
 msgid "Next week"
 msgstr "次の週"
 
-#: data/ui/window.ui:38
+#: data/ui/window.ui:39
 msgid "START TRACKING"
 msgstr "計測を開始"
 
-#: data/ui/window.ui:40 crates/app/src/desktop/dialogs/entry_editor.rs:221
+#: data/ui/window.ui:41 crates/app/src/desktop/dialogs/entry_editor.rs:221
 #: crates/app/src/desktop/dialogs/entry_editor.rs:374
-#: crates/app/src/desktop/pages/tracker.rs:507
+#: crates/app/src/desktop/pages/tracker.rs:525
 msgid "Project"
 msgstr "プロジェクト"
 
-#: data/ui/window.ui:41 crates/app/src/desktop/dialogs/entry_editor.rs:222
+#: data/ui/window.ui:42 crates/app/src/desktop/dialogs/entry_editor.rs:222
 #: crates/app/src/desktop/dialogs/entry_editor.rs:375
-#: crates/app/src/desktop/pages/tracker.rs:508
+#: crates/app/src/desktop/pages/tracker.rs:526
 msgid "Activity"
 msgstr "アクティビティ"
 
-#: data/ui/window.ui:45
+#: data/ui/window.ui:46
 msgid "Note · Optional"
 msgstr "メモ · 任意"
 
-#: data/ui/window.ui:46 crates/app/src/desktop/pages/tracker.rs:504
+#: data/ui/window.ui:47 crates/app/src/desktop/pages/tracker.rs:522
 msgid "What are you working on?"
 msgstr "何に取り組んでいますか？"
 
-#: data/ui/window.ui:47
+#: data/ui/window.ui:48
 msgid "Ready when you are."
 msgstr "準備ができました。"
 
-#: data/ui/window.ui:47
+#: data/ui/window.ui:48
 msgid "Start timer"
 msgstr "タイマーを開始"
 
-#: data/ui/window.ui:51 crates/app/src/desktop/pages/tracker.rs:469
+#: data/ui/window.ui:52 crates/app/src/desktop/pages/tracker.rs:487
 msgid "Edit active timer"
 msgstr "実行中のタイマーを編集"
 
-#: data/ui/window.ui:57 crates/app/src/desktop/pages/tracker.rs:399
+#: data/ui/window.ui:58 crates/app/src/desktop/pages/tracker.rs:417
 msgid "TRACKING NOW"
 msgstr "計測中"
 
-#: data/ui/window.ui:59 crates/app/src/desktop/pages/tracker.rs:403
+#: data/ui/window.ui:60 crates/app/src/desktop/pages/tracker.rs:421
 msgid "Pause"
 msgstr "一時停止"
 
-#: data/ui/window.ui:59
+#: data/ui/window.ui:60
 msgid "Finish"
 msgstr "完了"
 
-#: data/ui/window.ui:68
+#: data/ui/window.ui:70
 msgid "Projects & Activities"
 msgstr "プロジェクトとアクティビティ"
 
-#: data/ui/window.ui:69
+#: data/ui/window.ui:71
 msgid "Projects"
 msgstr "プロジェクト"
 
-#: data/ui/window.ui:69
+#: data/ui/window.ui:71
 msgid "Add Project"
 msgstr "プロジェクトを追加"
 
-#: data/ui/window.ui:69
+#: data/ui/window.ui:71
 msgid "Activities"
 msgstr "アクティビティ"
 
-#: data/ui/window.ui:69
+#: data/ui/window.ui:71
 msgid "Add Activity"
 msgstr "アクティビティを追加"
 
-#: data/ui/window.ui:71
+#: data/ui/window.ui:73
 msgid "Reports"
 msgstr "レポート"
 
-#: data/ui/window.ui:72
+#: data/ui/window.ui:74
 msgid "Weekly Report"
 msgstr "週次レポート"
 
-#: data/ui/window.ui:72
+#: data/ui/window.ui:74
 msgid "Full report"
 msgstr "詳細レポート"
 
-#: data/ui/window.ui:72
+#: data/ui/window.ui:74
 msgid "Export CSV"
 msgstr "CSV を書き出す"
 
-#: data/ui/window.ui:78
+#: data/ui/window.ui:80
 msgid "Add Manual Entry"
 msgstr "手動入力を追加"
 
-#: data/ui/window.ui:78
+#: data/ui/window.ui:80
 msgid "Preferences"
 msgstr "設定"
 
-#: data/ui/window.ui:78
+#: data/ui/window.ui:80
 msgid "Back Up Data"
 msgstr "データをバックアップ"
 
-#: data/ui/window.ui:78
+#: data/ui/window.ui:80
 msgid "Restore Data"
 msgstr "データを復元"
 
-#: data/ui/window.ui:78 crates/app/src/desktop/dialogs/quit.rs:27
+#: data/ui/window.ui:80 crates/app/src/desktop/dialogs/quit.rs:27
 msgid "Quit"
 msgstr "終了"
 
-#: data/ui/entry-row.ui:18 crates/app/src/desktop/widgets/entry_row.rs:97
+#: data/ui/entry-row.ui:21 crates/app/src/desktop/widgets/entry_row.rs:99
 msgid "View task report"
 msgstr "タスクのレポートを表示"
 
-#: data/ui/entry-row.ui:19 crates/app/src/desktop/widgets/entry_row.rs:89
+#: data/ui/entry-row.ui:22 crates/app/src/desktop/widgets/entry_row.rs:91
 msgid "Delete this time entry"
 msgstr "この時間エントリを削除する"
 
-#: data/ui/entry-row.ui:20 crates/app/src/desktop/widgets/entry_row.rs:81
+#: data/ui/entry-row.ui:23 crates/app/src/desktop/widgets/entry_row.rs:83
 msgid "Continue this work"
 msgstr "この作業を続ける"
 
-#: crates/app/src/desktop/application.rs:261
+#: crates/app/src/desktop/application.rs:269
 msgid "Automatic idle detection needs GNOME. Timers still work."
 msgstr ""
 "自動アイドル検出には GNOME が必要です。タイマーは引き続き使用できます。"
@@ -313,27 +312,27 @@ msgstr ""
 msgid "Back Up Houra"
 msgstr "Houra をバックアップ"
 
-#: crates/app/src/desktop/dialogs/backup_restore.rs:25
+#: crates/app/src/desktop/dialogs/backup_restore.rs:24
 msgid "backup requires a local file"
 msgstr "バックアップにはローカルファイルが必要です"
 
-#: crates/app/src/desktop/dialogs/backup_restore.rs:46
+#: crates/app/src/desktop/dialogs/backup_restore.rs:45
 msgid "Stop the timer before restoring a backup."
 msgstr "バックアップを復元する前にタイマーを停止してください。"
 
-#: crates/app/src/desktop/dialogs/backup_restore.rs:50
+#: crates/app/src/desktop/dialogs/backup_restore.rs:49
 msgid "Choose a Houra Backup"
 msgstr "Houra のバックアップを選択"
 
-#: crates/app/src/desktop/dialogs/backup_restore.rs:56
+#: crates/app/src/desktop/dialogs/backup_restore.rs:55
 msgid "restore requires a local file"
 msgstr "復元にはローカルファイルが必要です"
 
-#: crates/app/src/desktop/dialogs/backup_restore.rs:72
+#: crates/app/src/desktop/dialogs/backup_restore.rs:71
 msgid "Replace all local data?"
 msgstr "ローカルデータをすべて置き換えますか？"
 
-#: crates/app/src/desktop/dialogs/backup_restore.rs:73
+#: crates/app/src/desktop/dialogs/backup_restore.rs:72
 msgid ""
 "The validated backup will replace projects, activities, and entries. This "
 "cannot be undone."
@@ -341,14 +340,14 @@ msgstr ""
 "確認済みのバックアップでプロジェクト、アクティビティ、記録を置き換えます。こ"
 "の操作は元に戻せません。"
 
-#: crates/app/src/desktop/dialogs/backup_restore.rs:75
+#: crates/app/src/desktop/dialogs/backup_restore.rs:74
 #: crates/app/src/desktop/dialogs/idle.rs:158
 #: crates/app/src/desktop/dialogs/name_prompt.rs:35
-#: crates/app/src/desktop/pages/entries.rs:241
+#: crates/app/src/desktop/pages/entries.rs:271
 msgid "Cancel"
 msgstr "キャンセル"
 
-#: crates/app/src/desktop/dialogs/backup_restore.rs:75
+#: crates/app/src/desktop/dialogs/backup_restore.rs:74
 msgid "Replace Data"
 msgstr "データを置き換える"
 
@@ -362,7 +361,7 @@ msgstr "分"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:153
 #: crates/app/src/desktop/dialogs/entry_editor.rs:155
-#: crates/app/src/desktop/window.rs:462
+#: crates/app/src/desktop/window.rs:488
 msgid "Close"
 msgstr "閉じる"
 
@@ -373,7 +372,7 @@ msgstr "手動入力"
 #: crates/app/src/desktop/dialogs/entry_editor.rs:192
 #: crates/app/src/desktop/dialogs/entry_editor.rs:350
 #: crates/app/src/desktop/pages/tracker.rs:89
-#: crates/app/src/desktop/pages/tracker.rs:492
+#: crates/app/src/desktop/pages/tracker.rs:510
 msgid "No activity"
 msgstr "アクティビティなし"
 
@@ -383,7 +382,7 @@ msgstr "メモ（任意）"
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:223
 #: crates/app/src/desktop/dialogs/entry_editor.rs:376
-#: crates/app/src/desktop/pages/tracker.rs:509
+#: crates/app/src/desktop/pages/tracker.rs:527
 msgid "Note"
 msgstr "メモ"
 
@@ -461,10 +460,10 @@ msgid "Unknown time"
 msgstr "時刻不明"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:172
-#: crates/app/src/desktop/pages/entries.rs:383
-#: crates/app/src/desktop/pages/tracker.rs:419
+#: crates/app/src/desktop/pages/entries.rs:469
+#: crates/app/src/desktop/pages/tracker.rs:437
 #: crates/app/src/desktop/top_bar/mod.rs:167
-#: crates/app/src/desktop/widgets/entry_row.rs:196
+#: crates/app/src/desktop/widgets/entry_row.rs:198
 msgid "Tracked work"
 msgstr "記録した作業"
 
@@ -541,8 +540,8 @@ msgstr "タスクのレポート"
 
 #: crates/app/src/desktop/dialogs/entry_report.rs:301
 #: crates/app/src/desktop/dialogs/idle.rs:209
-#: crates/app/src/desktop/pages/tracker.rs:428
-#: crates/app/src/desktop/widgets/entry_row.rs:143
+#: crates/app/src/desktop/pages/tracker.rs:446
+#: crates/app/src/desktop/widgets/entry_row.rs:145
 msgid "Missing project"
 msgstr "プロジェクトが見つかりません"
 
@@ -588,7 +587,7 @@ msgid "less than a minute"
 msgstr "1 分未満"
 
 #: crates/app/src/desktop/dialogs/idle.rs:217
-#: crates/app/src/desktop/pages/tracker.rs:439
+#: crates/app/src/desktop/pages/tracker.rs:457
 #, rust-format
 msgid "{project} · {activity}"
 msgstr "{project} · {activity}"
@@ -752,56 +751,56 @@ msgid "End time must look like {example} and identify one local time."
 msgstr ""
 "終了時刻は {example} の形式で、実在する現地時刻をひとつ指定してください。"
 
-#: crates/app/src/desktop/pages/entries.rs:111
+#: crates/app/src/desktop/pages/entries.rs:126
 msgid "Earlier today"
 msgstr "今日のこれまでの記録"
 
-#: crates/app/src/desktop/pages/entries.rs:113
+#: crates/app/src/desktop/pages/entries.rs:128
 msgid "Recorded today"
 msgstr "今日の記録"
 
-#: crates/app/src/desktop/pages/entries.rs:115
+#: crates/app/src/desktop/pages/entries.rs:130
 msgid "Recorded"
 msgstr "記録済み"
 
-#: crates/app/src/desktop/pages/entries.rs:118
+#: crates/app/src/desktop/pages/entries.rs:133
 #, rust-format
 msgid "{count} entry"
 msgid_plural "{count} entries"
 msgstr[0] "{count} 件の記録"
 
-#: crates/app/src/desktop/pages/entries.rs:129
+#: crates/app/src/desktop/pages/entries.rs:144
 msgid "No time recorded for this day"
 msgstr "この日の記録はありません"
 
-#: crates/app/src/desktop/pages/entries.rs:219
+#: crates/app/src/desktop/pages/entries.rs:249
 msgid "Today, including the active timer"
 msgstr "今日（実行中のタイマーを含む）"
 
-#: crates/app/src/desktop/pages/entries.rs:221
+#: crates/app/src/desktop/pages/entries.rs:251
 msgid "Total today"
 msgstr "今日の合計"
 
-#: crates/app/src/desktop/pages/entries.rs:223
+#: crates/app/src/desktop/pages/entries.rs:253
 msgid "Total"
 msgstr "合計"
 
-#: crates/app/src/desktop/pages/entries.rs:235
+#: crates/app/src/desktop/pages/entries.rs:265
 msgid "Delete this time entry?"
 msgstr "この時間エントリを削除しますか？"
 
-#: crates/app/src/desktop/pages/entries.rs:241
+#: crates/app/src/desktop/pages/entries.rs:271
 msgid "Delete"
 msgstr "削除"
 
-#: crates/app/src/desktop/pages/entries.rs:388
-#: crates/app/src/desktop/widgets/entry_row.rs:152
+#: crates/app/src/desktop/pages/entries.rs:474
+#: crates/app/src/desktop/widgets/entry_row.rs:154
 #, rust-format
 msgid "{count} interval"
 msgid_plural "{count} intervals"
 msgstr[0] "{count} 件の区間"
 
-#: crates/app/src/desktop/pages/entries.rs:395
+#: crates/app/src/desktop/pages/entries.rs:481
 #, rust-format
 msgid "\"{note}\" ({intervals}, {duration}) will be permanently deleted."
 msgstr "「{note}」（{intervals}、{duration}）は完全に削除されます。"
@@ -818,31 +817,31 @@ msgstr "今週は記録がありません"
 msgid "Export Weekly CSV"
 msgstr "週次 CSV を書き出す"
 
-#: crates/app/src/desktop/pages/reports.rs:99
+#: crates/app/src/desktop/pages/reports.rs:101
 msgid "CSV export requires a local file"
 msgstr "CSV の書き出しにはローカルファイルが必要です"
 
-#: crates/app/src/desktop/pages/tracker.rs:349
+#: crates/app/src/desktop/pages/tracker.rs:347
 msgid "Review"
 msgstr "確認"
 
-#: crates/app/src/desktop/pages/tracker.rs:397
+#: crates/app/src/desktop/pages/tracker.rs:415
 msgid "PAUSED"
 msgstr "一時停止中"
 
-#: crates/app/src/desktop/pages/tracker.rs:403
+#: crates/app/src/desktop/pages/tracker.rs:421
 msgid "Resume"
 msgstr "再開"
 
-#: crates/app/src/desktop/pages/tracker.rs:519
+#: crates/app/src/desktop/pages/tracker.rs:537
 msgid "Save changes"
 msgstr "変更を保存"
 
-#: crates/app/src/desktop/pages/tracker.rs:587
+#: crates/app/src/desktop/pages/tracker.rs:615
 msgid "Only today and past dates can be chosen."
 msgstr "今日または過去の日付のみ選択できます。"
 
-#: crates/app/src/desktop/pages/tracker.rs:600
+#: crates/app/src/desktop/pages/tracker.rs:626
 msgid "Choose"
 msgstr "選択"
 
@@ -854,7 +853,7 @@ msgstr "アイドル時間が始まりました"
 msgid "Open Houra to review this time when you return."
 msgstr "戻ったら Houra を開いて、この時間を確認してください。"
 
-#: crates/app/src/desktop/platform.rs:258 shell-extension/indicator.js:265
+#: crates/app/src/desktop/platform.rs:258 shell-extension/indicator.js:267
 msgid "Idle time needs review"
 msgstr "アイドル時間の確認が必要です"
 
@@ -866,37 +865,45 @@ msgstr "Houra を開いて、この時間の扱いを選んでください。"
 msgid "Save the active timer before suspend"
 msgstr "サスペンド前に実行中のタイマーを保存"
 
-#: crates/app/src/desktop/window.rs:163
+#: crates/app/src/desktop/window.rs:177
 msgid "Total time on the active entry"
 msgstr "現在の記録の合計時間"
 
-#: crates/app/src/desktop/window.rs:459
+#: crates/app/src/desktop/window.rs:485
 msgid "Could not save the change"
 msgstr "変更を保存できませんでした"
 
-#: crates/app/src/desktop/widgets/entry_row.rs:172
+#: crates/app/src/desktop/widgets/entry_row.rs:174
 msgid "Active timer"
 msgstr "実行中のタイマー"
 
-#: crates/app/src/desktop/widgets/entry_row.rs:179
+#: crates/app/src/desktop/widgets/entry_row.rs:181
 #, rust-format
 msgid "{project} · {times}"
 msgstr "{project} · {times}"
 
-#: crates/app/src/desktop/widgets/entry_row.rs:185
+#: crates/app/src/desktop/widgets/entry_row.rs:187
 #, rust-format
 msgid "{project} · {activity} · {times}"
 msgstr "{project} · {activity} · {times}"
 
-#: crates/app/src/desktop/widgets/entry_row.rs:216
+#: crates/app/src/desktop/widgets/entry_row.rs:211
+#: crates/app/src/desktop/widgets/mod.rs:390
+#: crates/app/src/desktop/widgets/mod.rs:410
+#: crates/app/src/desktop/widgets/mod.rs:458
+#, rust-format
+msgid "Total {duration}"
+msgstr "合計 {duration}"
+
+#: crates/app/src/desktop/widgets/entry_row.rs:230
 msgid "Currently tracking"
 msgstr "記録中"
 
-#: crates/app/src/desktop/widgets/entry_row.rs:221
+#: crates/app/src/desktop/widgets/entry_row.rs:235
 msgid "Paused"
 msgstr "一時停止中"
 
-#: crates/app/src/desktop/widgets/entry_row.rs:226
+#: crates/app/src/desktop/widgets/entry_row.rs:240
 msgid "Review required"
 msgstr "確認が必要"
 
@@ -913,14 +920,14 @@ msgid "Archive"
 msgstr "アーカイブ"
 
 #: crates/app/src/desktop/widgets/mod.rs:19
-#: crates/app/src/desktop/widgets/mod.rs:40 shell-extension/indicator.js:223
+#: crates/app/src/desktop/widgets/mod.rs:40 shell-extension/indicator.js:225
 #, rust-format
 msgid "{minutes}m"
 msgstr "{minutes}分"
 
 #: crates/app/src/desktop/widgets/mod.rs:22
 #: crates/app/src/desktop/widgets/mod.rs:42 crates/app/src/export.rs:244
-#: shell-extension/indicator.js:224
+#: shell-extension/indicator.js:226
 #, rust-format
 msgid "{hours}h {minutes}m"
 msgstr "{hours}時間{minutes}分"
@@ -949,26 +956,28 @@ msgstr "{details} · {dates} · {duration}"
 msgid "{details} · {start} – {end} · {duration} · {source}"
 msgstr "{details} · {start} – {end} · {duration} · {source}"
 
-#: shell-extension/indicator.js:172
+#: shell-extension/indicator.js:174
 msgid "Resume timer"
 msgstr "タイマーを再開"
 
-#: shell-extension/indicator.js:172
+#: shell-extension/indicator.js:174
 msgid "Pause timer"
 msgstr "タイマーを一時停止"
 
-#: shell-extension/indicator.js:261
+#: shell-extension/indicator.js:263
 msgid "Tracking: {work}"
 msgstr "記録中: {work}"
 
-#: shell-extension/indicator.js:263
+#: shell-extension/indicator.js:265
 msgid "Paused: {work}"
 msgstr "一時停止中: {work}"
 
-#: shell-extension/indicator.js:267
+#: shell-extension/indicator.js:269
 msgid "Interrupted timer needs review"
 msgstr "中断されたタイマーの確認が必要です"
 
-#: shell-extension/indicator.js:269
+#. The stable label keeps its translation; development swaps in its
+#. own brand. A function replacement keeps the brand literal.
+#: shell-extension/indicator.js:273
 msgid "Open Houra"
 msgstr "Houra を開く"

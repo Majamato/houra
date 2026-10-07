@@ -42,6 +42,8 @@ mod imp {
         #[template_child]
         pub duration: gtk::TemplateChild<gtk::Label>,
         #[template_child]
+        pub total_duration: gtk::TemplateChild<gtk::Label>,
+        #[template_child]
         pub actions_separator: gtk::TemplateChild<gtk::Separator>,
         #[template_child]
         pub report_button: gtk::TemplateChild<gtk::Button>,
@@ -199,11 +201,23 @@ impl EntryRow {
         });
         row.imp().subtitle.set_label(&metadata);
         let stored_ms = totals.total_ms(entry, day_start_ms, day_end_ms);
+        let stored_all_ms = totals.total_ms(entry, i64::MIN, i64::MAX);
         let duration = u64::try_from(stored_ms.saturating_add(live_ms).max(0) / 1_000).unwrap_or(0);
         row.imp().duration.set_label(&format_duration(duration));
+        let total =
+            u64::try_from(stored_all_ms.saturating_add(live_ms).max(0) / 1_000).unwrap_or(0);
+        let total_text = format_duration(total);
+        row.imp().total_duration.set_label(&trf(
+            "Total {duration}",
+            &[("duration", total_text.as_str())],
+        ));
+        // The whole-entry total only earns its line when the entry reaches
+        // beyond the visible day; single-day rows stay exactly as before.
+        let show_total = tracking == EntryTrackingState::Inactive && stored_all_ms != stored_ms;
         row.imp()
             .duration
             .set_visible(tracking == EntryTrackingState::Inactive);
+        row.imp().total_duration.set_visible(show_total);
         row.imp()
             .delete_button
             .set_visible(tracking.delete_visible());
