@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: houra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-07 12:37-0500\n"
+"POT-Creation-Date: 2026-10-07 13:07-0500\n"
 "PO-Revision-Date: 2026-09-24 00:00-0500\n"
 "Last-Translator: Houra contributors\n"
 "Language-Team: Houra contributors\n"
@@ -186,14 +186,14 @@ msgstr "下一周"
 msgid "START TRACKING"
 msgstr "开始计时"
 
-#: data/ui/window.ui:41 crates/app/src/desktop/dialogs/entry_editor.rs:221
-#: crates/app/src/desktop/dialogs/entry_editor.rs:374
+#: data/ui/window.ui:41 crates/app/src/desktop/dialogs/entry_editor.rs:255
+#: crates/app/src/desktop/dialogs/entry_editor.rs:417
 #: crates/app/src/desktop/pages/tracker.rs:525
 msgid "Project"
 msgstr "项目"
 
-#: data/ui/window.ui:42 crates/app/src/desktop/dialogs/entry_editor.rs:222
-#: crates/app/src/desktop/dialogs/entry_editor.rs:375
+#: data/ui/window.ui:42 crates/app/src/desktop/dialogs/entry_editor.rs:256
+#: crates/app/src/desktop/dialogs/entry_editor.rs:418
 #: crates/app/src/desktop/pages/tracker.rs:526
 msgid "Activity"
 msgstr "活动"
@@ -343,89 +343,98 @@ msgstr "取消"
 msgid "Replace Data"
 msgstr "替换数据"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:128
+#: crates/app/src/desktop/dialogs/entry_editor.rs:138
+msgid "Time spent can't end in the future."
+msgstr "用时不能在未来结束。"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:142
+#, rust-format
+msgid "Time spent can't end in the future. At most {duration} fits before now."
+msgstr "用时不能在未来结束。到现在为止最多可容纳 {duration}。"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:162
 msgid "Hours"
 msgstr "小时"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:128
+#: crates/app/src/desktop/dialogs/entry_editor.rs:162
 msgid "Minutes"
 msgstr "分钟"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:153
-#: crates/app/src/desktop/dialogs/entry_editor.rs:155
+#: crates/app/src/desktop/dialogs/entry_editor.rs:187
+#: crates/app/src/desktop/dialogs/entry_editor.rs:189
 #: crates/app/src/desktop/window.rs:488
 msgid "Close"
 msgstr "关闭"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:175
+#: crates/app/src/desktop/dialogs/entry_editor.rs:209
 msgid "Manual Entry"
 msgstr "手动记录"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:192
-#: crates/app/src/desktop/dialogs/entry_editor.rs:350
+#: crates/app/src/desktop/dialogs/entry_editor.rs:226
+#: crates/app/src/desktop/dialogs/entry_editor.rs:393
 #: crates/app/src/desktop/pages/tracker.rs:89
 #: crates/app/src/desktop/pages/tracker.rs:510
 msgid "No activity"
 msgstr "无活动"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:196
+#: crates/app/src/desktop/dialogs/entry_editor.rs:230
 msgid "Optional note"
 msgstr "可选备注"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:223
-#: crates/app/src/desktop/dialogs/entry_editor.rs:376
+#: crates/app/src/desktop/dialogs/entry_editor.rs:257
+#: crates/app/src/desktop/dialogs/entry_editor.rs:419
 #: crates/app/src/desktop/pages/tracker.rs:527
 msgid "Note"
 msgstr "备注"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:224
-#: crates/app/src/desktop/dialogs/entry_editor.rs:402
+#: crates/app/src/desktop/dialogs/entry_editor.rs:258
+#: crates/app/src/desktop/dialogs/entry_editor.rs:445
 msgid "Start (local)"
 msgstr "开始时间（本地）"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:239
-#: crates/app/src/desktop/dialogs/entry_editor.rs:409
-#: crates/app/src/desktop/dialogs/entry_editor.rs:427
+#: crates/app/src/desktop/dialogs/entry_editor.rs:273
+#: crates/app/src/desktop/dialogs/entry_editor.rs:452
+#: crates/app/src/desktop/dialogs/entry_editor.rs:470
 msgid "Time spent"
 msgstr "用时"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:244
+#: crates/app/src/desktop/dialogs/entry_editor.rs:278
 msgid "Save Entry"
 msgstr "保存记录"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:256
+#: crates/app/src/desktop/dialogs/entry_editor.rs:290
 #, rust-format
 msgid "Start must look like {example} and identify one local time."
 msgstr "开始时间必须采用 {example} 格式，并对应一个本地时间。"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:268
+#: crates/app/src/desktop/dialogs/entry_editor.rs:302
 msgid "Duration must be at least one minute."
 msgstr "时长至少为一分钟。"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:326
+#: crates/app/src/desktop/dialogs/entry_editor.rs:369
 msgid "Edit Entry"
 msgstr "编辑记录"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:353
+#: crates/app/src/desktop/dialogs/entry_editor.rs:396
 #, rust-format
 msgid "{activity} (Archived)"
 msgstr "{activity}（已归档）"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:391
+#: crates/app/src/desktop/dialogs/entry_editor.rs:434
 msgid "Interval"
 msgstr "时间段"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:437
+#: crates/app/src/desktop/dialogs/entry_editor.rs:480
 msgid "Save Changes"
 msgstr "保存更改"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:474
+#: crates/app/src/desktop/dialogs/entry_editor.rs:517
 msgid ""
 "Total time must leave the final interval longer than zero and fit within the "
 "supported time range."
 msgstr "调整总时长后，最后一个时间段必须大于零且位于支持的时间范围内。"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:477
+#: crates/app/src/desktop/dialogs/entry_editor.rs:520
 #, rust-format
 msgid ""
 "Start must look like {example}, and duration must be at least one minute."
@@ -700,6 +709,30 @@ msgstr "完成并退出"
 #: crates/app/src/desktop/dialogs/quit.rs:30
 msgid "Keep Running"
 msgstr "继续运行"
+
+#: crates/app/src/desktop/dialogs/quit.rs:73
+msgid "Could not finish the timer"
+msgstr "无法完成计时器"
+
+#: crates/app/src/desktop/dialogs/quit.rs:75
+#, rust-format
+msgid ""
+"{error}\n"
+"\n"
+"You can quit anyway. The timer is kept, and Houra will ask what to do with "
+"it next time it opens."
+msgstr ""
+"{error}\n"
+"\n"
+"你仍然可以退出。计时器会被保留，下次打开 Houra 时会询问如何处理。"
+
+#: crates/app/src/desktop/dialogs/quit.rs:80
+msgid "Keep Houra Open"
+msgstr "保持 Houra 打开"
+
+#: crates/app/src/desktop/dialogs/quit.rs:81
+msgid "Quit Without Finishing"
+msgstr "不完成直接退出"
 
 #: crates/app/src/desktop/dialogs/recovery.rs:22
 msgid "Recover interrupted timer?"

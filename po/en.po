@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: houra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-07 12:37-0500\n"
+"POT-Creation-Date: 2026-10-07 13:07-0500\n"
 "PO-Revision-Date: 2026-09-24 00:00-0500\n"
 "Last-Translator: Houra contributors\n"
 "Language-Team: Houra contributors\n"
@@ -188,14 +188,14 @@ msgstr "Next week"
 msgid "START TRACKING"
 msgstr "START TRACKING"
 
-#: data/ui/window.ui:41 crates/app/src/desktop/dialogs/entry_editor.rs:221
-#: crates/app/src/desktop/dialogs/entry_editor.rs:374
+#: data/ui/window.ui:41 crates/app/src/desktop/dialogs/entry_editor.rs:255
+#: crates/app/src/desktop/dialogs/entry_editor.rs:417
 #: crates/app/src/desktop/pages/tracker.rs:525
 msgid "Project"
 msgstr "Project"
 
-#: data/ui/window.ui:42 crates/app/src/desktop/dialogs/entry_editor.rs:222
-#: crates/app/src/desktop/dialogs/entry_editor.rs:375
+#: data/ui/window.ui:42 crates/app/src/desktop/dialogs/entry_editor.rs:256
+#: crates/app/src/desktop/dialogs/entry_editor.rs:418
 #: crates/app/src/desktop/pages/tracker.rs:526
 msgid "Activity"
 msgstr "Activity"
@@ -347,83 +347,92 @@ msgstr "Cancel"
 msgid "Replace Data"
 msgstr "Replace Data"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:128
+#: crates/app/src/desktop/dialogs/entry_editor.rs:138
+msgid "Time spent can't end in the future."
+msgstr "Time spent can't end in the future."
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:142
+#, rust-format
+msgid "Time spent can't end in the future. At most {duration} fits before now."
+msgstr "Time spent can't end in the future. At most {duration} fits before now."
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:162
 msgid "Hours"
 msgstr "Hours"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:128
+#: crates/app/src/desktop/dialogs/entry_editor.rs:162
 msgid "Minutes"
 msgstr "Minutes"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:153
-#: crates/app/src/desktop/dialogs/entry_editor.rs:155
+#: crates/app/src/desktop/dialogs/entry_editor.rs:187
+#: crates/app/src/desktop/dialogs/entry_editor.rs:189
 #: crates/app/src/desktop/window.rs:488
 msgid "Close"
 msgstr "Close"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:175
+#: crates/app/src/desktop/dialogs/entry_editor.rs:209
 msgid "Manual Entry"
 msgstr "Manual Entry"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:192
-#: crates/app/src/desktop/dialogs/entry_editor.rs:350
+#: crates/app/src/desktop/dialogs/entry_editor.rs:226
+#: crates/app/src/desktop/dialogs/entry_editor.rs:393
 #: crates/app/src/desktop/pages/tracker.rs:89
 #: crates/app/src/desktop/pages/tracker.rs:510
 msgid "No activity"
 msgstr "No activity"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:196
+#: crates/app/src/desktop/dialogs/entry_editor.rs:230
 msgid "Optional note"
 msgstr "Optional note"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:223
-#: crates/app/src/desktop/dialogs/entry_editor.rs:376
+#: crates/app/src/desktop/dialogs/entry_editor.rs:257
+#: crates/app/src/desktop/dialogs/entry_editor.rs:419
 #: crates/app/src/desktop/pages/tracker.rs:527
 msgid "Note"
 msgstr "Note"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:224
-#: crates/app/src/desktop/dialogs/entry_editor.rs:402
+#: crates/app/src/desktop/dialogs/entry_editor.rs:258
+#: crates/app/src/desktop/dialogs/entry_editor.rs:445
 msgid "Start (local)"
 msgstr "Start (local)"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:239
-#: crates/app/src/desktop/dialogs/entry_editor.rs:409
-#: crates/app/src/desktop/dialogs/entry_editor.rs:427
+#: crates/app/src/desktop/dialogs/entry_editor.rs:273
+#: crates/app/src/desktop/dialogs/entry_editor.rs:452
+#: crates/app/src/desktop/dialogs/entry_editor.rs:470
 msgid "Time spent"
 msgstr "Time spent"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:244
+#: crates/app/src/desktop/dialogs/entry_editor.rs:278
 msgid "Save Entry"
 msgstr "Save Entry"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:256
+#: crates/app/src/desktop/dialogs/entry_editor.rs:290
 #, rust-format
 msgid "Start must look like {example} and identify one local time."
 msgstr "Start must look like {example} and identify one local time."
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:268
+#: crates/app/src/desktop/dialogs/entry_editor.rs:302
 msgid "Duration must be at least one minute."
 msgstr "Duration must be at least one minute."
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:326
+#: crates/app/src/desktop/dialogs/entry_editor.rs:369
 msgid "Edit Entry"
 msgstr "Edit Entry"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:353
+#: crates/app/src/desktop/dialogs/entry_editor.rs:396
 #, rust-format
 msgid "{activity} (Archived)"
 msgstr "{activity} (Archived)"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:391
+#: crates/app/src/desktop/dialogs/entry_editor.rs:434
 msgid "Interval"
 msgstr "Interval"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:437
+#: crates/app/src/desktop/dialogs/entry_editor.rs:480
 msgid "Save Changes"
 msgstr "Save Changes"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:474
+#: crates/app/src/desktop/dialogs/entry_editor.rs:517
 msgid ""
 "Total time must leave the final interval longer than zero and fit within the "
 "supported time range."
@@ -431,7 +440,7 @@ msgstr ""
 "Total time must leave the final interval longer than zero and fit within the "
 "supported time range."
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:477
+#: crates/app/src/desktop/dialogs/entry_editor.rs:520
 #, rust-format
 msgid ""
 "Start must look like {example}, and duration must be at least one minute."
@@ -709,6 +718,30 @@ msgstr "Finish and Quit"
 #: crates/app/src/desktop/dialogs/quit.rs:30
 msgid "Keep Running"
 msgstr "Keep Running"
+
+#: crates/app/src/desktop/dialogs/quit.rs:73
+msgid "Could not finish the timer"
+msgstr "Could not finish the timer"
+
+#: crates/app/src/desktop/dialogs/quit.rs:75
+#, rust-format
+msgid ""
+"{error}\n"
+"\n"
+"You can quit anyway. The timer is kept, and Houra will ask what to do with "
+"it next time it opens."
+msgstr ""
+"{error}\n"
+"\n"
+"You can quit anyway. The timer is kept, and Houra will ask what to do with it next time it opens."
+
+#: crates/app/src/desktop/dialogs/quit.rs:80
+msgid "Keep Houra Open"
+msgstr "Keep Houra Open"
+
+#: crates/app/src/desktop/dialogs/quit.rs:81
+msgid "Quit Without Finishing"
+msgstr "Quit Without Finishing"
 
 #: crates/app/src/desktop/dialogs/recovery.rs:22
 msgid "Recover interrupted timer?"

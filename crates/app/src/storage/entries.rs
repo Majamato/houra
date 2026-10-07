@@ -261,9 +261,52 @@ pub(super) fn append_to_entry(
         )));
     }
     for interval in &entry.intervals {
-        insert_interval(transaction, id, interval)?;
+        let merged = absorb_own_overlaps(transaction, id, interval)?;
+        insert_interval(transaction, id, &merged)?;
     }
     Ok(())
+}
+
+/// Folds the entry's own intervals that overlap `interval` into one span.
+/// Older versions let an edit push an interval past the current time; a timer
+/// continued onto that entry could then never stop. The shared time already
+/// belongs to the entry, so the union counts it once and keeps the timer
+/// stoppable. Overlaps with other entries are still rejected on insert.
+fn absorb_own_overlaps(
+    transaction: &Transaction<'_>,
+    entry_id: EntryId,
+    interval: &TrackedInterval,
+) -> Result<TrackedInterval, AppError> {
+    let overlapping = {
+        let mut statement = transaction.prepare(
+            "SELECT id,start_ms,end_ms,source FROM entry_intervals
+             WHERE entry_id=?1 AND ?2 < end_ms AND ?3 > start_ms",
+        )?;
+        statement
+            .query_map(
+                params![entry_id.0, interval.start_ms, interval.end_ms],
+                |row| {
+                    Ok((
+                        row.get::<_, i64>(0)?,
+                        row.get::<_, i64>(1)?,
+                        row.get::<_, i64>(2)?,
+                        row.get::<_, String>(3)?,
+                    ))
+                },
+            )?
+            .collect::<Result<Vec<_>, _>>()?
+    };
+    let mut merged = interval.clone();
+    for (id, start_ms, end_ms, source) in overlapping {
+        // The earliest span keeps its source: it is where the time began.
+        if start_ms < merged.start_ms {
+            merged.source = parse_source(&source);
+        }
+        merged.start_ms = merged.start_ms.min(start_ms);
+        merged.end_ms = merged.end_ms.max(end_ms);
+        transaction.execute("DELETE FROM entry_intervals WHERE id=?1", [id])?;
+    }
+    Ok(merged)
 }
 
 pub(super) fn update_entry_details(

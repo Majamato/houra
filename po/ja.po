@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: houra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-07 12:37-0500\n"
+"POT-Creation-Date: 2026-10-07 13:07-0500\n"
 "PO-Revision-Date: 2026-09-24 00:00-0500\n"
 "Last-Translator: Houra contributors\n"
 "Language-Team: Houra contributors\n"
@@ -191,14 +191,14 @@ msgstr "次の週"
 msgid "START TRACKING"
 msgstr "計測を開始"
 
-#: data/ui/window.ui:41 crates/app/src/desktop/dialogs/entry_editor.rs:221
-#: crates/app/src/desktop/dialogs/entry_editor.rs:374
+#: data/ui/window.ui:41 crates/app/src/desktop/dialogs/entry_editor.rs:255
+#: crates/app/src/desktop/dialogs/entry_editor.rs:417
 #: crates/app/src/desktop/pages/tracker.rs:525
 msgid "Project"
 msgstr "プロジェクト"
 
-#: data/ui/window.ui:42 crates/app/src/desktop/dialogs/entry_editor.rs:222
-#: crates/app/src/desktop/dialogs/entry_editor.rs:375
+#: data/ui/window.ui:42 crates/app/src/desktop/dialogs/entry_editor.rs:256
+#: crates/app/src/desktop/dialogs/entry_editor.rs:418
 #: crates/app/src/desktop/pages/tracker.rs:526
 msgid "Activity"
 msgstr "アクティビティ"
@@ -351,84 +351,93 @@ msgstr "キャンセル"
 msgid "Replace Data"
 msgstr "データを置き換える"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:128
+#: crates/app/src/desktop/dialogs/entry_editor.rs:138
+msgid "Time spent can't end in the future."
+msgstr "作業時間を未来で終わらせることはできません。"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:142
+#, rust-format
+msgid "Time spent can't end in the future. At most {duration} fits before now."
+msgstr "作業時間を未来で終わらせることはできません。現在までに収まるのは最大 {duration} です。"
+
+#: crates/app/src/desktop/dialogs/entry_editor.rs:162
 msgid "Hours"
 msgstr "時間"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:128
+#: crates/app/src/desktop/dialogs/entry_editor.rs:162
 msgid "Minutes"
 msgstr "分"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:153
-#: crates/app/src/desktop/dialogs/entry_editor.rs:155
+#: crates/app/src/desktop/dialogs/entry_editor.rs:187
+#: crates/app/src/desktop/dialogs/entry_editor.rs:189
 #: crates/app/src/desktop/window.rs:488
 msgid "Close"
 msgstr "閉じる"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:175
+#: crates/app/src/desktop/dialogs/entry_editor.rs:209
 msgid "Manual Entry"
 msgstr "手動入力"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:192
-#: crates/app/src/desktop/dialogs/entry_editor.rs:350
+#: crates/app/src/desktop/dialogs/entry_editor.rs:226
+#: crates/app/src/desktop/dialogs/entry_editor.rs:393
 #: crates/app/src/desktop/pages/tracker.rs:89
 #: crates/app/src/desktop/pages/tracker.rs:510
 msgid "No activity"
 msgstr "アクティビティなし"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:196
+#: crates/app/src/desktop/dialogs/entry_editor.rs:230
 msgid "Optional note"
 msgstr "メモ（任意）"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:223
-#: crates/app/src/desktop/dialogs/entry_editor.rs:376
+#: crates/app/src/desktop/dialogs/entry_editor.rs:257
+#: crates/app/src/desktop/dialogs/entry_editor.rs:419
 #: crates/app/src/desktop/pages/tracker.rs:527
 msgid "Note"
 msgstr "メモ"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:224
-#: crates/app/src/desktop/dialogs/entry_editor.rs:402
+#: crates/app/src/desktop/dialogs/entry_editor.rs:258
+#: crates/app/src/desktop/dialogs/entry_editor.rs:445
 msgid "Start (local)"
 msgstr "開始（現地時間）"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:239
-#: crates/app/src/desktop/dialogs/entry_editor.rs:409
-#: crates/app/src/desktop/dialogs/entry_editor.rs:427
+#: crates/app/src/desktop/dialogs/entry_editor.rs:273
+#: crates/app/src/desktop/dialogs/entry_editor.rs:452
+#: crates/app/src/desktop/dialogs/entry_editor.rs:470
 msgid "Time spent"
 msgstr "作業時間"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:244
+#: crates/app/src/desktop/dialogs/entry_editor.rs:278
 msgid "Save Entry"
 msgstr "記録を保存"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:256
+#: crates/app/src/desktop/dialogs/entry_editor.rs:290
 #, rust-format
 msgid "Start must look like {example} and identify one local time."
 msgstr ""
 "開始時刻は {example} の形式で、実在する現地時刻をひとつ指定してください。"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:268
+#: crates/app/src/desktop/dialogs/entry_editor.rs:302
 msgid "Duration must be at least one minute."
 msgstr "時間は１分以上にしてください。"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:326
+#: crates/app/src/desktop/dialogs/entry_editor.rs:369
 msgid "Edit Entry"
 msgstr "記録を編集"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:353
+#: crates/app/src/desktop/dialogs/entry_editor.rs:396
 #, rust-format
 msgid "{activity} (Archived)"
 msgstr "{activity}（アーカイブ済み）"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:391
+#: crates/app/src/desktop/dialogs/entry_editor.rs:434
 msgid "Interval"
 msgstr "区間"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:437
+#: crates/app/src/desktop/dialogs/entry_editor.rs:480
 msgid "Save Changes"
 msgstr "変更を保存"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:474
+#: crates/app/src/desktop/dialogs/entry_editor.rs:517
 msgid ""
 "Total time must leave the final interval longer than zero and fit within the "
 "supported time range."
@@ -436,7 +445,7 @@ msgstr ""
 "合計時間を変更しても、最後の区間は 0 より長く、対応する時間範囲内である必要が"
 "あります。"
 
-#: crates/app/src/desktop/dialogs/entry_editor.rs:477
+#: crates/app/src/desktop/dialogs/entry_editor.rs:520
 #, rust-format
 msgid ""
 "Start must look like {example}, and duration must be at least one minute."
@@ -713,6 +722,30 @@ msgstr "完了して終了"
 #: crates/app/src/desktop/dialogs/quit.rs:30
 msgid "Keep Running"
 msgstr "実行を続ける"
+
+#: crates/app/src/desktop/dialogs/quit.rs:73
+msgid "Could not finish the timer"
+msgstr "タイマーを完了できませんでした"
+
+#: crates/app/src/desktop/dialogs/quit.rs:75
+#, rust-format
+msgid ""
+"{error}\n"
+"\n"
+"You can quit anyway. The timer is kept, and Houra will ask what to do with "
+"it next time it opens."
+msgstr ""
+"{error}\n"
+"\n"
+"このまま終了することもできます。タイマーは保持され、次回 Houra を開いたときにどうするか確認します。"
+
+#: crates/app/src/desktop/dialogs/quit.rs:80
+msgid "Keep Houra Open"
+msgstr "Houra を開いたままにする"
+
+#: crates/app/src/desktop/dialogs/quit.rs:81
+msgid "Quit Without Finishing"
+msgstr "完了せずに終了"
 
 #: crates/app/src/desktop/dialogs/recovery.rs:22
 msgid "Recover interrupted timer?"

@@ -242,9 +242,10 @@ fn worker_loop(
                         entry_id,
                         project_id: entry.project_id,
                         activity_id: entry.activity_id,
-                        note: entry.note,
+                        note: entry.note.clone(),
                     })?;
                     if transition.snapshot.revision != engine.snapshot().revision {
+                        reject_continuing_past_start(&entry, &transition)?;
                         store.persist_transition(&transition)?;
                         engine = candidate;
                     }
@@ -330,4 +331,28 @@ fn worker_loop(
             break;
         }
     }
+}
+
+/// Refuses to continue an entry whose stored time already reaches past the
+/// new timer's start. Stopping would add time the entry claims twice, so the
+/// timer is refused up front instead of failing later at stop.
+fn reject_continuing_past_start(
+    entry: &TimeEntry,
+    transition: &Transition,
+) -> Result<(), AppError> {
+    let Some(active) = transition.snapshot.state.active() else {
+        return Ok(());
+    };
+    if active.entry_id == entry.id
+        && entry
+            .intervals
+            .iter()
+            .any(|interval| interval.end_ms > active.start_ms)
+    {
+        return Err(houra_core::DomainError::Overlap {
+            conflicts: entry.id.into_iter().collect(),
+        }
+        .into());
+    }
+    Ok(())
 }
