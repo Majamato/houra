@@ -1,7 +1,7 @@
 %global app_id io.github.majamato.Houra
 
 Name:           houra
-Version:        0.1.0
+Version:        0.2.0
 Release:        1%{?dist}
 Summary:        Time tracker for GNOME with a top-bar timer
 License:        GPL-3.0-or-later
@@ -64,5 +64,9 @@ appstreamcli validate --no-net %{buildroot}%{_metainfodir}/%{app_id}.metainfo.xm
 %{_datadir}/gnome-shell/extensions/houra@majamato.github.io/
 
 %changelog
+* Wed Oct 07 2026 majamato - 0.2.0-1
+- Show each entry's total time on its row when it spans several days
+- Refuse edits that end in the future, and let a stuck timer stop and Houra quit
+
 * Thu Oct 01 2026 majamato - 0.1.0-1
 - First public release

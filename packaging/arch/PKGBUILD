@@ -2,7 +2,7 @@
 # Template for the AUR package houra-bin. The release workflow fills in
 # sha256sums from the release's SHA256SUMS and publishes it to the AUR.
 pkgname=houra-bin
-pkgver=0.1.0
+pkgver=0.2.0
 pkgrel=1
 pkgdesc='Time tracker for GNOME with a top-bar timer'
 arch=('x86_64')
