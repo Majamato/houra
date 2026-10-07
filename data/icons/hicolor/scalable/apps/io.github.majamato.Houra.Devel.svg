@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <title>Houra Dev</title>
+  <desc>A charcoal timer with rounded H-shaped hands and a central pivot, surrounded by teal and amber tracked intervals.</desc>
+  <defs>
+    <linearGradient id="body" x1="22" y1="16" x2="106" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#394955"/><stop offset="1" stop-color="#202d37"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="46" y1="22" x2="105" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c4a7ff"/><stop offset="1" stop-color="#9141ac"/>
+    </linearGradient>
+  </defs>
+  <!-- Scaled about the centre so the disc spans 116 of 128 px, like other app icons. -->
+  <g transform="translate(64 64) scale(1.1373) translate(-64 -64)">
+    <circle cx="64" cy="68" r="51" fill="#14212a"/>
+    <circle cx="64" cy="64" r="51" fill="url(#body)"/>
+    <circle cx="64" cy="64" r="38" fill="none" stroke="#4b5c68" stroke-width="13"/>
+    <path d="M64 26a38 38 0 0 1 34.44 54.06" fill="none" stroke="url(#teal)" stroke-width="13" stroke-linecap="round"/>
+    <path d="M88.43 93.11a38 38 0 0 1-53.54-4.68" fill="none" stroke="#dc8add" stroke-width="13" stroke-linecap="round"/>
+    <path d="M27.29 73.84a38 38 0 0 1 20.65-44.28" fill="none" stroke="#6d8595" stroke-width="13" stroke-linecap="round"/>
+    <path d="M52 49v30M76 49v30M52 64h24" fill="none" stroke="#f5f8fa" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="64" cy="64" r="4.5" fill="#f5f8fa"/>
+  </g>
+</svg>

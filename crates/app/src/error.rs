@@ -52,6 +52,14 @@ pub enum AppError {
     #[error("could not register desktop application: {0}")]
     DesktopRegistration(#[source] glib::Error),
 
+    /// The development settings schema could not be loaded. Houra Dev refuses
+    /// to start rather than read or write production preferences.
+    #[cfg(all(feature = "native-ui", feature = "dev-app"))]
+    #[error(
+        "could not load the development settings schema from the executable or build directory"
+    )]
+    DevSettingsUnavailable,
+
     /// The active timer could not be published for the top-bar extension.
     #[cfg(feature = "native-ui")]
     #[error("could not publish the active timer for the top bar: {0}")]

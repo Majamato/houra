@@ -9,6 +9,7 @@ pub mod date_format;
 mod date_navigation;
 pub mod error;
 pub mod export;
+pub mod identity;
 pub mod settings;
 pub mod storage;
 pub mod tracker_service;
@@ -22,20 +23,7 @@ pub use autostart::{default_path, set_enabled};
 pub use backup::BackupDocument;
 pub use error::AppError;
 pub use export::{write_csv, write_csv_path};
+pub use identity::{APP_ID, APP_NAME};
 pub use settings::{DateFormat, Preferences};
 pub use storage::Store;
 pub use tracker_service::{TrackerHandle, TrackerService};
-
-/// Expands to [`APP_ID`] as a literal, for `concat!`.
-macro_rules! app_id {
-    () => {
-        "io.github.majamato.Houra"
-    };
-}
-pub(crate) use app_id;
-
-/// Reverse-DNS application ID shared by GApplication, the desktop file,
-/// icons, GSettings, resources, notifications, and package metadata.
-pub const APP_ID: &str = app_id!();
-/// User-visible application name.
-pub const APP_NAME: &str = "Houra";

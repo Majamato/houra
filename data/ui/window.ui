@@ -9,7 +9,7 @@
     <child><object class="AdwToolbarView">
       <child type="top"><object class="AdwHeaderBar"><style><class name="houra-header"/></style>
         <property name="title-widget"><object class="AdwViewSwitcher"><property name="stack">view_stack</property><property name="policy">wide</property><style><class name="houra-switcher"/></style></object></property>
-        <child type="start"><object class="GtkMenuButton"><property name="label" translatable="yes">Houra</property><property name="tooltip-text" translatable="yes">Main menu</property><property name="menu-model">main_menu</property><style><class name="flat"/><class name="houra-brand"/></style></object></child>
+        <child type="start"><object class="GtkMenuButton" id="brand_button"><property name="label" translatable="yes">Houra</property><property name="tooltip-text" translatable="yes">Main menu</property><property name="menu-model">main_menu</property><style><class name="flat"/><class name="houra-brand"/></style></object></child>
       </object></child>
       <property name="content"><object class="GtkBox"><property name="orientation">vertical</property>
         <child><object class="AdwBanner" id="integration_banner"><property name="revealed">false</property><property name="title" translatable="yes">Automatic idle detection is unavailable</property></object></child>

@@ -278,7 +278,7 @@ fn notifications_enabled(initial_value: bool) -> bool {
 fn take_sleep_inhibitor(proxy: &gio::DBusProxy) -> Option<OwnedFd> {
     let parameters = (
         "sleep",
-        "Houra",
+        crate::APP_NAME,
         tr("Save the active timer before suspend"),
         "delay",
     )

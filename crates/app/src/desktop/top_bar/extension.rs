@@ -5,8 +5,7 @@ use std::path::PathBuf;
 use gio::prelude::*;
 use tracing::{info, warn};
 
-/// UUID of the extension in `shell-extension/`.
-pub(super) const EXTENSION_UUID: &str = "houra@majamato.github.io";
+use crate::identity::EXTENSION_UUID;
 
 /// Adds the extension to GNOME Shell's enabled list when it is installed.
 /// A running Shell that already loaded the extension enables it at once;
@@ -160,10 +159,45 @@ mod tests {
         Ok(())
     }
 
+    fn manifest_uuid(variant: &str) -> String {
+        crate::identity::test_manifest_value(variant, "extension_uuid")
+            .as_str()
+            .unwrap_or_else(|| panic!("the manifest should define {variant}.extension_uuid"))
+            .to_owned()
+    }
+
+    #[test]
+    fn uuid_matches_the_selected_variant() {
+        assert_eq!(EXTENSION_UUID, manifest_uuid(crate::identity::APP_VARIANT));
+    }
+
     #[test]
     fn uuid_matches_the_extension_metadata() -> Result<(), Box<dyn std::error::Error>> {
         let metadata: serde_json::Value = serde_json::from_str(METADATA)?;
-        assert_eq!(metadata["uuid"], EXTENSION_UUID);
+        assert_eq!(metadata["uuid"], manifest_uuid("stable"));
         Ok(())
+    }
+
+    #[test]
+    fn enabling_dev_preserves_production_listings() {
+        let stable = manifest_uuid("stable");
+        let dev = manifest_uuid("devel");
+        assert_ne!(stable, dev);
+        // Production stays enabled when development is appended.
+        assert_eq!(
+            enable_extension(&list(&[&stable]), &[], &dev),
+            Some(ExtensionLists {
+                enabled: list(&[&stable, &dev]),
+                disabled: Vec::new(),
+            })
+        );
+        // Production stays disabled-listed when development is enabled.
+        assert_eq!(
+            enable_extension(&[], &list(&[&stable, &dev]), &dev),
+            Some(ExtensionLists {
+                enabled: list(&[&dev]),
+                disabled: list(&[&stable]),
+            })
+        );
     }
 }

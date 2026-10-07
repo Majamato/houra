@@ -12,6 +12,7 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
 import {APP_ID, BUS_NAME, OBJECT_PATH} from './activeTimer.js';
 import {elapsedParts, millisecondsUntilNextMinute} from './format.js';
+import {APP_NAME, INDICATOR_GTYPE_NAME, styleClass} from './identity.js';
 
 const STATES = new Set(['stopped', 'running', 'paused', 'idle', 'recovery']);
 const TICKING = new Set(['running', 'idle']);
@@ -56,12 +57,13 @@ function openHoura() {
         Gio.DBusCallFlags.NO_AUTO_START, -1, null, null);
 }
 
-export const HouraIndicator = GObject.registerClass(
-class HouraIndicator extends PanelMenu.Button {
+export const HouraIndicator = GObject.registerClass({
+    GTypeName: INDICATOR_GTYPE_NAME,
+}, class HouraIndicator extends PanelMenu.Button {
     _init(extension, proxy) {
-        super._init(0.5, _('Houra'), true); // true: no menu; we handle clicks
+        super._init(0.5, APP_NAME, true); // true: no menu; we handle clicks
         this.accessible_role = Atk.Role.PUSH_BUTTON;
-        this.add_style_class_name('houra-indicator');
+        this.add_style_class_name(styleClass('indicator'));
 
         this._proxy = proxy;
         this._state = 'stopped';
@@ -69,24 +71,24 @@ class HouraIndicator extends PanelMenu.Button {
         this._anchorUs = 0;
         this._tickId = 0;
 
-        const box = new St.BoxLayout({style_class: 'houra-box'});
+        const box = new St.BoxLayout({style_class: styleClass('box')});
         this._glyph = new St.Icon({
             gicon: Gio.icon_new_for_string(`${extension.path}/icons/houra-symbolic.svg`),
             fallback_icon_name: 'alarm-symbolic',
-            style_class: 'system-status-icon houra-glyph',
+            style_class: `system-status-icon ${styleClass('glyph')}`,
             y_align: Clutter.ActorAlign.CENTER,
         });
         this._time = new St.Label({
-            style_class: 'houra-time',
+            style_class: styleClass('time'),
             y_align: Clutter.ActorAlign.CENTER,
             visible: false,
         });
         this._toggleIcon = new St.Icon({
             icon_name: 'media-playback-pause-symbolic',
-            style_class: 'houra-toggle-icon',
+            style_class: styleClass('toggle-icon'),
         });
         this._toggle = new St.Button({
-            style_class: 'houra-toggle',
+            style_class: styleClass('toggle'),
             can_focus: true,
             y_align: Clutter.ActorAlign.CENTER,
             visible: false,
@@ -159,12 +161,12 @@ class HouraIndicator extends PanelMenu.Button {
         this._state = STATES.has(state) ? state : 'stopped';
         this._elapsedMs = Number(this._proxy.ElapsedMs ?? 0);
         this._anchorUs = GLib.get_monotonic_time();
-        const work = this._proxy.Summary || _('Houra');
+        const work = this._proxy.Summary || APP_NAME;
 
-        this._setClass('houra-active', this._state !== 'stopped');
-        this._setClass('houra-running', this._state === 'running');
-        this._setClass('houra-paused', this._state === 'paused');
-        this._setClass('houra-attention', NEEDS_REVIEW.has(this._state));
+        this._setClass(styleClass('active'), this._state !== 'stopped');
+        this._setClass(styleClass('running'), this._state === 'running');
+        this._setClass(styleClass('paused'), this._state === 'paused');
+        this._setClass(styleClass('attention'), NEEDS_REVIEW.has(this._state));
 
         const paused = this._state === 'paused';
         this._toggleIcon.icon_name = paused
@@ -266,10 +268,12 @@ function accessibleName(state, work) {
     case 'recovery':
         return _('Interrupted timer needs review');
     default:
-        return _('Open Houra');
+        // The stable label keeps its translation; development swaps in its
+        // own brand. A function replacement keeps the brand literal.
+        return _('Open Houra').replace('Houra', () => APP_NAME);
     }
 }
 
 function logDBusError(error) {
-    console.error(`Houra: ${error.message}`);
+    console.error(`${APP_NAME}: ${error.message}`);
 }

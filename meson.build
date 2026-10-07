@@ -83,6 +83,7 @@ if get_option('shell-extension')
     'shell-extension/extension.js',
     'shell-extension/indicator.js',
     'shell-extension/activeTimer.js',
+    'shell-extension/identity.js',
     'shell-extension/format.js',
     'shell-extension/stylesheet-dark.css',
     'shell-extension/stylesheet-light.css',

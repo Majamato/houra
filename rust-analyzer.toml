@@ -1,2 +1,2 @@
 [cargo]
-features = ["native-ui"]
+features = ["native-ui", "dev-app"]

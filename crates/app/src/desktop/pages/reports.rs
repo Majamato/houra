@@ -90,7 +90,9 @@ impl MainWindow {
         let mode = self.report_mode();
         let chooser = gtk::FileDialog::builder()
             .title(tr("Export Weekly CSV"))
-            .initial_name(format!("houra-{}.csv", start.format("%Y-%m-%d")))
+            .initial_name(crate::identity::csv_filename_suggestion(
+                &start.format("%Y-%m-%d").to_string(),
+            ))
             .build();
         let weak = self.downgrade();
         chooser.save(Some(self), None::<&gio::Cancellable>, move |result| {

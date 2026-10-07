@@ -3,7 +3,9 @@
 const INTERFACE_XML: &str =
     include_str!("../../../data/dbus/io.github.majamato.Houra.ActiveTimer.xml");
 const ACTIVE_TIMER_JS: &str = include_str!("../../../shell-extension/activeTimer.js");
+const IDENTITY_JS: &str = include_str!("../../../shell-extension/identity.js");
 const METADATA: &str = include_str!("../../../shell-extension/metadata.json");
+const MANIFEST: &str = include_str!("../../../data/app-variants.json");
 const MESON: &str = include_str!("../../../meson.build");
 const POTFILES: &str = include_str!("../../../po/POTFILES.in");
 
@@ -16,14 +18,52 @@ fn extension_embeds_the_published_interface() {
 }
 
 /// `shell-extension/tests/activeTimer.test.js` checks the bus name and object
-/// path the extension derives from this ID.
+/// path the extension derives from this ID, for stable and generated dev
+/// modules. `shell-extension/tests/identity.test.js` verifies the generated
+/// dev identity separately.
 #[test]
-fn extension_uses_the_application_id() {
-    let declaration = format!("export const APP_ID = '{}';", houra::APP_ID);
+fn extension_identity_matches_the_stable_manifest() -> Result<(), Box<dyn std::error::Error>> {
     assert!(
-        ACTIVE_TIMER_JS.contains(&declaration),
-        "missing {declaration}"
+        ACTIVE_TIMER_JS.contains("import {APP_ID} from './identity.js';"),
+        "activeTimer.js must import APP_ID from identity.js"
     );
+    assert!(
+        ACTIVE_TIMER_JS.contains("export {APP_ID};"),
+        "activeTimer.js must re-export APP_ID"
+    );
+    assert!(
+        ACTIVE_TIMER_JS.contains("export const BUS_NAME = APP_ID;"),
+        "activeTimer.js must derive BUS_NAME from APP_ID"
+    );
+    assert!(
+        ACTIVE_TIMER_JS.contains("export const OBJECT_PATH = `/${APP_ID.replaceAll('.', '/')}`;"),
+        "activeTimer.js must derive OBJECT_PATH from APP_ID"
+    );
+    let manifest: serde_json::Value = serde_json::from_str(MANIFEST)?;
+    let stable = manifest
+        .get("stable")
+        .ok_or("the manifest must define stable")?;
+    for (key, name) in [
+        ("app_id", "APP_ID"),
+        ("app_name", "APP_NAME"),
+        ("extension_gtype_name", "INDICATOR_GTYPE_NAME"),
+        ("extension_style_prefix", "STYLE_PREFIX"),
+    ] {
+        let value = stable
+            .get(key)
+            .and_then(serde_json::Value::as_str)
+            .ok_or(format!("the manifest must define stable.{key}"))?;
+        let declaration = format!("export const {name} = '{value}';");
+        assert!(
+            IDENTITY_JS.contains(&declaration),
+            "shell-extension/identity.js is missing {declaration}"
+        );
+    }
+    assert!(
+        IDENTITY_JS.contains("export function styleClass(suffix)"),
+        "identity.js must export styleClass"
+    );
+    Ok(())
 }
 
 #[test]

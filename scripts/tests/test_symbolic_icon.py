@@ -8,7 +8,8 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "data/icons/hicolor/symbolic/apps/io.github.majamato.Houra-symbolic.svg"
+STABLE = ROOT / "data/icons/hicolor/symbolic/apps/io.github.majamato.Houra-symbolic.svg"
+DEVEL = ROOT / "data/icons/hicolor/symbolic/apps/io.github.majamato.Houra.Devel-symbolic.svg"
 
 
 @unittest.skipUnless(shutil.which("magick"), "ImageMagick is required for SVG rendering")
@@ -24,27 +25,34 @@ class SymbolicIconTests(unittest.TestCase):
             ).stdout
 
     def test_shell_recoloring_preserves_the_icon_shape(self):
-        svg = SOURCE.read_text()
-        for color in ["#ffffff", "#222226", "#3584e4"]:
-            for opacity in [1, 140 / 255]:
-                with self.subTest(color=color, opacity=opacity):
-                    # StIconTheme overrides shape fills, but leaves strokes alone.
-                    css = ("<style>rect,path,ellipse,circle,polygon {"
-                           f"fill: {color} !important;" + "}</style>")
-                    opening = svg.index(">") + 1
-                    themed = svg[:opening] + css + svg[opening:]
-                    expected = svg.replace("#2e3436", color)
-                    # Shell dims the whole rendered icon when the timer is paused.
-                    def dim(image):
-                        start = image.index(">") + 1
-                        return (image[:start] + f'<g opacity="{opacity}">' +
-                                image[start:].replace("</svg>", "</g></svg>"))
-                    self.assertEqual(self.render(dim(themed)), self.render(dim(expected)),
-                                     "Shell recoloring changes the symbolic icon's shape or color")
+        for source, variant in [(STABLE, "stable"), (DEVEL, "devel")]:
+            with self.subTest(variant=variant):
+                svg = source.read_text()
+                for color in ["#ffffff", "#222226", "#3584e4"]:
+                    for opacity in [1, 140 / 255]:
+                        with self.subTest(color=color, opacity=opacity):
+                            # StIconTheme overrides shape fills, but leaves strokes alone.
+                            css = ("<style>rect,path,ellipse,circle,polygon {"
+                                   f"fill: {color} !important;" + "}</style>")
+                            opening = svg.index(">") + 1
+                            themed = svg[:opening] + css + svg[opening:]
+                            expected = svg.replace("#2e3436", color)
+                            # Shell dims the whole rendered icon when the timer is paused.
+                            def dim(image):
+                                start = image.index(">") + 1
+                                return (image[:start] + f'<g opacity="{opacity}">' +
+                                        image[start:].replace("</svg>", "</g></svg>"))
+                            self.assertEqual(self.render(dim(themed)), self.render(dim(expected)),
+                                             "Shell recoloring changes the symbolic icon's shape or color")
 
     def test_export_matches_the_installed_source(self):
-        self.assertEqual(SOURCE.read_bytes(),
+        self.assertEqual(STABLE.read_bytes(),
                          (ROOT / "icon-exports/houra-symbolic.svg").read_bytes())
+
+
+class DevelIconTests(unittest.TestCase):
+    def test_dev_icon_identifies_the_development_variant(self):
+        self.assertIn("<title>Houra Dev</title>", DEVEL.read_text())
 
 
 if __name__ == "__main__":

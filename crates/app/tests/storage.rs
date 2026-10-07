@@ -648,3 +648,44 @@ fn pause_banks_one_segment_and_resume_appends_to_the_same_entry() -> Result<(), 
     assert_eq!(entries[0].duration_ms(), 90_000);
     Ok(())
 }
+
+#[test]
+fn dev_database_leaves_production_database_unchanged() -> Result<(), Box<dyn std::error::Error>> {
+    let manifest_path =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../data/app-variants.json");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&manifest_path)?)?;
+    let subdir = |variant: &str| {
+        manifest
+            .get(variant)
+            .and_then(|variant| variant.get("data_subdir"))
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or_else(|| panic!("the manifest must define {variant}.data_subdir"))
+    };
+    let (stable_subdir, dev_subdir) = (subdir("stable"), subdir("devel"));
+    assert_ne!(stable_subdir, dev_subdir);
+    let directory = TempDir::new()?;
+    let base = directory.path().join("data with spaces");
+    std::fs::create_dir(&base)?;
+    let stable_path = base.join(stable_subdir).join(DATABASE_FILENAME);
+    let dev_path = base.join(dev_subdir).join(DATABASE_FILENAME);
+    let store = Store::open(&stable_path)?;
+    store.create_project("Stable Only", "#3584e4", 1)?;
+    let projects_before = store.list_projects(false)?;
+    let entries_before = store.list_all_entries()?;
+    drop(store);
+    let dev = Store::open(&dev_path)?;
+    dev.create_project("Dev Only", "#9141ac", 1)?;
+    dev.mark_clean_shutdown()?;
+    drop(dev);
+    let store = Store::open(&stable_path)?;
+    assert_eq!(store.list_projects(false)?, projects_before);
+    assert_eq!(store.list_all_entries()?, entries_before);
+    assert!(
+        store
+            .list_projects(false)?
+            .iter()
+            .all(|project| project.name != "Dev Only")
+    );
+    Ok(())
+}

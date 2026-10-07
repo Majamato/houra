@@ -49,7 +49,8 @@ impl DateFormat {
 pub struct Preferences {
     /// Minutes of inactivity before the idle prompt; defaults to 5.
     pub idle_threshold_minutes: u32,
-    /// Whether Houra starts with the desktop session; defaults to on.
+    /// Whether Houra starts with the desktop session; on in production,
+    /// off in development.
     pub launch_at_login: bool,
     /// Whether Houra may show desktop notifications; defaults to on.
     pub notifications: bool,
@@ -63,7 +64,7 @@ impl Default for Preferences {
     fn default() -> Self {
         Self {
             idle_threshold_minutes: 5,
-            launch_at_login: true,
+            launch_at_login: crate::identity::DEFAULT_LAUNCH_AT_LOGIN,
             notifications: true,
             duration_rounding: DurationRounding::Up,
             date_format: DateFormat::System,
@@ -88,7 +89,7 @@ mod tests {
             preferences,
             Preferences {
                 idle_threshold_minutes: 5,
-                launch_at_login: true,
+                launch_at_login: crate::identity::DEFAULT_LAUNCH_AT_LOGIN,
                 notifications: true,
                 duration_rounding: DurationRounding::Up,
                 date_format: DateFormat::System,

@@ -4,6 +4,7 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import {ACTIVE_TIMER_XML, BUS_NAME, OBJECT_PATH} from './activeTimer.js';
+import {APP_NAME} from './identity.js';
 import {HouraIndicator} from './indicator.js';
 
 export default class HouraExtension extends Extension {
@@ -27,7 +28,7 @@ export default class HouraExtension extends Extension {
             })
             .catch(error => {
                 if (!error.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                    console.error(`Houra: cannot watch the active timer: ${error.message}`);
+                    console.error(`${APP_NAME}: cannot watch the active timer: ${error.message}`);
             });
     }
 

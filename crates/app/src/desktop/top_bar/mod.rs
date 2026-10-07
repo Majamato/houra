@@ -22,7 +22,7 @@ use status::{TopBarState, TopBarStatus};
 /// D-Bus contract; `shell-extension/activeTimer.js` embeds an identical copy.
 const INTERFACE_XML: &str =
     include_str!("../../../../../data/dbus/io.github.majamato.Houra.ActiveTimer.xml");
-const INTERFACE_NAME: &str = concat!(crate::app_id!(), ".ActiveTimer");
+const INTERFACE_NAME: &str = crate::identity::ACTIVE_TIMER_INTERFACE;
 const PROPERTY_NAMES: [&str; 3] = ["State", "ElapsedMs", "Summary"];
 
 /// Publishes the active timer; clones share one D-Bus registration.

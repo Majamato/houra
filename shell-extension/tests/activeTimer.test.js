@@ -1,9 +1,13 @@
-// Run with: gjs -m shell-extension/tests/activeTimer.test.js
+// Run with: gjs -m shell-extension/tests/activeTimer.test.js [extension-dir]
 // Needs a session bus: GApplication computes its object path on registration.
+// With an extension directory, checks generated dev modules instead.
 import Gio from 'gi://Gio';
 import System from 'system';
 
-import {APP_ID, BUS_NAME, OBJECT_PATH} from '../activeTimer.js';
+const base = ARGV[0]
+    ? Gio.File.new_for_commandline_arg(ARGV[0]).get_uri()
+    : import.meta.url.replace(/\/tests\/[^/]+$/, '');
+const {APP_ID, BUS_NAME, OBJECT_PATH} = await import(`${base}/activeTimer.js`);
 
 // NON_UNIQUE registers without claiming the name from a running Houra.
 const application = new Gio.Application({
@@ -29,4 +33,4 @@ for (const [index, [actual, expected]] of cases.entries()) {
 }
 if (failures > 0)
     System.exit(1);
-print(`${cases.length} active timer checks passed`);
+print(`${cases.length} active timer checks passed for ${APP_ID}`);

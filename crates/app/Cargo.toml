@@ -10,6 +10,7 @@ default-run = "houra"
 [features]
 default = []
 native-ui = ["dep:gio", "dep:glib", "dep:gtk", "dep:libadwaita", "dep:gettext-rs"]
+dev-app = []
 
 [dependencies]
 chrono.workspace = true
@@ -28,6 +29,9 @@ glib = { workspace = true, optional = true }
 gtk = { workspace = true, optional = true }
 libadwaita = { workspace = true, optional = true }
 tempfile.workspace = true
+
+[build-dependencies]
+serde_json.workspace = true
 
 [lints.rust]
 unsafe_code = "forbid"

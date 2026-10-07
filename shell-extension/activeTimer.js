@@ -2,7 +2,9 @@
 // identical to data/dbus/io.github.majamato.Houra.ActiveTimer.xml; a Rust
 // test in crates/app/tests/top_bar_contract.rs enforces this.
 
-export const APP_ID = 'io.github.majamato.Houra';
+import {APP_ID} from './identity.js';
+
+export {APP_ID};
 export const BUS_NAME = APP_ID;
 export const OBJECT_PATH = `/${APP_ID.replaceAll('.', '/')}`;
 
