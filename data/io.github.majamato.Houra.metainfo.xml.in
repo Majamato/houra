@@ -40,23 +40,33 @@
   <screenshots>
     <screenshot type="default">
       <caption>Track time by project and activity</caption>
-      <image>https://raw.githubusercontent.com/Majamato/houra/v0.1.0/data/screenshots/tracker.png</image>
+      <image>https://raw.githubusercontent.com/Majamato/houra/v0.2.0/data/screenshots/tracker.png</image>
     </screenshot>
     <screenshot>
       <caption>Review the week and export it as CSV</caption>
-      <image>https://raw.githubusercontent.com/Majamato/houra/v0.1.0/data/screenshots/reports.png</image>
+      <image>https://raw.githubusercontent.com/Majamato/houra/v0.2.0/data/screenshots/reports.png</image>
     </screenshot>
     <screenshot>
       <caption>Decide what happens to time you were away</caption>
-      <image>https://raw.githubusercontent.com/Majamato/houra/v0.1.0/data/screenshots/idle.png</image>
+      <image>https://raw.githubusercontent.com/Majamato/houra/v0.2.0/data/screenshots/idle.png</image>
     </screenshot>
     <screenshot>
       <caption>Dark style</caption>
-      <image>https://raw.githubusercontent.com/Majamato/houra/v0.1.0/data/screenshots/tracker-dark.png</image>
+      <image>https://raw.githubusercontent.com/Majamato/houra/v0.2.0/data/screenshots/tracker-dark.png</image>
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="0.2.0" date="2026-10-07">
+      <description>
+        <p>Safer editing and clearer totals.</p>
+        <ul>
+          <li>Entries that span several days show their total time on the row</li>
+          <li>Edits can no longer end in the future</li>
+          <li>A timer that cannot be finished no longer keeps Houra from closing</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.0" date="2026-10-01">
       <description>
         <p>First public release.</p>

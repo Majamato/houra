@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: houra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-07 13:07-0500\n"
+"POT-Creation-Date: 2026-10-07 15:13-0500\n"
 "PO-Revision-Date: 2026-09-24 00:00-0500\n"
 "Last-Translator: Houra contributors\n"
 "Language-Team: Houra contributors\n"
@@ -105,27 +105,43 @@ msgid "Dark style"
 msgstr "Тёмный стиль"
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:62
+msgid "Safer editing and clearer totals."
+msgstr "Более безопасное редактирование и понятные итоги."
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:64
+msgid "Entries that span several days show their total time on the row"
+msgstr "Записи, охватывающие несколько дней, показывают общее время в строке"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:65
+msgid "Edits can no longer end in the future"
+msgstr "Правки больше не могут заканчиваться в будущем"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:66
+msgid "A timer that cannot be finished no longer keeps Houra from closing"
+msgstr "Таймер, который не удаётся завершить, больше не мешает закрыть Houra"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:72
 msgid "First public release."
 msgstr "Первый публичный выпуск."
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:64
+#: data/io.github.majamato.Houra.metainfo.xml.in:74
 msgid "Time tracking by project and activity"
 msgstr "Учёт времени по проектам и видам деятельности"
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:65
+#: data/io.github.majamato.Houra.metainfo.xml.in:75
 msgid "Idle review, crash recovery and suspend handling"
 msgstr ""
 "Проверка простоя, восстановление после сбоев и обработка спящего режима"
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:66
+#: data/io.github.majamato.Houra.metainfo.xml.in:76
 msgid "Top-bar timer for GNOME Shell"
 msgstr "Таймер на верхней панели GNOME Shell"
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:67
+#: data/io.github.majamato.Houra.metainfo.xml.in:77
 msgid "Weekly reports, CSV export and JSON backups"
 msgstr "Недельные отчёты, экспорт в CSV и резервные копии в JSON"
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:68
+#: data/io.github.majamato.Houra.metainfo.xml.in:78
 msgid "Available in 10 languages"
 msgstr "Доступно на 10 языках"
 
@@ -361,7 +377,9 @@ msgstr "Затраченное время не может заканчивать
 #: crates/app/src/desktop/dialogs/entry_editor.rs:142
 #, rust-format
 msgid "Time spent can't end in the future. At most {duration} fits before now."
-msgstr "Затраченное время не может заканчиваться в будущем. До текущего момента помещается не более {duration}."
+msgstr ""
+"Затраченное время не может заканчиваться в будущем. До текущего момента "
+"помещается не более {duration}."
 
 #: crates/app/src/desktop/dialogs/entry_editor.rs:162
 msgid "Hours"
@@ -742,7 +760,8 @@ msgid ""
 msgstr ""
 "{error}\n"
 "\n"
-"Можно всё равно выйти. Таймер сохранится, и Houra спросит, что с ним сделать, при следующем запуске."
+"Можно всё равно выйти. Таймер сохранится, и Houra спросит, что с ним "
+"сделать, при следующем запуске."
 
 #: crates/app/src/desktop/dialogs/quit.rs:80
 msgid "Keep Houra Open"

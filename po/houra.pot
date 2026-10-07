@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: houra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-07 13:07-0500\n"
+"POT-Creation-Date: 2026-10-07 15:13-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -96,26 +96,42 @@ msgid "Dark style"
 msgstr ""
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:62
-msgid "First public release."
+msgid "Safer editing and clearer totals."
 msgstr ""
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:64
-msgid "Time tracking by project and activity"
+msgid "Entries that span several days show their total time on the row"
 msgstr ""
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:65
-msgid "Idle review, crash recovery and suspend handling"
+msgid "Edits can no longer end in the future"
 msgstr ""
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:66
+msgid "A timer that cannot be finished no longer keeps Houra from closing"
+msgstr ""
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:72
+msgid "First public release."
+msgstr ""
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:74
+msgid "Time tracking by project and activity"
+msgstr ""
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:75
+msgid "Idle review, crash recovery and suspend handling"
+msgstr ""
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:76
 msgid "Top-bar timer for GNOME Shell"
 msgstr ""
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:67
+#: data/io.github.majamato.Houra.metainfo.xml.in:77
 msgid "Weekly reports, CSV export and JSON backups"
 msgstr ""
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:68
+#: data/io.github.majamato.Houra.metainfo.xml.in:78
 msgid "Available in 10 languages"
 msgstr ""
 

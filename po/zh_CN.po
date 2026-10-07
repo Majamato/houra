@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: houra\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-07 13:07-0500\n"
+"POT-Creation-Date: 2026-10-07 15:13-0500\n"
 "PO-Revision-Date: 2026-09-24 00:00-0500\n"
 "Last-Translator: Houra contributors\n"
 "Language-Team: Houra contributors\n"
@@ -99,26 +99,42 @@ msgid "Dark style"
 msgstr "深色风格"
 
 #: data/io.github.majamato.Houra.metainfo.xml.in:62
+msgid "Safer editing and clearer totals."
+msgstr "更安全的编辑，更清晰的合计。"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:64
+msgid "Entries that span several days show their total time on the row"
+msgstr "跨越多天的记录会在行中显示总时间"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:65
+msgid "Edits can no longer end in the future"
+msgstr "编辑后的时间不能再在未来结束"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:66
+msgid "A timer that cannot be finished no longer keeps Houra from closing"
+msgstr "无法完成的计时器不再阻止关闭 Houra"
+
+#: data/io.github.majamato.Houra.metainfo.xml.in:72
 msgid "First public release."
 msgstr "首个公开版本。"
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:64
+#: data/io.github.majamato.Houra.metainfo.xml.in:74
 msgid "Time tracking by project and activity"
 msgstr "按项目和活动计时"
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:65
+#: data/io.github.majamato.Houra.metainfo.xml.in:75
 msgid "Idle review, crash recovery and suspend handling"
 msgstr "空闲检查、崩溃恢复和挂起处理"
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:66
+#: data/io.github.majamato.Houra.metainfo.xml.in:76
 msgid "Top-bar timer for GNOME Shell"
 msgstr "GNOME Shell 顶栏计时器"
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:67
+#: data/io.github.majamato.Houra.metainfo.xml.in:77
 msgid "Weekly reports, CSV export and JSON backups"
 msgstr "每周报表、CSV 导出和 JSON 备份"
 
-#: data/io.github.majamato.Houra.metainfo.xml.in:68
+#: data/io.github.majamato.Houra.metainfo.xml.in:78
 msgid "Available in 10 languages"
 msgstr "支持 10 种语言"
 
