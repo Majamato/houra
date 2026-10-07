@@ -283,6 +283,36 @@ fn continue_resolves_identity_and_active_edits_update_shared_details()
 }
 
 #[test]
+fn continuing_an_entry_that_reaches_past_now_is_refused() -> Result<(), Box<dyn std::error::Error>>
+{
+    use houra_core::*;
+    let directory = TempDir::new()?;
+    let service = TrackerService::start(directory.path().join("future.sqlite3"), Box::new(|| {}))?;
+    let now = chrono::Utc::now().timestamp_millis();
+    let entry_id = service.handle.add_entry(TimeEntry {
+        id: None,
+        project_id: ProjectId(1),
+        activity_id: None,
+        note: "edited past now".into(),
+        intervals: vec![TrackedInterval {
+            id: None,
+            start_ms: now - 60_000,
+            end_ms: now + 12 * 60 * 60 * 1_000,
+            source: EntrySource::Manual,
+        }],
+        created_at_ms: now,
+        updated_at_ms: now,
+    })?;
+    assert!(matches!(
+        service.handle.continue_entry(entry_id),
+        Err(AppError::Domain(DomainError::Overlap { conflicts })) if conflicts == vec![entry_id]
+    ));
+    assert!(service.handle.snapshot()?.state.active().is_none());
+    service.shutdown()?;
+    Ok(())
+}
+
+#[test]
 fn delete_entry_round_trip_reports_not_found_afterwards() -> Result<(), Box<dyn std::error::Error>>
 {
     use houra_core::*;

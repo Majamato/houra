@@ -7,6 +7,7 @@ use houra_core::{DurationRounding, EntrySource, ProjectId, TimeEntry, TrackedInt
 use libadwaita as adw;
 use libadwaita::prelude::*;
 
+use crate::desktop::widgets::format_duration;
 use crate::desktop::window::MainWindow;
 
 const MILLIS_PER_MINUTE: i64 = 60_000;
@@ -108,6 +109,39 @@ fn intervals_from_total_duration(
         .start_ms
         .checked_add(final_duration_ms)?;
     Some(edited)
+}
+
+/// How much of the edited time fits before `now_ms`, or `None` when no
+/// changed interval ends after it. Intervals the edit kept exactly as stored
+/// are exempt, so entries saved by older versions stay editable.
+fn time_fitting_before_now(
+    original: &[TrackedInterval],
+    edited: &[TrackedInterval],
+    now_ms: i64,
+) -> Option<i64> {
+    let overrun_ms = edited
+        .iter()
+        .filter(|interval| !original.contains(interval))
+        .map(|interval| interval.end_ms.saturating_sub(now_ms))
+        .filter(|overrun| *overrun > 0)
+        .max()?;
+    let total_ms = edited.iter().fold(0_i64, |total, interval| {
+        total.saturating_add(interval.duration_ms())
+    });
+    Some(total_ms.saturating_sub(overrun_ms).max(0))
+}
+
+/// Explains why an edit was refused, naming the most time that would fit.
+fn future_end_message(fitting_ms: i64) -> String {
+    let fitting_minutes = fitting_ms / MILLIS_PER_MINUTE;
+    if fitting_minutes < 1 {
+        return tr("Time spent can't end in the future.").to_owned();
+    }
+    let seconds = u64::try_from(fitting_minutes * 60).unwrap_or(0);
+    trf(
+        "Time spent can't end in the future. At most {duration} fits before now.",
+        &[("duration", &format_duration(seconds))],
+    )
 }
 
 fn duration_controls(
@@ -269,6 +303,21 @@ impl MainWindow {
                 }
                 return;
             };
+            let interval = TrackedInterval {
+                id: None,
+                start_ms,
+                end_ms,
+                source: EntrySource::Manual,
+            };
+            let now = chrono::Utc::now().timestamp_millis();
+            if let Some(fitting_ms) =
+                time_fitting_before_now(&[], std::slice::from_ref(&interval), now)
+            {
+                if let Some(window) = weak.upgrade() {
+                    window.show_database_error(&future_end_message(fitting_ms));
+                }
+                return;
+            }
             let index = usize::try_from(project.selected()).unwrap_or(0);
             let project_id = projects
                 .get(index)
@@ -278,18 +327,12 @@ impl MainWindow {
                 .checked_sub(1)
                 .and_then(|index| activities.get(index))
                 .map(|activity| activity.id);
-            let now = chrono::Utc::now().timestamp_millis();
             let entry = TimeEntry {
                 id: None,
                 project_id,
                 activity_id,
                 note: note.text().to_string(),
-                intervals: vec![TrackedInterval {
-                    id: None,
-                    start_ms,
-                    end_ms,
-                    source: EntrySource::Manual,
-                }],
+                intervals: vec![interval],
                 created_at_ms: now,
                 updated_at_ms: now,
             };
@@ -481,6 +524,14 @@ impl MainWindow {
                 }
                 return;
             };
+            let now = chrono::Utc::now().timestamp_millis();
+            if let Some(fitting_ms) = time_fitting_before_now(&existing.intervals, &intervals, now)
+            {
+                if let Some(window) = weak.upgrade() {
+                    window.show_database_error(&future_end_message(fitting_ms));
+                }
+                return;
+            }
             let index = usize::try_from(project.selected()).unwrap_or(0);
             let project_id = projects
                 .get(index)
@@ -495,7 +546,7 @@ impl MainWindow {
                 activity_id,
                 note: note.text().to_string(),
                 intervals,
-                updated_at_ms: chrono::Utc::now().timestamp_millis(),
+                updated_at_ms: now,
                 ..existing.clone()
             };
             match handle.update_entry(updated) {
@@ -521,7 +572,7 @@ impl MainWindow {
 mod tests {
     use super::{
         LocalTimestampFormat, edited_single_interval, end_from_duration,
-        intervals_from_total_duration, rounded_duration_parts,
+        intervals_from_total_duration, rounded_duration_parts, time_fitting_before_now,
     };
     use crate::DateFormat;
     use houra_core::{DurationRounding, EntrySource, IntervalId, TrackedInterval};
@@ -682,5 +733,47 @@ mod tests {
             intervals_from_total_duration(&end_overflow, (0, 1), 0, 2),
             None
         );
+    }
+
+    #[test]
+    fn edits_cannot_end_in_the_future() {
+        let now = 3_600_000;
+        let original = vec![interval(1, 0, 600_000, EntrySource::Timer)];
+
+        let past_now = vec![interval(1, 0, now + 60_000, EntrySource::Timer)];
+        assert_eq!(
+            time_fitting_before_now(&original, &past_now, now),
+            Some(now)
+        );
+
+        let at_now = vec![interval(1, 0, now, EntrySource::Timer)];
+        assert_eq!(time_fitting_before_now(&original, &at_now, now), None);
+
+        // A manual entry starting after now has no time that fits.
+        let future_start = [interval(1, now + 1, now + 61_000, EntrySource::Manual)];
+        assert_eq!(time_fitting_before_now(&[], &future_start, now), Some(0));
+    }
+
+    #[test]
+    fn multi_interval_edits_count_earlier_intervals_toward_what_fits() {
+        let now = 1_000_000;
+        let original = vec![
+            interval(1, 0, 100_000, EntrySource::Timer),
+            interval(2, 500_000, 600_000, EntrySource::Timer),
+        ];
+        let edited = intervals_from_total_duration(&original, (0, 3), 0, 20)
+            .unwrap_or_else(|| panic!("longer total should build"));
+        // 100 s earlier plus the final interval from 500 s up to now.
+        assert_eq!(
+            time_fitting_before_now(&original, &edited, now),
+            Some(600_000)
+        );
+    }
+
+    #[test]
+    fn untouched_legacy_future_intervals_stay_editable() {
+        let now = 1_000;
+        let legacy = vec![interval(1, 0, 50_000_000, EntrySource::Timer)];
+        assert_eq!(time_fitting_before_now(&legacy, &legacy, now), None);
     }
 }

@@ -1,4 +1,4 @@
-use crate::locale::tr;
+use crate::locale::{tr, trf};
 use gtk::prelude::*;
 use houra_core::{TrackerCommand, TrackerState};
 use libadwaita as adw;
@@ -44,7 +44,7 @@ impl MainWindow {
         let stop_and_quit = move || {
             if let Some(handle) = &handle {
                 if let Err(error) = handle.apply(TrackerCommand::Stop) {
-                    window.show_database_error(&error.to_string());
+                    window.offer_quit_without_finishing(&error.to_string());
                     return;
                 }
                 if let Some(application) = &application {
@@ -63,6 +63,32 @@ impl MainWindow {
         } else {
             dialog.connect_response(Some("quit"), move |_, _| stop_and_quit());
         }
+        dialog.present(Some(self));
+    }
+
+    /// A timer that cannot be finished must never keep Houra from closing.
+    /// Its state is already saved, so the next launch asks what to keep.
+    fn offer_quit_without_finishing(&self, message: &str) {
+        let dialog = adw::AlertDialog::builder()
+            .heading(tr("Could not finish the timer"))
+            .body(trf(
+                "{error}\n\nYou can quit anyway. The timer is kept, and Houra will ask what to do with it next time it opens.",
+                &[("error", message)],
+            ))
+            .build();
+        dialog.add_responses(&[
+            ("cancel", tr("Keep Houra Open")),
+            ("quit", tr("Quit Without Finishing")),
+        ]);
+        dialog.set_response_appearance("quit", adw::ResponseAppearance::Destructive);
+        dialog.set_default_response(Some("cancel"));
+        dialog.set_close_response("cancel");
+        let application = self.application();
+        dialog.connect_response(Some("quit"), move |_, _| {
+            if let Some(application) = &application {
+                application.quit();
+            }
+        });
         dialog.present(Some(self));
     }
 }

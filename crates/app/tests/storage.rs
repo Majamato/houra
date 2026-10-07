@@ -689,3 +689,35 @@ fn dev_database_leaves_production_database_unchanged() -> Result<(), Box<dyn std
     );
     Ok(())
 }
+
+#[test]
+fn stopping_onto_an_entry_that_reaches_past_now_merges_instead_of_failing() -> Result<(), AppError>
+{
+    use houra_core::{ManualClock, TrackerCommand, TrackerEngine};
+    const HOUR: i64 = 60 * 60 * 1_000;
+    // Older versions let an edit push an interval past the current time, and
+    // a timer continued onto that entry could then never stop.
+    let mut store = Store::open_in_memory()?;
+    let other_id = store.add_entry(&manual(None, 1, 0, HOUR))?;
+    let entry_id = store.add_entry(&manual(None, 1, HOUR, 14 * HOUR))?;
+    let clock = ManualClock::at(2 * HOUR);
+    let mut engine = TrackerEngine::new(clock.clone());
+    store.persist_transition(&engine.apply(TrackerCommand::Continue {
+        entry_id,
+        project_id: ProjectId(1),
+        activity_id: None,
+        note: "manual".into(),
+    })?)?;
+    clock.advance(std::time::Duration::from_secs(60));
+    store.persist_transition(&engine.apply(TrackerCommand::Stop)?)?;
+
+    let entry = store.entry(entry_id)?;
+    assert_eq!(entry.intervals.len(), 1);
+    assert_eq!(entry.intervals[0].start_ms, HOUR);
+    assert_eq!(entry.intervals[0].end_ms, 14 * HOUR);
+    assert_eq!(entry.intervals[0].source, houra_core::EntrySource::Manual);
+    assert_eq!(entry.duration_ms(), 13 * HOUR);
+    assert_eq!(store.entry(other_id)?.duration_ms(), HOUR);
+    assert!(store.load_snapshot()?.state.active().is_none());
+    Ok(())
+}
