@@ -307,6 +307,7 @@ mod tests {
         entry_row.connect_report_requested(move |_| requested_for_signal.set(true));
         entry_row.imp().report_button.emit_clicked();
         assert!(requested.get());
+        assert!(!entry_row.imp().total_duration.is_visible());
         for (state, status) in [
             (super::EntryTrackingState::Inactive, None),
             (
@@ -333,6 +334,7 @@ mod tests {
             );
             assert_eq!(row.imp().duration.is_visible(), status.is_none());
             assert_eq!(row.imp().duration.label(), super::format_duration(120));
+            assert!(!row.imp().total_duration.is_visible());
             assert_eq!(row.imp().tracking_status.is_visible(), status.is_some());
             if let Some(status) = status {
                 assert_eq!(row.imp().tracking_status.label(), status);
@@ -346,6 +348,117 @@ mod tests {
             row.imp().report_button.emit_clicked();
             assert!(requested.get());
         }
+        let multi_day = houra_core::TimeEntry {
+            id: None,
+            project_id: project.id,
+            activity_id: Some(activity.id),
+            note: "Tracked work".into(),
+            intervals: vec![
+                houra_core::TrackedInterval {
+                    id: None,
+                    start_ms: 0,
+                    end_ms: 3_600_000,
+                    source: houra_core::EntrySource::Timer,
+                },
+                houra_core::TrackedInterval {
+                    id: None,
+                    start_ms: 86_400_000,
+                    end_ms: 88_200_000,
+                    source: houra_core::EntrySource::Timer,
+                },
+            ],
+            created_at_ms: 0,
+            updated_at_ms: 0,
+        };
+        let day_row = super::EntryRow::new(
+            &multi_day,
+            Some(&project),
+            Some(&activity),
+            (0, 86_400_000),
+            &houra_core::EntryTotals::default(),
+            0,
+            super::EntryTrackingState::Inactive,
+        );
+        assert_eq!(
+            day_row.imp().duration.label(),
+            super::format_duration(3_600)
+        );
+        assert!(day_row.imp().duration.is_visible());
+        let total_text = super::format_duration(5_400);
+        assert_eq!(
+            day_row.imp().total_duration.label(),
+            crate::locale::trf("Total {duration}", &[("duration", total_text.as_str())])
+        );
+        assert!(day_row.imp().total_duration.is_visible());
+        let live_row = super::EntryRow::new(
+            &multi_day,
+            Some(&project),
+            Some(&activity),
+            (0, 86_400_000),
+            &houra_core::EntryTotals::default(),
+            60_000,
+            super::EntryTrackingState::Inactive,
+        );
+        assert_eq!(
+            live_row.imp().duration.label(),
+            super::format_duration(3_660)
+        );
+        let live_total_text = super::format_duration(5_460);
+        assert_eq!(
+            live_row.imp().total_duration.label(),
+            crate::locale::trf(
+                "Total {duration}",
+                &[("duration", live_total_text.as_str())]
+            )
+        );
+        let tracking_row = super::EntryRow::new(
+            &multi_day,
+            Some(&project),
+            Some(&activity),
+            (0, 86_400_000),
+            &houra_core::EntryTotals::default(),
+            0,
+            super::EntryTrackingState::Tracking,
+        );
+        assert!(!tracking_row.imp().total_duration.is_visible());
+        let split_seconds = houra_core::TimeEntry {
+            intervals: vec![
+                houra_core::TrackedInterval {
+                    id: None,
+                    start_ms: 0,
+                    end_ms: 61_000,
+                    source: houra_core::EntrySource::Timer,
+                },
+                houra_core::TrackedInterval {
+                    id: None,
+                    start_ms: 86_400_000,
+                    end_ms: 86_461_000,
+                    source: houra_core::EntrySource::Timer,
+                },
+            ],
+            ..multi_day.clone()
+        };
+        let rounded_row = super::EntryRow::new(
+            &split_seconds,
+            Some(&project),
+            Some(&activity),
+            (0, 86_400_000),
+            &houra_core::EntryTotals::default(),
+            0,
+            super::EntryTrackingState::Inactive,
+        );
+        assert_eq!(
+            rounded_row.imp().duration.label(),
+            super::format_duration(120)
+        );
+        let rounded_total_text = super::format_duration(180);
+        assert_eq!(
+            rounded_row.imp().total_duration.label(),
+            crate::locale::trf(
+                "Total {duration}",
+                &[("duration", rounded_total_text.as_str())]
+            )
+        );
         assert!(
             entry_row
                 .imp()
